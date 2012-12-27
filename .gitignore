@@ -1,0 +1,14 @@
+Debug/*
+ipch/*
+objfiles/*
+Release/*
+*.sln
+*sdf
+*.suo
+*.obj
+*.ilk
+*.pdb
+*vcxproj*
+*.m
+*/Debug/*
+*/Release/*
