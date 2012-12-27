@@ -30,7 +30,7 @@ OBIFileReader::~OBIFileReader(void)
 void OBIFileReader::parse(const char * file){
 	using namespace boost;
 	ifstream myStream(file, ifstream::in);
-	char_separator<char> sep(" /");
+//	char_separator<char> sep(" /");
 	
 	if(!myStream){
 		printf("File not found!");
@@ -38,19 +38,53 @@ void OBIFileReader::parse(const char * file){
 	}
 	
 
-	typedef tokenizer<char_separator<char>> tokenizer_; 
+//	typedef tokenizer<char_separator<char>> tokenizer_; 
 	std::string buff;
-	tokenizer_ t(buff, sep);
+//	tokenizer_ t(buff, sep);
 
 	vector<std::string> tokens;
 
 	float val1, val2, val3;
-	//int vl1,vl2,vl3, vl4, vl5, vl6;
+	int vl1,vl2,vl3, vl4, vl5, vl6, vl7, vl8, vl9;
+	vl1= vl2 = vl3 = vl4 = vl5 = vl6= vl7= vl8=vl9 = -1;
 	tuple3f tuple;
 	tuple3i tuplei;
 	char what1, what2;
 	int matches;
 
+
+	int nrNormals, nrVertices, nrTextures, nrFaces;
+	nrNormals = nrFaces = nrVertices = nrTextures = 0;
+	while(myStream.good()){
+		getline(myStream, buff);
+		matches = sscanf_s(buff.c_str(), "%1c%1c", &what1, 1, &what2,1); 
+
+		if(matches != 2){
+			//skip everything
+			cout << ">> Could not parse line: "<<buff <<std::endl;
+		}
+		else if(what1 == 'v' && what2 == ' '){
+			nrVertices++;
+		}
+		else if(what1 == 'v' && what2 == 'n'){
+			nrNormals++;
+		}
+		else if(what1 == 'v' && what2 == 't'){
+			nrTextures++;
+		}
+		else if(what1 == 'f' && what2 == ' '){
+			nrFaces++;
+		}
+	}
+	myStream.close();
+
+	myStream = ifstream(file, ifstream::in);
+	vertices.reserve(nrVertices);
+	normals.reserve(nrNormals);
+	tex.reserve(nrTextures);
+	faces.reserve(nrFaces);
+	faces_textures.reserve(nrFaces);
+	faces_normals.reserve(nrFaces);
 
 	while(myStream.good()){
 		getline(myStream, buff);
@@ -79,14 +113,54 @@ void OBIFileReader::parse(const char * file){
 		else if(what1 == 'f' && what2 == ' '){
 
 
-			tokens.clear();
+		/*	tokens.clear();
 			t= tokenizer_(buff, sep);
 			for(tokenizer_::iterator beg = t.begin(); beg!=t.end(); ++beg){
 				tokens.push_back(beg.current_token());
-			}
+			}*/
+
+			matches = sscanf_s(buff.c_str(), "f %d%*1c%d%*1c%d %d%*1c%d%*1c%d %d%*1c%d%*1c%d", &vl1,&vl2,&vl3,&vl4,&vl5,&vl6,&vl7,&vl8,&vl9);
 			
 
-			if(tokens.size() == 4){ //only face coordinates
+			if(matches == 3){ //only face coordinates
+				tuplei.set(vl1 - 1,
+					vl2-1,
+					vl3-1);
+				faces.push_back(tuplei);
+			}
+			else if(matches == 6){//assume there are onlyvertices and normals
+				tuplei.set(vl1-1,
+					vl3 -1,
+					vl5 -1);
+				faces.push_back(tuplei);
+
+				tuplei.set(vl2-1,
+					vl4 -1,
+					vl6 -1);
+				faces_normals.push_back(tuplei);
+			}
+			else if(matches == 9){
+				tuplei.set(vl1-1,
+					vl4 -1,
+					vl7 -1);
+				faces.push_back(tuplei);
+
+				tuplei.set(vl2-1,
+					vl5 -1,
+					vl8 -1);
+				faces_textures.push_back(tuplei);
+
+				tuplei.set(vl3-1,
+					vl6 -1,
+					vl9 -1);
+				faces_normals.push_back(tuplei);
+			}
+			else{
+				cout <<"Undefined face specification!";
+				throw std::runtime_error("Unimplemented face specification found while reading obj file");
+			}
+
+	/*		if(tokens.size() == 4){ //only face coordinates
 				tuplei.set(lexical_cast<int>(tokens[1]) - 1,
 					lexical_cast<int>(tokens[2])-1,
 					lexical_cast<int>(tokens[3])-1);
@@ -103,7 +177,7 @@ void OBIFileReader::parse(const char * file){
 					lexical_cast<int>(tokens[6]) -1);
 				faces_normals.push_back(tuplei);
 			}
-			else if(tokens.size() == 10){//assume there are onlyvertices and normals
+			else if(tokens.size() == 10){
 				tuplei.set(lexical_cast<int>(tokens[1])-1,
 					lexical_cast<int>(tokens[4]) -1,
 					lexical_cast<int>(tokens[7]) -1);
@@ -122,7 +196,7 @@ void OBIFileReader::parse(const char * file){
 			else{
 				cout <<"Undefined face specification!";
 				throw std::runtime_error("Unimplemented face specification found while reading obj file");
-			}
+			}*/
 
 		}
 		else{
@@ -187,6 +261,12 @@ void OBIFileReader::initializeMesh( wfMesh & mesh )
 
 	mesh.setTexture(faces_textures, tex);
 }
+
+inline int OBIFileReader::cast( char * numeral )
+{
+	return 0;
+}
+
 
 
 

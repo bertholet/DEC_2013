@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QSlider>
 #include <QTimer>
+#include "application_smoothing.h"
 
 class smoothingWidget: public QWidget
 {
@@ -22,5 +23,7 @@ private:
 	QLabel * timeLabel;
 	QSlider * timeStepSlider;
 	float timeStep;
+
+	application_smoothing smoother;
 };
 

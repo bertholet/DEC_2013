@@ -30,6 +30,9 @@ void wingedMesh::initEdges(void)
 	edges.clear();
 	f2e.clear();
 
+	edges.reserve(faces.size() + myMesh->getVertices().size() + 100);
+	f2e.reserve(faces.size());
+
 	wingedEdge halfedge;
 	
 	//the raw edges

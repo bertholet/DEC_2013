@@ -32,6 +32,8 @@ private:
 	vector<tuple3i> getFaceTextures(){
 		return faces_textures;}
 
+
+	inline int cast(char * numeral);
 	void checkAllVerticesUsed(void);
 	//int hasVertex(void);
 	//int hasFace(void);

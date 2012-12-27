@@ -5,7 +5,6 @@
 #include <string>
 #include <sstream>
 #include <math.h>
-#include "application_smoothing.h"
 #include "MODEL.h"
 
 smoothingWidget::smoothingWidget(QWidget *parent):QWidget(parent)
@@ -68,7 +67,6 @@ void smoothingWidget::startDirectSmoothing()
 void smoothingWidget::doSmoothing()
 {
 
-	application_smoothing smoother(* MODEL::getModel()->getMesh());
 	smoother.explicitEuler( MODEL::getModel(), timeStep);
 	//	smoother.smootheMesh_explicitEuler(*(Model::getModel()->getMesh()));
 	//Model::getModel()->getMesh()->updateObserver(meshMsg::POS_CHANGED);

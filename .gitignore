@@ -12,3 +12,4 @@ Release/*
 *.m
 */Debug/*
 */Release/*
+simpleDisplay/GeneratedFiles/*

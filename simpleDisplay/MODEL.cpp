@@ -7,7 +7,7 @@ MODEL::MODEL(void)
 {
 
 	myMesh = new wingedMesh(new ball(1, 10,5));
-//	myMesh->getWfMesh()->attach(this);
+	myMesh->getWfMesh()->attach(this);
 
 	d0 = d1 = star0 = star1 = star0_mixed = 
 		star1_mixed = laplace0_mixed = coderiv1_mixed = 
@@ -39,7 +39,7 @@ void MODEL::setMesh( wingedMesh * aMesh )
 	}
 
 	myMesh = aMesh;
-//	aMesh->getWfMesh()->attach(this);
+	aMesh->getWfMesh()->attach(this);
 	
 	//this->updateObserver(NEW_MESH_CREATED);
 }
