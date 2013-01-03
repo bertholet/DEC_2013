@@ -32,11 +32,11 @@ void cpuCSRMatrix::initMatrix( matrixCreator & creator, int n )
 {
 	std::vector<int> js;
 	int j;
-	int stp = n/100 +1;
+/*	int stp = n/100 +1;
 	int max = (n - n%stp)/stp;
 	int nrStp = 0;
 	//statusbar
-	/*if(bar != NULL){
+	if(bar != NULL){
 		bar->setBar(0,max);
 	}*/
 
@@ -44,19 +44,19 @@ void cpuCSRMatrix::initMatrix( matrixCreator & creator, int n )
 
 	for(int i = 0; i < n ; i++){
 		creator.indices(i,js);
-		iapush_back(a.size() +1); //stupid one based notation...
+		iapush_back(a.size());
 
 		for(unsigned int k = 0; k < js.size(); k++){
 			j = js[k];
 			apush_back(creator.val(i,j));
-			japush_back(j+1);
+			japush_back(j);
 		}
 
 		/*if(bar != NULL && i % stp == 0){
 			bar->updateBar(nrStp++);
 		}*/
 	}
-	iapush_back(a.size() +1);
+	iapush_back(a.size());
 }
 
 void cpuCSRMatrix::saveMatrix( std::string file )
@@ -75,11 +75,11 @@ void cpuCSRMatrix::saveMatrix( std::string file )
 	for(int i = 0; i < (int) a.size(); i++){
 		//i goes over all indices. i.e determine for each a[i] its "i" matrix
 		//coordinate. ia[internI+1] is the start index of 0 based row internI
-		while(i+1 >= ia[internI+1]){
+		while(i >= ia[internI+1]){
 			internI++;
 			myFile << "...\n";
 		}
-		myFile << boost::lexical_cast<std::string>(internI+1);
+		myFile << boost::lexical_cast<std::string>(internI+1); //store 1-based indices for matlab
 		if(i!= a.size() -1){
 			myFile <<", ";
 		}
@@ -92,11 +92,11 @@ void cpuCSRMatrix::saveMatrix( std::string file )
 
 	internI = 0;
 	for(int i = 0; i < (int) a.size(); i++){
-		while(i+1 >= ia[internI+1]){
+		while(i >= ia[internI+1]){
 			internI++;
 			myFile << "...\n";
 		}
-		myFile << boost::lexical_cast<std::string>(ja[i]);
+		myFile << boost::lexical_cast<std::string>(ja[i]+1);
 		if(i!= a.size() -1){
 			myFile <<", ";
 		}
@@ -108,7 +108,7 @@ void cpuCSRMatrix::saveMatrix( std::string file )
 	myFile << "];\n\n a=[";
 	internI = 0;
 	for(int i = 0; i < (int) a.size(); i++){
-		while(i+1 >= ia[internI+1]){
+		while(i >= ia[internI+1]){
 			internI++;
 			myFile << "...\n";
 		}
@@ -180,22 +180,22 @@ void cpuCSRMatrix::getDiagonalIndices( std::vector<int> & target_ind )
 	for(int i = 0; i < (int) ia.size()-1; i++){
 		hasDiagEl = false;
 		for(int j = 0; j < ia[i+1]-ia[i]; j++){
-			if(ja[ia[i] - 1 + j] == i+1) { //stupid one-based notation
+			if(ja[ia[i] + j] == i) { 
 				hasDiagEl = true;
 				target_ind.push_back(ia[i] + j -1);
 			}
 		}
 		assert(hasDiagEl);
-		assert(ja[target_ind.back()] == i+1); //i really do hate one based stuff.
+		assert(ja[target_ind.back()] == i); 
 	}
 }
 
 void cpuCSRMatrix::add( int i, int j, float val )
 {
-	int bs = ia[i]-1;
+	int bs = ia[i];
 	bool added = false;
-	for(int k = bs; k < ia[i+1]-1; k++){
-		if(ja[k] == j+1){
+	for(int k = bs; k < ia[i+1]; k++){
+		if(ja[k] == j){
 			a[k]+= val;
 			added = true;
 			break;
@@ -212,14 +212,14 @@ void cpuCSRMatrix::addLine(std::vector<int> & js, std::vector<double> & vals){
 	assert(js.size()  == vals.size());
 	if(ia.size() == 0){
 		assert(a.size() == 0 && ja.size() == 0);
-		iapush_back(1);
+		iapush_back(0);
 	}
 
 	for(unsigned int i = 0; i < js.size();i++){
 		a.push_back(vals[i]);
-		japush_back(js[i]+1);
+		japush_back(js[i]);
 	}
-	iapush_back(a.size() +1);
+	iapush_back(a.size());
 
 }
 
@@ -230,7 +230,7 @@ cpuCSRMatrix cpuCSRMatrix::operator*( cpuCSRMatrix & B )
 	AB.ia.reserve(this->dim());
 	AB.ja.reserve(3*this->dim());
 	AB.a.reserve(3*this->dim());
-	AB.iapush_back(1);
+	AB.iapush_back(0);
 
 	int Aia_start, Aia_stop, next_j, k;
 	double val;
@@ -238,17 +238,17 @@ cpuCSRMatrix cpuCSRMatrix::operator*( cpuCSRMatrix & B )
 
 	for(int i = 0; i < this->n; i++){
 		//new this.ia[i]
-		Aia_start = this->ia[i]-1;
-		Aia_stop = this->ia[i+1]-1;
+		Aia_start = this->ia[i];
+		Aia_stop = this->ia[i+1];
 
 		//reset b_idx and b_stop
 		b_idx.clear();
 		b_stop.clear();
 		for(int l = Aia_start; l < Aia_stop; l++){
-			k=this->ja[l]-1; //loop k s.t. A(i,k) != 0;
-			b_idx.push_back(B.ia[k]-1); //index of first val in row k for matrix B
+			k=this->ja[l]; //loop k s.t. A(i,k) != 0;
+			b_idx.push_back(B.ia[k]); //index of first val in row k for matrix B
 										//j = B.ja[b_idx] first j such that B(k,j)!=0;
-			b_stop.push_back(B.ia[k+1]-1); //at b_stop the next row starts.
+			b_stop.push_back(B.ia[k+1]); //at b_stop the next row starts.
 		}
 
 		//b_idx contains now the indices of the values in B.a of the rows k  with A(i,k) != 0
@@ -267,7 +267,7 @@ cpuCSRMatrix cpuCSRMatrix::operator*( cpuCSRMatrix & B )
 			}
 
 			//break condition
-			if(next_j > B.getm()+1) 
+			if(next_j > B.getm()) 
 				break;
 
 			//calculate A*B(i,next_j)
@@ -290,7 +290,7 @@ cpuCSRMatrix cpuCSRMatrix::operator*( cpuCSRMatrix & B )
 		}
 
 		//adapt AB.ia
-		AB.iapush_back(AB.a.size()+1);
+		AB.iapush_back(AB.a.size());
 
 		
 	}
@@ -317,7 +317,7 @@ cpuCSRMatrix cpuCSRMatrix::operator%( cpuCSRMatrix & B )
 	AB.ia.reserve(this->dim());
 	AB.ja.reserve(3*this->dim());
 	AB.a.reserve(3*this->dim());
-	AB.iapush_back(1);
+	AB.iapush_back(0);
 
 	int Aia_start, Aia_stop, next_j;
 	double val;
@@ -326,15 +326,15 @@ cpuCSRMatrix cpuCSRMatrix::operator%( cpuCSRMatrix & B )
 
 	for(int i = 0; i < dim(); i++){
 		//new this.ia[i]
-		Aia_start = this->ia[i]-1;
-		Aia_stop = this->ia[i+1]-1;
+		Aia_start = this->ia[i];
+		Aia_stop = this->ia[i+1];
 
 		//loop the j such that A*B(i,j)!=0
 		for(int j = 0; j < B.dim(); j++){
 			//find next j value
-			next_j = j+1; 
-			Bia_start = B.ia[j] -1;
-			Bia_stop = B.ia[j+1] -1; // first index of next row
+			next_j = j; 
+			Bia_start = B.ia[j] ;
+			Bia_stop = B.ia[j+1] ; // first index of next row
 
 			if(Bia_start == Bia_stop|| Aia_start == Aia_stop ||
 				this->ja[Aia_start] > B.ja[Bia_stop-1] || 
@@ -369,11 +369,11 @@ cpuCSRMatrix cpuCSRMatrix::operator%( cpuCSRMatrix & B )
 
 
 		//adapt AB.ia
-		if(AB.ia.back() == AB.a.size()+1){
+		if(AB.ia.back() == AB.a.size()){
 			emptyLineFound = true;
 		}
 		else if( !emptyLineFound){
-			AB.iapush_back(AB.a.size()+1);
+			AB.iapush_back(AB.a.size());
 		}
 		else{
 			//cout << "Matrix degenerated!in pardisoMatrix%";
@@ -395,17 +395,17 @@ cpuCSRMatrix cpuCSRMatrix::operator+( cpuCSRMatrix & B )
 	AnB.ia.reserve(this->dim());
 	AnB.ja.reserve(3*this->dim());
 	AnB.a.reserve(3*this->dim());
-	AnB.iapush_back(1);
+	AnB.iapush_back(0);
 	
 	int Aia_start, Aia_stop, Bia_start, Bia_stop;
 	int j1, j2;
 	double val;
 	
 	for(int i = 0; i < dim(); i++){
-		Aia_start = this->ia[i]-1;
-		Aia_stop = this->ia[i+1]-1;
-		Bia_start = B.ia[i]-1;
-		Bia_stop = B.ia[i+1]-1;
+		Aia_start = this->ia[i];
+		Aia_stop = this->ia[i+1];
+		Bia_start = B.ia[i];
+		Bia_stop = B.ia[i+1];
 		for(j1 = Aia_start, j2 = Bia_start; j1 <Aia_stop || j2 < Bia_stop;){
 			if(j2 >= Bia_stop || this->ja[j1]< B.ja[j2] && j1 < Aia_stop){
 				val = this->a[j1];
@@ -436,7 +436,7 @@ cpuCSRMatrix cpuCSRMatrix::operator+( cpuCSRMatrix & B )
 		} 	
 
 		//adapt AB.ia
-		AnB.iapush_back(AnB.a.size()+1);
+		AnB.iapush_back(AnB.a.size());
 	}
 	return AnB;
 }
@@ -449,17 +449,17 @@ cpuCSRMatrix cpuCSRMatrix::operator-( cpuCSRMatrix & B )
 	AnB.ia.reserve(this->dim());
 	AnB.ja.reserve(3*this->dim());
 	AnB.a.reserve(3*this->dim());
-	AnB.iapush_back(1);
+	AnB.iapush_back(0);
 
 	int Aia_start, Aia_stop, Bia_start, Bia_stop;
 	int j1, j2;
 	double val;
 
 	for(int i = 0; i < dim(); i++){
-		Aia_start = this->ia[i]-1;
-		Aia_stop = this->ia[i+1]-1;
-		Bia_start = B.ia[i]-1;
-		Bia_stop = B.ia[i+1]-1;
+		Aia_start = this->ia[i];
+		Aia_stop = this->ia[i+1];
+		Bia_start = B.ia[i];
+		Bia_stop = B.ia[i+1];
 		for(j1 = Aia_start, j2 = Bia_start; j1 <Aia_stop || j2 < Bia_stop;){
 			if(j2 >= Bia_stop|| (j1 < Aia_stop && this->ja[j1]< B.ja[j2]) ){
 
@@ -491,7 +491,7 @@ cpuCSRMatrix cpuCSRMatrix::operator-( cpuCSRMatrix & B )
 		} 	
 
 		//adapt AB.ia
-		AnB.iapush_back(AnB.a.size()+1);
+		AnB.iapush_back(AnB.a.size());
 	}
 	return AnB;
 }
@@ -506,13 +506,10 @@ void cpuCSRMatrix::operator*=( float  other )
 
 
 
-void cpuCSRMatrix::elementWiseInv(double eps)
+void cpuCSRMatrix::elementWiseInv()
 {
-	assert(eps == 0); // nvm.... don't ask....
 	for(unsigned int i = 0; i < a.size(); i++){
-		if(a[i]> eps || a[i]< -eps){
-			a[i] = 1/ a[i];
-		}
+			a[i] = 1.f/ a[i];
 	}
 }
 
@@ -539,8 +536,8 @@ void cpuCSRMatrix::mult( std::vector<double> & x, std::vector<double> & target, 
 			target.push_back(0);
 		}
 		target[i] = 0;
-		for(int j = ia[i]-1; j < ia[i+1]-1; j++){
-			target[i] += x[ja[j]-1]*a[j];
+		for(int j = ia[i]; j < ia[i+1]; j++){
+			target[i] += x[ja[j]]*a[j];
 		}
 	}
 }
@@ -559,10 +556,10 @@ void cpuCSRMatrix::mult( std::vector<tuple3f> & x, std::vector<tuple3f> & target
 			target.push_back(tuple3f());
 		}
 		target[i].set(0,0,0);
-		for(int j = ia[i]-1; j < ia[i+1]-1; j++){
-			target[i].x += (float) x[ja[j]-1].x*a[j];
-			target[i].y += (float) x[ja[j]-1].y*a[j];
-			target[i].z += (float) x[ja[j]-1].z*a[j];
+		for(int j = ia[i]; j < ia[i+1]; j++){
+			target[i].x += (float) x[ja[j]].x*a[j];
+			target[i].y += (float) x[ja[j]].y*a[j];
+			target[i].z += (float) x[ja[j]].z*a[j];
 		}
 	}
 }
@@ -574,8 +571,8 @@ void cpuCSRMatrix::mult( std::vector<tuple3f> & x, std::vector<tuple3f> & target
 void cpuCSRMatrix::setLineToID( int line )
 {
 	bool diagElementExisted = false;
-	for(int j = ia[line]-1; j < ia[line+1]-1; j++){
-		if(ja[j] -1 == line){
+	for(int j = ia[line]; j < ia[line+1]; j++){
+		if(ja[j] == line){
 			a[j] = 1;
 			diagElementExisted = true;
 		}
@@ -594,14 +591,14 @@ void cpuCSRMatrix::setLineToID( int line )
 
 void cpuCSRMatrix::setLineToZero( int line )
 {
-	for(int j = ia[line]-1; j < ia[line+1]-1; j++){
+	for(int j = ia[line]; j < ia[line+1]; j++){
 		a[j] = 0;
 	}
 }
 
 void cpuCSRMatrix::scaleLine( int line, float scale )
 {
-	for(int j = ia[line]-1; j < ia[line+1]-1; j++){
+	for(int j = ia[line]; j < ia[line+1]; j++){
 		a[j] *= scale;
 	}
 }
@@ -612,86 +609,6 @@ cpuCSRMatrix cpuCSRMatrix::transpose( cpuCSRMatrix & mat )
 	id.initMatrix(idCreator(),mat.m);
 	return id % mat;
 }
-
-/*void cpuCSRMatrix::transpose( cpuCSRMatrix & B, cpuCSRMatrix & target )
-{
-	bool emptyLineFound = false;
-
-	target.clear();
-	target.ia.reserve(this->dim());
-	target.ja.reserve(3*this->dim());
-	target.a.reserve(3*this->dim());
-	target.iapush_back(1);
-
-	int Aia_start, Aia_stop, next_j;
-	double val;
-	//	std::vector<int> b_idx, b_stop;
-	int Bia_start, Bia_stop;
-
-	for(int i = 0; i < dim(); i++){
-		//new this.ia[i]
-		Aia_start = i;
-		Aia_stop = i+1;
-
-		//loop the j such that A*B(i,j)!=0
-		for(int j = 0; j < B.dim(); j++){
-			//find next j value
-			next_j = j+1; 
-			Bia_start = B.ia[j] -1;
-			Bia_stop = B.ia[j+1] -1; // first index of next row
-
-			if(Bia_start == Bia_stop|| 
-				i > B.ja[Bia_stop-1] || 
-				i < B.ja[Bia_start]){
-					continue;
-			}
-
-			//calculate (A*B^T)(i,next_j)
-			val = 0;
-			for(int l=Aia_start, l2 = Bia_start; l < Aia_stop && l2 < Bia_stop;){
-				//"B(k,next_j)!=0"
-				while(B.ja[l2] < this->ja[l] && l2 < Bia_stop){
-					l2++;
-				}
-				while(this->ja[l] <B.ja[l2] && l < Aia_stop){
-					l++;
-				}
-
-				if(B.ja[l2] == this->ja[l] && l<Aia_stop && l2 < Bia_stop){
-					val+=this->a[l]*B.a[l2];
-					l2++;
-					l++;
-				}
-			}
-
-			if(val!=0){
-				//store values
-				AB.japush_back(next_j);
-				AB.a.push_back(val);
-			}
-		}
-
-
-		//adapt AB.ia
-		if(AB.ia.back() == AB.a.size()+1){
-			emptyLineFound = true;
-		}
-		else if( !emptyLineFound){
-			AB.iapush_back(AB.a.size()+1);
-		}
-		else{
-			//cout << "Matrix degenerated!in pardisoMatrix%";
-			assert(false);
-			throw std::runtime_error("Matrix degenerated in pardisoMatrix::%");
-		}
-
-
-	}
-
-
-	return AB;
-}
-}*/
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -711,8 +628,8 @@ void cpuCSRMatrix::getLine( int line, std::vector<int> & target_ind, std::vector
 	assert(line < getn());
 	target_vals.clear();
 	target_ind.clear();
-	for(int i = ia[line]-1; i < ia[line+1]-1; i++){
-		target_ind.push_back(ja[i]-1);
+	for(int i = ia[line]; i < ia[line+1]; i++){
+		target_ind.push_back(ja[i]);
 		target_vals.push_back(a[i]);
 	}
 }

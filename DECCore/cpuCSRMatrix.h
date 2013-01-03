@@ -85,7 +85,7 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	// psuhback with adaptation of dimension variables. pushback 1 based variables!
+	// psuhback with adaptation of dimension variables.
 	//////////////////////////////////////////////////////////////////////////
 	void iapush_back(int i){
 		ia.push_back(i);
@@ -93,8 +93,8 @@ public:
 	}
 	void japush_back(int j){
 		ja.push_back(j);
-		if(j > m){
-			m = j;
+		if(j+1 > m){
+			m = j+1;
 		}
 	}
 
@@ -106,6 +106,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// store Matrix in matlab executable format in a file.
 	// Handy for debugging and analysis.
+	// stores the matrix with 1-based indices (for matlab).
 	//////////////////////////////////////////////////////////////////////////
 	void saveMatrix(std::string file);
 	/*void saveVector(std::vector<double> & vctor, std::string  name, 
@@ -134,12 +135,11 @@ public:
 	void setLineToZero( int line );
 
 	//////////////////////////////////////////////////////////////////////////
-	// This method will replace all values in this Matrix by 1/val, if the
-	// absolute values is > eps
+	// This method will replace all values in this Matrix by 1/val
 	// For diagonalmatrices (only!) this gives the inverse.
 	// Convenience Method
 	//////////////////////////////////////////////////////////////////////////
-	void elementWiseInv(double eps);
+	void elementWiseInv();
 
 
 	//////////////////////////////////////////////////////////////////////////
