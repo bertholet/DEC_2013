@@ -8,8 +8,7 @@
 #include "DECCORE_EXPORT.h"
 
 //////////////////////////////////////////////////////////////////////////
-//Note: while indirect definition of matrices is 0 based, direct manipulation
-// of the intern variables (via getia , iapush_back etc) has to be 1 based.
+//Indices are 0-based.
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +34,7 @@ public:
 	cpuCSRMatrix(void);
 	//////////////////////////////////////////////////////////////////////////
 	// vals are copied. a is assumed to have the same size as ja. Do not forget
-	// that the last element of i_a has to be #values +1 and thus has #rows + 1
+	// that the last element of i_a has to be #values and thus has #rows + 1
 	// values.
 	//////////////////////////////////////////////////////////////////////////
 	cpuCSRMatrix(int * ia_, int * ja_,double * a_,

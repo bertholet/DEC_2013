@@ -8,7 +8,6 @@ cpuCSRMatrix::cpuCSRMatrix(void)
 {
 	n= 0;
 	m= 0;
-	//this->iapush_back(1);
 }
 
 cpuCSRMatrix::cpuCSRMatrix( int * ia_, int *ja_,

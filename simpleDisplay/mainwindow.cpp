@@ -11,13 +11,16 @@
 //#include "meshParamWidget.h"
 
 #include "MODEL.h"
-#include "kernel.h"
+#include "mySolver.h"
 
 #define SLIDER_STEPSPERUNIT 20
 
 
 MainWindow::MainWindow(QGLFormat & format): QMainWindow()
 {
+	AllocConsole();
+	freopen("CONOUT$", "wb",stdout);
+	
 	setupMenubar();
 	setupComponents(format);
 	setupQTabs();
@@ -27,12 +30,13 @@ MainWindow::MainWindow(QGLFormat & format): QMainWindow()
 
 	layoutGui();
 
-	AllocConsole();
-	freopen("CONOUT$", "wb",stdout);
+
 	this->show();
 
 
-	CUDA_STUFF::main();
+	//CUDA_STUFF::main();
+	mySolver bla;
+	bla.main();
 }
 
 
