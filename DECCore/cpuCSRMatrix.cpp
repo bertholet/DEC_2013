@@ -614,6 +614,87 @@ cpuCSRMatrix cpuCSRMatrix::transpose( cpuCSRMatrix & mat )
 	return id % mat;
 }
 
+/*void cpuCSRMatrix::transpose( cpuCSRMatrix & B, cpuCSRMatrix & target )
+{
+	bool emptyLineFound = false;
+
+	target.clear();
+	target.ia.reserve(this->dim());
+	target.ja.reserve(3*this->dim());
+	target.a.reserve(3*this->dim());
+	target.iapush_back(1);
+
+	int Aia_start, Aia_stop, next_j;
+	double val;
+	//	std::vector<int> b_idx, b_stop;
+	int Bia_start, Bia_stop;
+
+	for(int i = 0; i < dim(); i++){
+		//new this.ia[i]
+		Aia_start = i;
+		Aia_stop = i+1;
+
+		//loop the j such that A*B(i,j)!=0
+		for(int j = 0; j < B.dim(); j++){
+			//find next j value
+			next_j = j+1; 
+			Bia_start = B.ia[j] -1;
+			Bia_stop = B.ia[j+1] -1; // first index of next row
+
+			if(Bia_start == Bia_stop|| 
+				i > B.ja[Bia_stop-1] || 
+				i < B.ja[Bia_start]){
+					continue;
+			}
+
+			//calculate (A*B^T)(i,next_j)
+			val = 0;
+			for(int l=Aia_start, l2 = Bia_start; l < Aia_stop && l2 < Bia_stop;){
+				//"B(k,next_j)!=0"
+				while(B.ja[l2] < this->ja[l] && l2 < Bia_stop){
+					l2++;
+				}
+				while(this->ja[l] <B.ja[l2] && l < Aia_stop){
+					l++;
+				}
+
+				if(B.ja[l2] == this->ja[l] && l<Aia_stop && l2 < Bia_stop){
+					val+=this->a[l]*B.a[l2];
+					l2++;
+					l++;
+				}
+			}
+
+			if(val!=0){
+				//store values
+				AB.japush_back(next_j);
+				AB.a.push_back(val);
+			}
+		}
+
+
+		//adapt AB.ia
+		if(AB.ia.back() == AB.a.size()+1){
+			emptyLineFound = true;
+		}
+		else if( !emptyLineFound){
+			AB.iapush_back(AB.a.size()+1);
+		}
+		else{
+			//cout << "Matrix degenerated!in pardisoMatrix%";
+			assert(false);
+			throw std::runtime_error("Matrix degenerated in pardisoMatrix::%");
+		}
+
+
+	}
+
+
+	return AB;
+}
+}*/
+
+
 //////////////////////////////////////////////////////////////////////////
 // force the number columns to have nrColums size.
 // This might be needed if you want to assure the dimension of the matrix

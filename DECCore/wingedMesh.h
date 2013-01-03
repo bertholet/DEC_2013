@@ -39,6 +39,10 @@ public:
 	std::vector<tuple3f> & getVertices();
 	std::vector<wingedEdge> & getEdges();
 	std::vector<tuple3i> & getFaces();
+
+	//////////////////////////////////////////////////////////////////////////
+	// returns a sorted (ascending) lists of edge indiced incident to vertices
+	//////////////////////////////////////////////////////////////////////////
 	std::vector<std::vector<int>> & getv2e();
 	std::vector<tuple3i> & getf2e();
 	
@@ -69,5 +73,6 @@ private:
 
 
 	void initEdges(void);
+	void checkAreaRatios();
 };
 

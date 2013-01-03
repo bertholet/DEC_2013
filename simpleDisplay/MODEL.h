@@ -37,16 +37,19 @@ public:
 	cpuCSRMatrix & getLaplace0_mixed();
 	cpuCSRMatrix & getCoderiv1_mixed();
 	cpuCSRMatrix & getD0();
+	cpuCSRMatrix & getBorder1();
 
 private:
 	static MODEL* instance;
 	wingedMesh * myMesh;
 
 	enum validity {INVALID, UNREFRESHED, VALID};
-	cpuCSRMatrix *d0, *d1, *star0, *star1, 
+	cpuCSRMatrix *d0, *d1,*border1, *id0, *star0, *star1, 
 		*star0_mixed, *star1_mixed, *laplace0_mixed, * coderiv1_mixed;
+	cpuCSRMatrix bufferMatrix;
 	//to track the validity of the stored matrices.
-	validity d0_valid,d1_valid,star0_valid,star1_valid, 
+	validity d0_valid,d1_valid, border1_valid, id0_valid,
+		star0_valid,star1_valid, 
 		star0_mixed_valid, star1_mixed_valid, 
 		laplace0_mixed_valid, coderiv1_mixed_valid;
 
@@ -54,6 +57,7 @@ private:
 	//matrix management
 	void invalidateAll();
 	void unrefreshedStars();
-
+	cpuCSRMatrix & getStar1_mixed();
+	cpuCSRMatrix & getStar0_mixed();
 };
 

@@ -17,6 +17,7 @@ public:
 	static float dualEdge_edge_ratio( int edge, wingedMesh & mesh );
 	//dual edge edge ratio if the dual mesh is defined using mixed areas.
 	static float dualEdge_edge_ratio_mixed( int edge, wingedMesh & mesh );
+	static void dualEdge_edge_ratios_mixed(wingedMesh & mesh, std::vector<float> & target);
 	
 
 	static void calcAllMixedAreas( wingedMesh &m, std::vector<float> &AMixed );

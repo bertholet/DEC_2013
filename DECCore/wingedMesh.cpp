@@ -1,12 +1,15 @@
 #include "StdAfx.h"
 #include "wingedMesh.h"
 #include <algorithm>
-
+#include "meshMath.h"
+#include <limits>
 
 wingedMesh::wingedMesh(wfMesh * theMesh)
 {
 	myMesh = theMesh;
 	initEdges();
+	
+	checkAreaRatios();
 	valid = true;
 }
 
@@ -37,8 +40,18 @@ void wingedMesh::initEdges(void)
 	
 	//the raw edges
 	for(it = faces.begin(); it!= faces.end(); it++){
-
 		halfedge.set((it->a < it->b ? (*it).a: (*it).b),
+			(it->a < it->b ? (*it).b: (*it).a));
+		edges.push_back(halfedge);
+
+		halfedge.set((it->b < it->c ? (*it).b: (*it).c),
+			(it->b < it->c ? (*it).c: (*it).b));
+		edges.push_back(halfedge);
+
+		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
+			(it->a < it->c ? (*it).c: (*it).a));
+		edges.push_back(halfedge);
+		/*halfedge.set((it->a < it->b ? (*it).a: (*it).b),
 			(it->a < it->b ? (*it).b: (*it).a));
 		el = lower_bound(edges.begin(),edges.end(), halfedge);
 		if(el==edges.end() || el->v_a_b.a != halfedge.v_a_b.a || el->v_a_b.b != halfedge.v_a_b.b){
@@ -59,8 +72,21 @@ void wingedMesh::initEdges(void)
 		el = lower_bound(edges.begin(),edges.end(), halfedge);
 		if(el==edges.end() || el->v_a_b.a != halfedge.v_a_b.a || el->v_a_b.b != halfedge.v_a_b.b){
 			edges.insert(el,halfedge);
+		}*/
+	}
+
+	//sort and remove duplicates
+	sort(edges.begin(), edges.end());
+	int index = 0;
+	halfedge.set(-1,-1);
+	for(int i = 0; i< edges.size(); i++){
+		if(halfedge!= edges[i]){
+			halfedge = edges[i];
+			edges[index]=halfedge;
+			index++;
 		}
 	}
+	edges.resize(index);
 
 	//the previous and next edges
 	//assumes an oriented wf mesh
@@ -138,7 +164,7 @@ void wingedMesh::initEdges(void)
 	}
 
 
-	//init v2e
+	//init v2e, note: they are automatically sorted.
 	int nrVertices = myMesh->getVertices().size();
 	v2e.clear();
 	v2e.reserve(nrVertices);
@@ -207,6 +233,37 @@ wingedEdge & wingedMesh::getAnEdge( int vertex )
 wfMesh* wingedMesh::getWfMesh()
 {
 	return this->myMesh;
+}
+
+void wingedMesh::checkAreaRatios()
+{
+	float maxVoronoi=0, minVoronoi = numeric_limits<float>::infinity();
+	float maxArea = 0, minArea = numeric_limits<float>::infinity();
+	float temp;
+
+	for(int i = 0; i < myMesh->getVertices().size(); i++){
+		temp = meshMath::aVoronoi(i,*this);
+		if(temp > maxVoronoi){
+			maxVoronoi = temp;
+		}
+		if(temp < minVoronoi){
+			minVoronoi = temp;
+		}
+	}
+
+	for(int i = 0; i < myMesh->getFaces().size(); i++){
+		temp = meshMath::area(i,*this);
+		if(temp > maxArea){
+			maxArea = temp;
+		}
+		if(temp < minArea){
+			minArea = temp;
+		}
+	}
+
+	cout << " Voronoi Areas: \n" << "Max: \t" << maxVoronoi << "\tMin: \t" << minVoronoi << "\tRatio:\t"<< maxVoronoi/minVoronoi <<"\n";
+	cout << "Areas: \n" << "Max: \t" << maxArea << "\tMin: \t" << minArea << "\tRatio:\t"<< maxArea/minArea <<"\n";
+	
 }
 
 

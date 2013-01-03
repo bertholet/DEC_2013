@@ -114,6 +114,36 @@ float meshMath::dualEdge_edge_ratio_mixed( int edgeNr, wingedMesh & mesh )
 }
 
 
+void meshMath::dualEdge_edge_ratios_mixed( wingedMesh & mesh, std::vector<float> & target )
+{
+	std::vector<wingedEdge> & edges = mesh.getEdges();
+	std::vector<tuple3f> & verts = mesh.getVertices();
+	float cot_alpha1, cot_alpha2;
+	int prev, next, vertex1, vertex2;
+
+	if(target.size() != edges.size()){
+		target.resize(edges.size(), 0);
+	}
+	for(int i = 0; i < edges.size(); i++){
+		vertex1 = edges[i].start();
+		vertex2 = edges[i].end();
+		prev = edges[i].getPrev(vertex1).otherVertex(vertex1);//meshOperation::getPrevious_bc(i, j, m, &prevIsNeighbor);	
+		next = edges[i].getNext(vertex1).otherVertex(vertex1);
+
+		cot_alpha1 = tuple3f::cotPoints(verts[vertex2], verts[prev], verts[vertex1]);
+		cot_alpha2 = tuple3f::cotPoints(verts[vertex1], verts[next], verts[vertex2]);
+
+		cot_alpha1 = (cot_alpha1 >0? cot_alpha1: 0);
+		cot_alpha2 = (cot_alpha2 >0? cot_alpha2: 0);
+
+		target[i]= (cot_alpha1 + cot_alpha2)/2;
+	}
+
+
+}
+
+
+
 float meshMath::area( int faceNr, wingedMesh & mesh )
 {
 	std::vector<tuple3i> & fcs = mesh.getFaces();

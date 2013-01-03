@@ -29,7 +29,15 @@ public:
 	static cpuCSRMatrix star0_mixed( wingedMesh & aMesh, std::vector<float> & buffer);
 	static cpuCSRMatrix star1_mixed( wingedMesh & aMesh, std::vector<float> & buffer);
 	static cpuCSRMatrix coderiv1_mixed( wingedMesh & aMesh , std::vector<float> & buffer);
+	static cpuCSRMatrix coderiv1_mixed( wingedMesh & aMesh , std::vector<float> & buffer, cpuCSRMatrix & _border1);
 
+	//The coderivatives, simple concatenations of the star
+	// Fast memory efficient computation.
+	static void coderiv1(
+		cpuCSRMatrix & star_1, 
+		cpuCSRMatrix & border_1,
+		cpuCSRMatrix & star_0,
+		cpuCSRMatrix & target);
 	//The coderivatives, simple concatenations of the star
 	// abd d matrices.
 	static cpuCSRMatrix coderiv1( wingedMesh & aMesh );

@@ -11,7 +11,7 @@
 //#include "meshParamWidget.h"
 
 #include "MODEL.h"
-
+#include "kernel.h"
 
 #define SLIDER_STEPSPERUNIT 20
 
@@ -27,13 +27,19 @@ MainWindow::MainWindow(QGLFormat & format): QMainWindow()
 
 	layoutGui();
 
+	AllocConsole();
+	freopen("CONOUT$", "wb",stdout);
 	this->show();
+
+
+	CUDA_STUFF::main();
 }
 
 
 MainWindow::~MainWindow()
 {
-
+	fclose(stdout);
+	FreeConsole();
 }
 
 /************************************************************************/

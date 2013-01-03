@@ -9,6 +9,7 @@
 #include "idCreator.h"
 //#include "meshOperation.h"
 
+
 class d_0Creator: public matrixCreator
 {
 
@@ -37,6 +38,29 @@ public:
 			target.push_back(edge.end());
 			target.push_back(edge.start());
 		}
+	}
+};
+
+class border1_Creator: public matrixCreator
+{
+
+	wingedMesh * mesh;
+
+public:
+	border1_Creator(wingedMesh & aMesh){
+		mesh = & aMesh;
+	}
+
+	float val(int i , int j){
+		// i is the row, j the edge
+		wingedEdge & edge =mesh->getEdges()[j];
+		return (float) edge.orientation(i);
+	}
+
+	// row: its the vertex number; 
+	void indices(int row, std::vector<int> & target){
+		target.clear();
+		target =  mesh->getv2e()[row];
 	}
 };
 
@@ -395,8 +419,13 @@ DDGMatrices::~DDGMatrices(void)
 
 cpuCSRMatrix DDGMatrices::border1( wingedMesh & aMesh )
 {
-	cpuCSRMatrix border_1 = d0(aMesh);
-	return cpuCSRMatrix::transpose(border_1);
+
+	cpuCSRMatrix border1_;
+	int nrVertices = aMesh.getVertices().size();
+	border1_.initMatrix(border1_Creator(aMesh), nrVertices);
+
+//	cpuCSRMatrix border_1 = cpuCSRMatrix::transpose(d0(aMesh));
+	return border1_;
 }
 
 cpuCSRMatrix DDGMatrices::border2( wingedMesh & aMesh )
@@ -508,13 +537,73 @@ cpuCSRMatrix DDGMatrices::star1_mixed( wingedMesh & aMesh, std::vector<float> & 
 
 cpuCSRMatrix DDGMatrices::coderiv1_mixed( wingedMesh & aMesh, std::vector<float> & buffer )
 {
+	
+
 	cpuCSRMatrix star_1= star1_mixed(aMesh, buffer);
+
+	//meshMath::dualEdge_edge_ratios_mixed(aMesh, buffer);
+	//cout << "calculating dual weights: " << GetTickCount() - tm <<"\n";
+	//tm=GetTickCount();
+
+
 	cpuCSRMatrix border1_ = border1(aMesh);
+
 	cpuCSRMatrix star_0_inv = star0_mixed(aMesh, buffer);
 	star_0_inv.elementWiseInv(0);
 
 	return star_0_inv * border1_ * star_1;
 }
+
+cpuCSRMatrix DDGMatrices::coderiv1_mixed( wingedMesh & aMesh, std::vector<float> & buffer, cpuCSRMatrix & border1_ )
+{
+
+	DWORD tm = GetTickCount();
+
+	cpuCSRMatrix star_1= star1_mixed(aMesh, buffer);
+//	cout << "star_1: " << GetTickCount() - tm <<"\n";
+//	tm=GetTickCount();
+
+	//meshMath::dualEdge_edge_ratios_mixed(aMesh, buffer);
+	//cout << "calculating dual weights: " << GetTickCount() - tm <<"\n";
+	//tm=GetTickCount();
+
+	cpuCSRMatrix star_0_inv = star0_mixed(aMesh, buffer);
+	star_0_inv.elementWiseInv(0);
+
+//	cout << "star0_inv: " << GetTickCount() - tm <<"\n";
+//	tm=GetTickCount();
+
+	star_1 =star_0_inv * border1_ * star_1;
+//	cout << "star_0_inv * border1_ * star_1: " << GetTickCount() - tm <<"\n";
+	cout << "*time in coderiv1mixed " << GetTickCount() - tm <<"\n";
+
+	return star_1;
+}
+
+void DDGMatrices::coderiv1(
+	cpuCSRMatrix & star_1, 
+	cpuCSRMatrix & border_1,
+	cpuCSRMatrix & star_0,
+	cpuCSRMatrix & target)
+{
+
+	DWORD tm = GetTickCount();
+
+	
+	target = star_0;
+	target.elementWiseInv(0);
+
+	//	cout << "star0_inv: " << GetTickCount() - tm <<"\n";
+	//	tm=GetTickCount();
+
+	target = target * border_1;
+	target = target * star_1;
+	//	cout << "star_0_inv * border1_ * star_1: " << GetTickCount() - tm <<"\n";
+	cout << "*time in coderiv1mixed " << GetTickCount() - tm <<"\n";
+
+}
+
+
 
 
 cpuCSRMatrix DDGMatrices::coderiv1( wingedMesh & aMesh )

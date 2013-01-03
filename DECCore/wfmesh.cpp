@@ -59,7 +59,7 @@ wfMesh::~wfMesh(void)
 
 void wfMesh::initNormalsFromVertices()
 {
-	cout << ">> Normals are generated, no normals read!\n";
+	//cout << ">> Normals are generated, no normals read!\n";
 	//vector<int> nrFaces(vertices.size());
 	normals_per_vertex.clear();
 	normals_per_vertex.reserve(vertices.size());
@@ -81,7 +81,7 @@ void wfMesh::initNormalsFromVertices()
 
 
 	//face_normals_perVertex = faces;
-	cout << ">> Normals generated!\n";
+	//cout << ">> Normals generated!\n";
 }
 
 void wfMesh::reset( vector<tuple3f> & _vertices, vector<tuple3i> &_faces )

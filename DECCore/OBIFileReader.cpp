@@ -112,15 +112,15 @@ void OBIFileReader::parse(const char * file){
 		}
 		else if(what1 == 'f' && what2 == ' '){
 
-
-		/*	tokens.clear();
-			t= tokenizer_(buff, sep);
-			for(tokenizer_::iterator beg = t.begin(); beg!=t.end(); ++beg){
-				tokens.push_back(beg.current_token());
-			}*/
-
+			//who cares about elegance?????
 			matches = sscanf_s(buff.c_str(), "f %d%*1c%d%*1c%d %d%*1c%d%*1c%d %d%*1c%d%*1c%d", &vl1,&vl2,&vl3,&vl4,&vl5,&vl6,&vl7,&vl8,&vl9);
 			
+			if(!(matches==3||matches==6||matches==9)){
+				matches= sscanf_s(buff.c_str(), "f %d//%d %d%//%d %d//%d", &vl1,&vl2,&vl3,&vl4,&vl5,&vl6);
+				if(matches!=6){
+					matches= sscanf_s(buff.c_str(), "f %d// %d%// %d//", &vl1,&vl2,&vl3);
+				}
+			}
 
 			if(matches == 3){ //only face coordinates
 				tuplei.set(vl1 - 1,
@@ -160,44 +160,6 @@ void OBIFileReader::parse(const char * file){
 				throw std::runtime_error("Unimplemented face specification found while reading obj file");
 			}
 
-	/*		if(tokens.size() == 4){ //only face coordinates
-				tuplei.set(lexical_cast<int>(tokens[1]) - 1,
-					lexical_cast<int>(tokens[2])-1,
-					lexical_cast<int>(tokens[3])-1);
-				faces.push_back(tuplei);
-			}
-			else if(tokens.size() == 7){//assume there are onlyvertices and normals
-				tuplei.set(lexical_cast<int>(tokens[1])-1,
-					lexical_cast<int>(tokens[3]) -1,
-					lexical_cast<int>(tokens[5]) -1);
-				faces.push_back(tuplei);
-
-				tuplei.set(lexical_cast<int>(tokens[2])-1,
-					lexical_cast<int>(tokens[4]) -1,
-					lexical_cast<int>(tokens[6]) -1);
-				faces_normals.push_back(tuplei);
-			}
-			else if(tokens.size() == 10){
-				tuplei.set(lexical_cast<int>(tokens[1])-1,
-					lexical_cast<int>(tokens[4]) -1,
-					lexical_cast<int>(tokens[7]) -1);
-				faces.push_back(tuplei);
-
-				tuplei.set(lexical_cast<int>(tokens[2])-1,
-					lexical_cast<int>(tokens[5]) -1,
-					lexical_cast<int>(tokens[8]) -1);
-				faces_textures.push_back(tuplei);
-
-				tuplei.set(lexical_cast<int>(tokens[3])-1,
-					lexical_cast<int>(tokens[6]) -1,
-					lexical_cast<int>(tokens[9]) -1);
-				faces_normals.push_back(tuplei);
-			}
-			else{
-				cout <<"Undefined face specification!";
-				throw std::runtime_error("Unimplemented face specification found while reading obj file");
-			}*/
-
 		}
 		else{
 			cout << ">> Didnt read line: "<<buff <<std::endl;
@@ -213,7 +175,6 @@ void OBIFileReader::parse(const char * file){
 		<< faces.size() << " faces. :-*\n";
 
 	checkAllVerticesUsed();
-
 
 }
 
@@ -266,6 +227,7 @@ inline int OBIFileReader::cast( char * numeral )
 {
 	return 0;
 }
+
 
 
 
