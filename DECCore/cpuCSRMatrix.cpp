@@ -11,7 +11,7 @@ cpuCSRMatrix::cpuCSRMatrix(void)
 }
 
 cpuCSRMatrix::cpuCSRMatrix( int * ia_, int *ja_,
-							 double * a_, int sz_ia, int sz_ja)
+							 float * a_, int sz_ia, int sz_ja)
 {
 	n= 0;
 	m= 0;
@@ -182,11 +182,27 @@ void cpuCSRMatrix::getDiagonalIndices( std::vector<int> & target_ind )
 		for(int j = 0; j < ia[i+1]-ia[i]; j++){
 			if(ja[ia[i] + j] == i) { 
 				hasDiagEl = true;
-				target_ind.push_back(ia[i] + j -1);
+				target_ind.push_back(ia[i] + j);
 			}
 		}
 		assert(hasDiagEl);
 		assert(ja[target_ind.back()] == i); 
+	}
+}
+
+void cpuCSRMatrix::addOnDiagonal( float val )
+{
+	bool hasDiagEl;
+
+	for(int i = 0; i < (int) ia.size()-1; i++){
+		hasDiagEl = false;
+		for(int j = 0; j < ia[i+1]-ia[i]; j++){
+			if(ja[ia[i] + j] == i) { 
+				hasDiagEl = true;
+				a[ia[i] + j] += val;
+			}
+		}
+		assert(hasDiagEl);
 	}
 }
 
@@ -208,7 +224,7 @@ void cpuCSRMatrix::add( int i, int j, float val )
 	}
 }
 
-void cpuCSRMatrix::addLine(std::vector<int> & js, std::vector<double> & vals){
+void cpuCSRMatrix::addLine(std::vector<int> & js, std::vector<float> & vals){
 	assert(js.size()  == vals.size());
 	if(ia.size() == 0){
 		assert(a.size() == 0 && ja.size() == 0);
@@ -233,7 +249,7 @@ cpuCSRMatrix cpuCSRMatrix::operator*( cpuCSRMatrix & B )
 	AB.iapush_back(0);
 
 	int Aia_start, Aia_stop, next_j, k;
-	double val;
+	float val;
 	std::vector<int> b_idx, b_stop;
 
 	for(int i = 0; i < this->n; i++){
@@ -320,7 +336,7 @@ cpuCSRMatrix cpuCSRMatrix::operator%( cpuCSRMatrix & B )
 	AB.iapush_back(0);
 
 	int Aia_start, Aia_stop, next_j;
-	double val;
+	float val;
 //	std::vector<int> b_idx, b_stop;
 	int Bia_start, Bia_stop;
 
@@ -399,7 +415,7 @@ cpuCSRMatrix cpuCSRMatrix::operator+( cpuCSRMatrix & B )
 	
 	int Aia_start, Aia_stop, Bia_start, Bia_stop;
 	int j1, j2;
-	double val;
+	float val;
 	
 	for(int i = 0; i < dim(); i++){
 		Aia_start = this->ia[i];
@@ -453,7 +469,7 @@ cpuCSRMatrix cpuCSRMatrix::operator-( cpuCSRMatrix & B )
 
 	int Aia_start, Aia_stop, Bia_start, Bia_stop;
 	int j1, j2;
-	double val;
+	float val;
 
 	for(int i = 0; i < dim(); i++){
 		Aia_start = this->ia[i];
@@ -623,7 +639,7 @@ void cpuCSRMatrix::forceNrColumns( int nrColumns )
 }
 
 //returns the zero based indices of values in this column and the values.
-void cpuCSRMatrix::getLine( int line, std::vector<int> & target_ind, std::vector<double> & target_vals )
+void cpuCSRMatrix::getLine( int line, std::vector<int> & target_ind, std::vector<float> & target_vals )
 {
 	assert(line < getn());
 	target_vals.clear();
@@ -659,6 +675,9 @@ void cpuCSRMatrix::diagAppend( cpuCSRMatrix & mat )
 	assert(this->m = newm);
 
 }
+
+
+
 
 
 

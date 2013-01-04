@@ -15,16 +15,20 @@
 class DECCORE_EXPORT cpuCSRMatrix
 {
 private:
+	//////////////////////////////////////////////////////////////////////////
 	//indices of the values in the sparse matrix
+	//ia: the offsets of the values of a row in a and ja
+	//ja: the column indices
+	//////////////////////////////////////////////////////////////////////////
 	std::vector<int> ia, ja;
 	//values of the elements of the sparse matrix
-	std::vector<double> a;
+	std::vector<float> a;
 
 	int n, m;
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Matrix multiplication with transposed matrix. Returned by value, so
+	// Matrix multiplication with transposed matrix. Rather
 	// mediocrely efficient. Use for onetime construction of reused matrix
 	// where efficiency is not as important.
 	//////////////////////////////////////////////////////////////////////////
@@ -37,7 +41,7 @@ public:
 	// that the last element of i_a has to be #values and thus has #rows + 1
 	// values.
 	//////////////////////////////////////////////////////////////////////////
-	cpuCSRMatrix(int * ia_, int * ja_,double * a_,
+	cpuCSRMatrix(int * ia_, int * ja_,float * a_,
 		 int sz_ia, int sz_ja);
 	~cpuCSRMatrix(void);
 
@@ -61,13 +65,16 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// getter
 	//////////////////////////////////////////////////////////////////////////
+	// get the row offsets
 	std::vector<int> & getia(void){
 		return ia;
 	}
+	//get the column indices
 	std::vector<int> & getja(void){
 		return ja;
 	}
-	std::vector<double> & geta(void){
+	//get the values
+	std::vector<float> & geta(void){
 		return a;
 	}
 
@@ -98,7 +105,7 @@ public:
 		}
 	}
 
-	void apush_back(double val){
+	void apush_back(float val){
 		a.push_back(val);
 	}
 	
@@ -196,11 +203,13 @@ public:
 	// Adds a row at the end of the matrix. js are the column indices of the
 	// values vals. The indices have to be 0 based.
 	//////////////////////////////////////////////////////////////////////////
-	void addLine(std::vector<int> & js, std::vector<double> & vals);
+	void addLine(std::vector<int> & js, std::vector<float> & vals);
 
 	void forceNrColumns( int nrColumns );
-	void getLine( int line, std::vector<int> & target_ind, std::vector<double> & target_vals );
+	void getLine( int line, std::vector<int> & target_ind, std::vector<float> & target_vals );
 	//appends the matrix mat at the right bottom corner of this matrix
 	void diagAppend( cpuCSRMatrix & mat );
 	void scaleLine( int line, float scale );
+	//adds val to all elemetns on the diagonal
+	void addOnDiagonal( float val );
 };
