@@ -549,7 +549,7 @@ cpuCSRMatrix DDGMatrices::coderiv1_mixed( wingedMesh & aMesh, std::vector<float>
 	cpuCSRMatrix border1_ = border1(aMesh);
 
 	cpuCSRMatrix star_0_inv = star0_mixed(aMesh, buffer);
-	star_0_inv.elementWiseInv(0);
+	star_0_inv.elementWiseInv();
 
 	return star_0_inv * border1_ * star_1;
 }
@@ -568,7 +568,7 @@ cpuCSRMatrix DDGMatrices::coderiv1_mixed( wingedMesh & aMesh, std::vector<float>
 	//tm=GetTickCount();
 
 	cpuCSRMatrix star_0_inv = star0_mixed(aMesh, buffer);
-	star_0_inv.elementWiseInv(0);
+	star_0_inv.elementWiseInv();
 
 //	cout << "star0_inv: " << GetTickCount() - tm <<"\n";
 //	tm=GetTickCount();
@@ -591,7 +591,7 @@ void DDGMatrices::coderiv1(
 
 	
 	target = star_0;
-	target.elementWiseInv(0);
+	target.elementWiseInv();
 
 	//	cout << "star0_inv: " << GetTickCount() - tm <<"\n";
 	//	tm=GetTickCount();
@@ -611,7 +611,7 @@ cpuCSRMatrix DDGMatrices::coderiv1( wingedMesh & aMesh )
 	cpuCSRMatrix star_1= star1(aMesh);
 	cpuCSRMatrix border1_ = border1(aMesh);
 	cpuCSRMatrix star_0_inv = star0(aMesh);
-	star_0_inv.elementWiseInv(0);
+	star_0_inv.elementWiseInv();
 
 	return star_0_inv * border1_ * star_1;
 	//return (star_0_inv % d_0)* star_1;
@@ -625,7 +625,7 @@ cpuCSRMatrix DDGMatrices::coderiv2( wingedMesh & aMesh )
 	cpuCSRMatrix border2_ = border2(aMesh);//dual_d0(aMesh);
 
 	cpuCSRMatrix star_1_inv = star1(aMesh);
-	star_1_inv.elementWiseInv(0.0000000);
+	star_1_inv.elementWiseInv();
 
 	return star_1_inv * border2_ * star_2;
 	//return (star_1_inv % d_1)* star_2;

@@ -78,6 +78,18 @@ void tests::testAndSaveDECMatrices()
 	st2_matrix.saveMatrix("st2_.m");
 	std::cout << "Size is : " << st2_matrix.getm() << ", " << st2_matrix.getn()<<"\n\n";
 
+
+	//operations
+
+	d0_matrix*=4;
+	d0_matrix.saveMatrix("d0_tms4.m");
+	d1_matrix= d1_matrix + (d1_matrix *0.25f);
+	d1_matrix.saveMatrix("d1_plus_d1tms025.m");
+	d1_matrix = d1_matrix - (d1_matrix *0.2f);
+	d1_matrix.saveMatrix("d1_plus_minus_d1.m");
+	(d1_matrix*d0_matrix).saveMatrix("d1_times_4d0.m");
+
+
 	std::cout << "Now, enter a number and press Enter\n";
 	int a;
 	std::cin >> a;
