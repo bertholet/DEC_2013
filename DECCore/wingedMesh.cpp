@@ -79,7 +79,7 @@ void wingedMesh::initEdges(void)
 	sort(edges.begin(), edges.end());
 	int index = 0;
 	halfedge.set(-1,-1);
-	for(int i = 0; i< edges.size(); i++){
+	for(unsigned int i = 0; i< edges.size(); i++){
 		if(halfedge!= edges[i]){
 			halfedge = edges[i];
 			edges[index]=halfedge;
@@ -241,7 +241,7 @@ void wingedMesh::checkAreaRatios()
 	float maxArea = 0, minArea = numeric_limits<float>::infinity();
 	float temp;
 
-	for(int i = 0; i < myMesh->getVertices().size(); i++){
+	for(unsigned int i = 0; i < myMesh->getVertices().size(); i++){
 		temp = meshMath::aVoronoi(i,*this);
 		if(temp > maxVoronoi){
 			maxVoronoi = temp;
@@ -251,7 +251,7 @@ void wingedMesh::checkAreaRatios()
 		}
 	}
 
-	for(int i = 0; i < myMesh->getFaces().size(); i++){
+	for(unsigned int i = 0; i < myMesh->getFaces().size(); i++){
 		temp = meshMath::area(i,*this);
 		if(temp > maxArea){
 			maxArea = temp;

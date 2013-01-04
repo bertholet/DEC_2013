@@ -96,7 +96,7 @@ float tuple3f::cotPoints( tuple3f &a, tuple3f &b, tuple3f &c )
 	float z = (a.x-b.x)*(c.y - b.y) - (a.y-b.y)*(c.x - b.x);
 	float norm_sqr_a_bXc_b = x*x + y*y + z*z;
 	float cotanis = a_bDotc_b/pow(norm_sqr_a_bXc_b, 0.5f);
-	cotanis = (cotanis*0!= 0? 10e10:cotanis);
+	cotanis = (cotanis*0!= 0? 10e10f:cotanis);
 	return cotanis;
 }
 

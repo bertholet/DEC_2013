@@ -94,7 +94,7 @@ wingedEdge & wingedEdge::getNext( int vertex )
 	}
 	else{
 		assert(false);
-		return wingedEdge();
+		throw std::runtime_error("mesh has a border");
 	}
 }
 
