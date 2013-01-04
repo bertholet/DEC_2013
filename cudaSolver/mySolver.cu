@@ -15,13 +15,26 @@ cudaError_t addWithCuda_(int *c, const int *a, const int *b, size_t size);
 __global__ void addKernel_(int *c, const int *a, const int *b);
 
 
-void CUDASOLVER_EXPORT mySolver::setMatrix( cpuCSRMatrix & mat )
+CUDASOLVER_EXPORT mySolver::mySolver()
 {
+	myMatrix = new cusp::csr_matrix<int,float,cusp::device_memory>();
+}
 
+CUDASOLVER_EXPORT mySolver::~mySolver()
+{
+	delete myMatrix;
 }
 
 
-void CUDASOLVER_EXPORT mySolver::updateMatrix()
+void CUDASOLVER_EXPORT mySolver::setMatrix( cpuCSRMatrix & mat )
+{
+	delete myMatrix;
+	myMatrix = new cusp::csr_matrix<int,float,cusp::device_memory>(mat.getn(), mat.getm(), mat.geta().size());
+	//myMatrix.colmn_indices
+}
+
+
+void CUDASOLVER_EXPORT mySolver::updateMatrix(cpuCSRMatrix & mat)
 {
 
 }

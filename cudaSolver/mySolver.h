@@ -13,15 +13,17 @@
 
 class mySolver{
 public:
-	mySolver(){}
-	~mySolver(){}
+	CUDASOLVER_EXPORT mySolver();
+	CUDASOLVER_EXPORT ~mySolver();
 	
 	//test function, to delete
 	int  CUDASOLVER_EXPORT main();
 	
-	
+	//matrix is allocated on the gpu and filled in
 	void CUDASOLVER_EXPORT setMatrix(cpuCSRMatrix & mat);
-	void CUDASOLVER_EXPORT updateMatrix();
+	//matrix is assumed to be correctly allocated on the gpu
+	//and just new values are sent over
+	void CUDASOLVER_EXPORT updateMatrix(cpuCSRMatrix & mat);
 	void CUDASOLVER_EXPORT solve(double *x, double * b);
 
 	static void CUDASOLVER_EXPORT checkMatrix(cpuCSRMatrix & mat );
@@ -31,5 +33,7 @@ private:
 	//__global__ void addKernel_(int *c, const int *a, const int *b);
 
 };
+
+
 
 
