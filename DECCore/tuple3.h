@@ -37,7 +37,7 @@ public:
 	tuple3f operator - (void);
 	tuple3f operator - (float &other);
 	void operator -= (float &other);
-
+	float operator[](unsigned int i);
 
 //////////////////////////////////////////////////////////////////////////
 //Trigonometry

@@ -3,6 +3,7 @@
 //#include "device_launch_parameters.h"
 #include <cusp/csr_matrix.h>
 #include "cpuCSRMatrix.h"
+#include "floatVector.h"
 
 
 /************************************************************************/
@@ -24,8 +25,7 @@ public:
 	//matrix is assumed to be correctly allocated on the gpu
 	//and just new values are sent over
 	void CUDASOLVER_EXPORT updateMatrix(cpuCSRMatrix & mat);
-	void CUDASOLVER_EXPORT solve(double *x, double * b);
-
+	void CUDASOLVER_EXPORT solve(floatVector & x, floatVector & b);
 	static void CUDASOLVER_EXPORT checkMatrix(cpuCSRMatrix & mat );
 private:
 	cusp::csr_matrix<int,float,cusp::device_memory> * myMatrix;

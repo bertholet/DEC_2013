@@ -9,6 +9,7 @@ public:
 	application_smoothing();
 	~application_smoothing(void);
 	void explicitEuler(MODEL * model, float timeStep);
+	void implicitEuler(MODEL * model, float timeStep);
 private :
 	std::vector<tuple3f> buffer;
 };

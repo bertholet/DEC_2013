@@ -35,8 +35,10 @@ MainWindow::MainWindow(QGLFormat & format): QMainWindow()
 
 
 	//CUDA_STUFF::main();
-	mySolver bla;
+	/*mySolver bla;
 	bla.main();
+	bla.setMatrix(MODEL::getModel()->getLaplace0_mixed());*/
+
 }
 
 

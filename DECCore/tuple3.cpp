@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "tuple3.h"
+#include <limits>
 
 
 tuple3f::tuple3f(void)
@@ -198,6 +199,22 @@ void tuple3f::operator -= (float &other){
 	y -= other;
 	z -= other;
 }
+
+float tuple3f::operator[]( unsigned int i )
+{
+	switch(i){
+		case 0: 
+			return x;
+		case 1: 
+			return y;
+		case 2: 
+			return z;
+		default:
+			throw std::runtime_error("illegal argument in tuple3 []");
+			return std::numeric_limits<float>::quiet_NaN();
+	}
+}
+
 
 
 

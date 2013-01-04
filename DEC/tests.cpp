@@ -80,14 +80,9 @@ void tests::testAndSaveDECMatrices()
 
 
 	//operations
-
-	d0_matrix*=4;
-	d0_matrix.saveMatrix("d0_tms4.m");
-	d1_matrix= d1_matrix + (d1_matrix *0.25f);
-	d1_matrix.saveMatrix("d1_plus_d1tms025.m");
-	d1_matrix = d1_matrix - (d1_matrix *0.2f);
-	d1_matrix.saveMatrix("d1_plus_minus_d1.m");
-	(d1_matrix*d0_matrix).saveMatrix("d1_times_4d0.m");
+	d0_matrix= d0_matrix*cpuCSRMatrix::transpose(d0_matrix);
+	d0_matrix.addOnDiagonal(5);
+	d0_matrix.saveMatrix("d0d0t_plus5ondiag.m");
 
 
 	std::cout << "Now, enter a number and press Enter\n";

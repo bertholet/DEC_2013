@@ -6,6 +6,8 @@
 #include <thrust/version.h>
 #include <cusp/version.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/print.h>
+#include <cusp/krylov/cg.h>
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
@@ -30,13 +32,42 @@ void CUDASOLVER_EXPORT mySolver::setMatrix( cpuCSRMatrix & mat )
 {
 	delete myMatrix;
 	myMatrix = new cusp::csr_matrix<int,float,cusp::device_memory>(mat.getn(), mat.getm(), mat.geta().size());
-	//myMatrix.colmn_indices
+	updateMatrix(mat);
+
+	//cusp::print(*myMatrix);
 }
 
 
 void CUDASOLVER_EXPORT mySolver::updateMatrix(cpuCSRMatrix & mat)
 {
+	myMatrix->column_indices = cusp::array1d<float, cusp::host_memory>(mat.getja().begin(), mat.getja().end());
+	myMatrix->row_offsets = cusp::array1d<float, cusp::host_memory>(mat.getia().begin(), mat.getia().end());
+	myMatrix->values = cusp::array1d<float, cusp::host_memory>(mat.geta().begin(), mat.geta().end());
 
+}
+
+
+
+void CUDASOLVER_EXPORT mySolver::solve( floatVector & x, floatVector & b )
+{
+	cusp::csr_matrix<int,float,cusp::device_memory> & A = *myMatrix;
+
+	// allocate storage for solution (x) and right hand side (b)
+    cusp::array1d<float, cusp::device_memory> x_(x.begin(), x.end());
+	cusp::array1d<float, cusp::device_memory> b_(b.begin(), b.end());
+
+    // set stopping criteria:
+    //  iteration_limit    = 100
+    //  relative_tolerance = 1e-3
+    cusp::verbose_monitor<float> monitor(b_, 100, 1e-3);
+
+    // set preconditioner (identity)
+    cusp::identity_operator<float, cusp::device_memory> M(A.num_rows, A.num_rows);
+
+    // solve the linear system A * x = b with the Conjugate Gradient method
+    cusp::krylov::cg(A, x_, b_, monitor, M);
+
+	cusp::print(b_);
 }
 
 
