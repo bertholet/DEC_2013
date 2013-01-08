@@ -18,11 +18,13 @@ public:
 		void doSmoothing();
 		void startImplicitSmoothing();
 		void doImplicitSmoothing();
+		void addNoise(void);
+		void updateNoise();
 private:
 	QTimer * smootherTimer, * implicitSmootherTimer;
-	QLabel * timeLabel;
-	QSlider * timeStepSlider;
-	float timeStep;
+	QLabel * timeLabel, *noiseLabel;
+	QSlider * timeStepSlider, *noiseSlider;
+	float timeStep, noiseLevel;
 
 	application_smoothing smoother;
 };

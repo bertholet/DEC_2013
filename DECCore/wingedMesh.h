@@ -55,6 +55,17 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	wingedEdge & getAnEdge( int vertex );
 
+	//////////////////////////////////////////////////////////////////////////
+	// one edge per boundary component is returned
+	std::vector<wingedEdge*> & getBoundaryEdges();
+
+	void findBoundary();
+
+	//////////////////////////////////////////////////////////////////////////
+	//cout information about area ratios.
+	//////////////////////////////////////////////////////////////////////////
+	void checkAreaRatios();
+
 	bool isValid();
 	virtual void update( void * src, meshMsg msg );
 
@@ -70,9 +81,15 @@ private:
 	std::vector<tuple3i> f2e;
 	//the winged edges
 	std::vector<wingedEdge> edges;
+	std::vector<wingedEdge*> boundaryEdges;
+	std::vector<int> boundarySizes;
 
 
 	void initEdges(void);
-	void checkAreaRatios();
+	//returns NULL if the halfedge does not exist,
+	// pointer to the existing halfedge, else.
+	wingedEdge * edgePointer( wingedEdge & halfedge );
+
+	void putOuterBoundaryToPositionZero();
 };
 

@@ -9,14 +9,14 @@
 #include "trackBallListener.h"
 
 #include <QMatrix4x4>
-//#include "curvVisualizingMesh.h"
+#include "colorMap.h"
 //#include "trackBallListener.h"
 //#include "mouseStrokeListener.h"
 //#include "Observer.h"
 //#include "Model.h"
 //#include "squareTexture.h"
 
-enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE, FLUIDSIMMODE, TEXMODE, TEXMODE2,TEXMODE3};
+//enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE, FLUIDSIMMODE, TEXMODE, TEXMODE2,TEXMODE3};
 enum MouseInputMode {TRACKBALLMODE,INPUTMODE, COLORMAPSCROLL};
 
 class Displayer : public QGLWidget,Observer<glDisplayable::glDispMessage>//public Observer<Model::modelMsg>
@@ -31,9 +31,9 @@ public:
 	void display(wfMesh * amesh);
 
 
-	void setMode(DisplayMode aMode);
+	//void setMode(DisplayMode aMode);
 	void setMouseMode(MouseInputMode aMode);
-//	void setColormap(colorMap * map);
+	void setColormap(colorMap & map);
 	void setNormedFieldDisplay(bool);
 	void setPointCloudDisplay(bool);
 	void setVectorDisplay(bool);
@@ -59,7 +59,7 @@ private:
 	QVector3D up;
 	QMatrix4x4 camMatrix, projMatrix;
 
-	DisplayMode mode;
+	//DisplayMode mode;
 	MouseInputMode mouseMode;
 	//colorMap * map;
 	//triangleMarkupMap * tmmap;

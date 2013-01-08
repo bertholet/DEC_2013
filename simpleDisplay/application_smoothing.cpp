@@ -15,8 +15,8 @@ application_smoothing::~application_smoothing(void)
 void application_smoothing::explicitEuler(MODEL * model, float timeStep)
 {
 	
-
-	implicitEuler(model, timeStep);
+	//implicitEuler(model,timeStep);
+	
 	QTime timer;
 	wfMesh * myMesh = model->getMesh()->getWfMesh();
 	buffer = myMesh->getVertices();
@@ -57,16 +57,31 @@ void application_smoothing::implicitEuler( MODEL * model, float timeStep )
 	wfMesh * myMesh = model->getMesh()->getWfMesh();
 	buffer = myMesh->getVertices();
 
+
 	cpuCSRMatrix Id_min_t_laplace = model->getLaplace0_mixed();
-	Id_min_t_laplace*=timeStep;
+	Id_min_t_laplace*= timeStep;
 	Id_min_t_laplace.addOnDiagonal(1.f);
 
 
 	floatVector b(myMesh->getVertices(), 0);
-	floatVector x = b;
+	floatVector x = b,y=b,z=b;
 	mySolver solver;
 	solver.setMatrix(Id_min_t_laplace);
 	solver.solve(x,b);
 
+	b.set(myMesh->getVertices(),1);
+	solver.solve(y,b);
+
+	b.set(myMesh->getVertices(),2);
+	solver.solve(z,b);
+
+
+	float scale= meshMath::volume(*(model->getMesh()));
+	myMesh->setVertices(x,y,z);
+	scale= pow(scale/meshMath::volume(*(model->getMesh())),1.f/3);
+	myMesh->scaleVertices(scale);
+	myMesh->updateObserver(POS_CHANGED);
+
+	model->getMesh()->checkAreaRatios();
 
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "tuple3.h"
+#include "floatVector.h"
 #include "Observer.h"
 #include "DECCORE_EXPORT.h"
 
@@ -82,6 +83,16 @@ public:
 	vector<tuple3f> & getTexCoords();
 	
 	void setVertices( vector<tuple3f> & verts );
+	void setVertices(floatVector & x, floatVector & y, floatVector & z )
+	{
+		unsigned int sz = x.size();
+		if(vertices.size() != sz){
+			vertices.resize(x.size(), tuple3f());
+		}
+		for(unsigned int i = 0; i < sz; i++){
+			vertices[i].set(x[i],y[i],z[i]);
+		}
+	}
 	void setFaces( vector<tuple3i> & facs );
 	void setNormals( vector<tuple3i>&  v_per_f_normals, vector<tuple3f> & normls );
 

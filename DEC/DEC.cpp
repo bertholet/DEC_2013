@@ -21,8 +21,8 @@
 int _tmain(int argc, _TCHAR* argv[])
 {
 
-	tests::testAndSaveDECMatrices();
-	//tests::testWfWingedMesh();
+	//tests::testAndSaveDECMatrices();
+	tests::testWfWingedMesh();
 	//tests::testCudaCusp();
 
 	return 0;

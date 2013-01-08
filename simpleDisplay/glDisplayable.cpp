@@ -10,13 +10,13 @@
 
 glDisplayable::glDisplayable(wfMesh * mesh):
  m_vertexBuffer( QGLBuffer::VertexBuffer ), m_IndexBuffer(QGLBuffer::IndexBuffer), 
-	 m_normalBuffer(QGLBuffer::VertexBuffer)
+	 m_normalBuffer(QGLBuffer::VertexBuffer), m_colorBuffer(QGLBuffer::VertexBuffer)
 {
 	myMesh = mesh;
 	model2world.setToIdentity();
 	normalMatrix = model2world;
 	
-	myMesh->normalize();
+	//myMesh->normalize();
 
 	myMesh->attach(this);
 
@@ -105,36 +105,24 @@ void glDisplayable::sendToGPU()
 
 	glDebuggingStuff::didIDoWrong();
 
-//	uint vao;
-//	glGenVertexArrays(1, &vao);
-//	glBindVertexArray(vao);
-	// Enable the "vertex" attribute to bind it to our currently bound
-	// vertex buffer.
 
 	//bind this buffer to the context to relate it to the 'vertex' symbol.
 	m_vertexBuffer.bind();
 	m_shader.setAttributeBuffer( "vertex", GL_FLOAT, 0, 3 );
-	
-	glDebuggingStuff::didIDoWrong();
-
 	m_shader.enableAttributeArray( "vertex" );
+	glDebuggingStuff::didIDoWrong();
 
 	m_normalBuffer.bind();
-	glDebuggingStuff::didIDoWrong();
-
 	m_shader.setAttributeBuffer( "normal", GL_FLOAT, 0, 3 );
-
-	glDebuggingStuff::didIDoWrong();
-
 	m_shader.enableAttributeArray( "normal" );
 
 	glDebuggingStuff::didIDoWrong();
 
-
+	this->sendColorMap(constColor(*myMesh, tuple3f(0.8,0.3,0.3)));
 	//additional uniforms
 	m_shader.setUniformValue("light_pos", QVector3D(0,-4,4));
 	m_shader.setUniformValue("light", QVector3D(1,1,1));
-	m_shader.setUniformValue("color", QVector3D(0.8,0.3,0.3));
+	//m_shader.setUniformValue("color", QVector3D(0.8,0.3,0.3));
 
 
 
@@ -166,6 +154,8 @@ bool glDisplayable::prepareShaderProgram( const QString & vspath, const QString 
 	return result;
 }
 
+
+
 void glDisplayable::draw(QMatrix4x4 & world2view, QVector3D & eye)
 {
 	if(myMesh->getVertices().size() == 0){
@@ -178,6 +168,7 @@ void glDisplayable::draw(QMatrix4x4 & world2view, QVector3D & eye)
 	m_shader.setUniformValue("normalMat", normalMatrix);
 	m_shader.setUniformValue("eye", eye);
 	m_vertexBuffer.bind();
+	//m_colorBuffer.bind();
 	m_IndexBuffer.bind();
 	glDebuggingStuff::didIDoWrong();
 
@@ -244,4 +235,30 @@ void glDisplayable::updateObserver(glDispMessage msg )
 	for(int i = 0; i < observer.size(); i++){
 		observer[i]->update(this, msg);
 	}
+}
+
+void glDisplayable::sendColorMap( colorMap &map )
+{
+	if(!m_colorBuffer.isCreated()){
+		m_colorBuffer.create();
+		m_colorBuffer.setUsagePattern( QGLBuffer::StaticDraw );
+		glDebuggingStuff::didIDoWrong();
+	}
+
+
+	if ( !m_shader.bind() )
+	{
+		qWarning() << "Could not bind shader program to context";
+		return;
+	}
+	if ( !m_colorBuffer.bind() )
+	{
+		qWarning() << "Could not bind vertex buffer to the context";
+		return;
+	}
+	m_colorBuffer.allocate( &(map.getColors()[0].x), 3 * myMesh->getVertices().size()* sizeof( float ) );
+
+	m_shader.setAttributeBuffer( "color", GL_FLOAT, 0, 3 );
+	m_shader.enableAttributeArray( "color" );
+	glDebuggingStuff::didIDoWrong();
 }

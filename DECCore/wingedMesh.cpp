@@ -8,7 +8,7 @@ wingedMesh::wingedMesh(wfMesh * theMesh)
 {
 	myMesh = theMesh;
 	initEdges();
-	
+	findBoundary();
 	checkAreaRatios();
 	valid = true;
 }
@@ -51,31 +51,10 @@ void wingedMesh::initEdges(void)
 		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
 			(it->a < it->c ? (*it).c: (*it).a));
 		edges.push_back(halfedge);
-		/*halfedge.set((it->a < it->b ? (*it).a: (*it).b),
-			(it->a < it->b ? (*it).b: (*it).a));
-		el = lower_bound(edges.begin(),edges.end(), halfedge);
-		if(el==edges.end() || el->v_a_b.a != halfedge.v_a_b.a || el->v_a_b.b != halfedge.v_a_b.b){
-			edges.insert(el,halfedge);
-		}
 
-		//halfedge.set((*it).b, (*it).c);
-		halfedge.set((it->b < it->c ? (*it).b: (*it).c),
-			(it->b < it->c ? (*it).c: (*it).b));
-		el = lower_bound(edges.begin(),edges.end(), halfedge);
-		if(el==edges.end() || el->v_a_b.a != halfedge.v_a_b.a || el->v_a_b.b != halfedge.v_a_b.b){
-			edges.insert(el,halfedge);
-		}
-
-		//halfedge.set((*it).c, (*it).a);
-		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
-			(it->a < it->c ? (*it).c: (*it).a));
-		el = lower_bound(edges.begin(),edges.end(), halfedge);
-		if(el==edges.end() || el->v_a_b.a != halfedge.v_a_b.a || el->v_a_b.b != halfedge.v_a_b.b){
-			edges.insert(el,halfedge);
-		}*/
 	}
 
-	//sort and remove duplicates
+	//sort and remove duplicates and assign indices to the edges
 	sort(edges.begin(), edges.end());
 	int index = 0;
 	halfedge.set(-1,-1);
@@ -83,6 +62,7 @@ void wingedMesh::initEdges(void)
 		if(halfedge!= edges[i]){
 			halfedge = edges[i];
 			edges[index]=halfedge;
+			edges[index].setIndex(index);
 			index++;
 		}
 	}
@@ -94,25 +74,32 @@ void wingedMesh::initEdges(void)
 	for(it = faces.begin(); it!= faces.end(); it++){
 		halfedge.set((it->a < it->b ? (*it).a: (*it).b),
 			(it->a < it->b ? (*it).b: (*it).a));
-		e1 = & edges[edgeIndex(halfedge)];
-		
+
+		//e1 = & edges[edgeIndex(halfedge)];
+		e1 = edgePointer(halfedge);
+
 		halfedge.set((it->b < it->c ? (*it).b: (*it).c),
 			(it->b < it->c ? (*it).c: (*it).b));
-		e2 = & edges[edgeIndex(halfedge)];
-
+		//e2 = & edges[edgeIndex(halfedge)];
+		e2 = edgePointer(halfedge);
 
 		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
 			(it->a < it->c ? (*it).c: (*it).a));
-		e3 = & edges[edgeIndex(halfedge)];
+		//e3 = & edges[edgeIndex(halfedge)];
+		e3 = edgePointer(halfedge);
 
-		e1->setNext(e3);
-		e1->setPrev(e2);
-
-		e2->setNext(e1);
-		e2->setPrev(e3);
-
-		e3->setNext(e2);
-		e3->setPrev(e1);
+		if(e1!=NULL){
+			e1->setNext(e3);
+			e1->setPrev(e2);
+		}
+		if(e2!= NULL){
+			e2->setNext(e1);
+			e2->setPrev(e3);
+		}
+		if(e3!=NULL){
+			e3->setNext(e2);
+			e3->setPrev(e1);
+		}
 	}
 	
 
@@ -139,28 +126,27 @@ void wingedMesh::initEdges(void)
 	}
 
 
-	//fill in f2e
-	for(it = faces.begin(); it!= faces.end(); it++){
+	//edges: previous face, next face, setup
+	//both have been initialized with -1
+	int orientation;
+	int j;
+	for(unsigned int i = 0; i < faces.size(); i++){
+		tuple3i & fc = faces[i];
+		tuple3i & edg = f2e[i];
 
-		halfedge.set((it->a < it->b ? (*it).a: (*it).b),
-			(it->a < it->b ? (*it).b: (*it).a));
-		el = lower_bound(edges.begin(),edges.end(), halfedge);
-		f2e_.a =  (el - edges.begin());
-
-		//halfedge.set(it->b, it->c);
-		//		sign = (it->b < it->c ? 1: -1);
-		halfedge.set((it->b < it->c ? (*it).b: (*it).c),
-			(it->b < it->c ? (*it).c: (*it).b));
-		el = lower_bound(edges.begin(),edges.end(), halfedge);
-		f2e_.b = (el - edges.begin());
-
-		//halfedge.set(it->c, it->a);
-		//		sign = (it->c < it->a ? 1: -1);
-		halfedge.set((it->a < it->c ? (*it).a: (*it).c),
-			(it->a < it->c ? (*it).c: (*it).a));
-		el = lower_bound(edges.begin(),edges.end(), halfedge);
-		f2e_.c = (el - edges.begin());
-		f2e.push_back(f2e_);
+		for(j=0; j < 3; j++){
+			orientation = fc.orientation(edges[edg[j]]);
+		
+			if(orientation== 1){
+				edges[edg[j]].setLeftFace(i);
+			}
+			else if(orientation == -1){
+				edges[edg[j]].setRightFace(i);
+			}
+			else{
+				assert(false);
+			}
+		}
 	}
 
 
@@ -184,6 +170,15 @@ void wingedMesh::initEdges(void)
 int wingedMesh::edgeIndex( wingedEdge & edge )
 {
 	return lower_bound(edges.begin(),edges.end(), edge) - edges.begin();
+}
+
+wingedEdge * wingedMesh::edgePointer( wingedEdge & halfedge )
+{
+	int idx = edgeIndex(halfedge);
+	if(idx == edges.size()){
+		return NULL;
+	}
+	return &edges[idx];
 }
 
 
@@ -239,6 +234,7 @@ void wingedMesh::checkAreaRatios()
 {
 	float maxVoronoi=0, minVoronoi = numeric_limits<float>::infinity();
 	float maxArea = 0, minArea = numeric_limits<float>::infinity();
+	float maxMixedArea = 0, minMixedArea = numeric_limits<float>::infinity();
 	float temp;
 
 	for(unsigned int i = 0; i < myMesh->getVertices().size(); i++){
@@ -261,10 +257,99 @@ void wingedMesh::checkAreaRatios()
 		}
 	}
 
+
+	std::vector<float> mixedAreas;
+	meshMath::calcAllMixedAreas(*this,mixedAreas);
+
+	for(unsigned int i = 0; i < myMesh->getVertices().size(); i++){
+		temp = mixedAreas[i];
+		if(temp > maxMixedArea){
+			maxMixedArea = temp;
+		}
+		if(temp < minMixedArea){
+			minMixedArea = temp;
+		}
+	}
+
+
 	cout << " Voronoi Areas: \n" << "Max: \t" << maxVoronoi << "\tMin: \t" << minVoronoi << "\tRatio:\t"<< maxVoronoi/minVoronoi <<"\n";
+	cout << " Mixed Voronoi Areas: \n" << "Max: \t" << maxMixedArea << "\tMin: \t" << minMixedArea << "\tRatio:\t"<< maxMixedArea/minMixedArea <<"\n";
 	cout << "Areas: \n" << "Max: \t" << maxArea << "\tMin: \t" << minArea << "\tRatio:\t"<< maxArea/minArea <<"\n";
 	
 }
+
+
+void wingedMesh::findBoundary()
+{
+	bool * marked = new bool[edges.size()];
+	for(unsigned int i = 0; i < edges.size(); i++){
+		marked[i] = false;
+	}
+
+	boundaryEdges.clear();
+	boundarySizes.clear();
+
+	wingedEdge temp;
+	int borderSize;
+	for(unsigned int i = 0; i < edges.size(); i++){
+		if(marked[i]==false){
+			if(edges[i].isOnBorder()){
+				borderSize = 0;
+				boundaryEdges.push_back(& (edges[i]));
+				temp = edges[i];
+
+				while(!marked[temp.getIndex()]){
+					borderSize++;
+					marked[temp.getIndex()] = true;
+					temp = *temp.nextBorderEdge();
+					assert(temp.isOnBorder());
+				}
+
+				boundarySizes.push_back(borderSize);
+
+			}
+			marked[i] = true;
+		}
+	}
+
+	putOuterBoundaryToPositionZero();
+
+
+	cout << "Border Components:\t" << boundaryEdges.size() << " \n";
+
+	delete[] marked;
+}
+
+void wingedMesh::putOuterBoundaryToPositionZero()
+{
+	if(boundaryEdges.size()>0){
+		int max = boundarySizes[0];
+		int indexMax = 0;
+		for(int i = 0; i < boundarySizes.size(); i++){
+			if(boundarySizes[i]> max ){
+				max = boundarySizes[i];
+				indexMax = i;
+			}
+		}
+		wingedEdge * anEdge = boundaryEdges[0];
+		int sz = boundarySizes[0];
+		boundaryEdges[0]= boundaryEdges[indexMax];
+		boundarySizes[0]= boundarySizes[indexMax];
+		boundaryEdges[indexMax] = anEdge;
+		boundarySizes[indexMax] = sz;
+	}
+}
+
+std::vector<wingedEdge*> & wingedMesh::getBoundaryEdges()
+{
+	return boundaryEdges;
+}
+
+
+
+
+
+
 
 
 

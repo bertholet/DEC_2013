@@ -8,7 +8,8 @@
 //#include "vectorfieldcontrolwidget.h"
 #include "smoothingWidget.h"
 #include "glDisplayable.h"
-//#include "meshParamWidget.h"
+#include "meshParamWidget.h"
+#include "colorMap.h"
 
 #include "MODEL.h"
 #include "mySolver.h"
@@ -33,11 +34,6 @@ MainWindow::MainWindow(QGLFormat & format): QMainWindow()
 
 	this->show();
 
-
-	//CUDA_STUFF::main();
-	/*mySolver bla;
-	bla.main();
-	bla.setMatrix(MODEL::getModel()->getLaplace0_mixed());*/
 
 }
 
@@ -109,10 +105,10 @@ void MainWindow::setupQTabs()
 	QWidget * tab1Widget = new smoothingWidget();
 	tabs->addTab(tab1Widget, "Smoothing");
 
-/*	QWidget * paramWidget = new meshParamWidget();
+	QWidget * paramWidget = new meshParamWidget();
 	tabs->addTab(paramWidget, "Mesh Parametrization");
 
-	vectorFieldControlWidget * tab2Widget = new vectorFieldControlWidget();
+/*	vectorFieldControlWidget * tab2Widget = new vectorFieldControlWidget();
 	tab2Widget->setMainWindow(this);
 	tabs->addTab(tab2Widget, "Vector Fields");
 
@@ -228,19 +224,17 @@ void MainWindow::generateMesh()
 void MainWindow::setDisplayMode( int mode )
 {
 	if(mode == 0){
-		this->myGLDisp->setMode(EDGEMODE);
+		//this->myGLDisp->setMode(EDGEMODE);
 	}
 	else if(mode == 1){
-		this->myGLDisp->setMode(FLATMODE);
+		this->myGLDisp->setColormap(
+			constColor(* MODEL::getModel()->getMesh()->getWfMesh(), tuple3f(0.8,0.3,0.3)));
 	}
-/*	else if(mode == 2){
-		Model & model = *Model::getModel();
-		this->myGLDisp->setColormap((colorMap *)
-			new borderColorMap(model.getMeshInfo()->getBorder(),
-			tuple3f(0,0,1),tuple3f(1,0,0)));
-		this->myGLDisp->setMode(COLORMAPMODE);
+	else if(mode == 2){
+		this->myGLDisp->setColormap(
+			borderMap(* MODEL::getModel()->getMesh()));
 	}
-	else if(mode == 3){
+/*	else if(mode == 3){
 		Model & model = *Model::getModel();
 		this->myGLDisp->setColormap((colorMap *) new curvColormap(* Model::getModel()->getMesh()));
 		this->myGLDisp->setMode(COLORMAPMODE);

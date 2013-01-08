@@ -4,6 +4,9 @@
 #include <assert.h>
 #include "DECCORE_EXPORT.h"
 
+
+class wingedEdge;
+
 //////////////////////////////////////////////////////////////////////////
 //designed for float or double 3-tuples.
 //////////////////////////////////////////////////////////////////////////
@@ -37,7 +40,7 @@ public:
 	tuple3f operator - (void);
 	tuple3f operator - (float &other);
 	void operator -= (float &other);
-	float operator[](unsigned int i);
+	float & operator[](unsigned int i);
 
 //////////////////////////////////////////////////////////////////////////
 //Trigonometry
@@ -89,7 +92,7 @@ public:
 class  DECCORE_EXPORT tuple3i
 {
 public:
-	unsigned int a, b, c;
+	int a, b, c;
 	tuple3i(void);
 	tuple3i(int x_, int y_, int z_);
 	~tuple3i(void);
@@ -101,7 +104,9 @@ public:
 	bool contains(int what);
 
 	int orientation(tuple2i & edge);
-//	int orientation(wingedEdge & edge);
+	int orientation(wingedEdge & edge);
+
+	int & operator[](unsigned int i);
 };
 
 

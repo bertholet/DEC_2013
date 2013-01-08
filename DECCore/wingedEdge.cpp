@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "wingedEdge.h"
-
+#include <assert.h>
 
 wingedEdge::wingedEdge(void)
 {
@@ -8,6 +8,7 @@ wingedEdge::wingedEdge(void)
 	nexta = NULL;
 	prevb = NULL;
 	nextb = NULL;
+	myIndex = -1;
 	this->v_a_b.set(-1,-1);
 
 }
@@ -18,22 +19,13 @@ wingedEdge::wingedEdge( int start, int end )
 	nexta = NULL;
 	prevb = NULL;
 	nextb = NULL;
+	myIndex = -1;
 	this->v_a_b.set(start, end);
 }
 
 
 wingedEdge::~wingedEdge(void)
 {
-}
-
-bool wingedEdge::operator<( const wingedEdge & other ) const
-{
-	return v_a_b < other.v_a_b;
-}
-
-bool wingedEdge::operator==( const wingedEdge & other ) const
-{
-	return v_a_b == other.v_a_b;
 }
 
 void wingedEdge::set( int start, int stop )
@@ -50,6 +42,17 @@ int wingedEdge::end()
 {
 	return v_a_b.b;
 }
+
+void wingedEdge::setLeftFace( int fc )
+{
+	fc_p_n.b = fc;
+}
+
+void wingedEdge::setRightFace( int fc )
+{
+	fc_p_n.a = fc;
+}
+
 
 void wingedEdge::setNext( wingedEdge * e )
 {
@@ -84,13 +87,13 @@ bool wingedEdge::operator!=( const wingedEdge & other ) const
 	return !(this->operator==(other) );
 }
 
-wingedEdge & wingedEdge::getNext( int vertex )
+wingedEdge * wingedEdge::getNext( int vertex )
 {
 	if(v_a_b.a == vertex){
-		return *nexta;
+		return nexta;
 	}
 	else if( v_a_b.b == vertex ){
-		return *nextb;
+		return nextb;
 	}
 	else{
 		assert(false);
@@ -98,18 +101,44 @@ wingedEdge & wingedEdge::getNext( int vertex )
 	}
 }
 
-wingedEdge & wingedEdge::getPrev( int vertex )
+wingedEdge * wingedEdge::getPrev( int vertex )
 {
 	if(v_a_b.a == vertex){
-		return *preva;
+		return preva;
 	}
 	else if( v_a_b.b == vertex ){
-		return *prevb;
+		return prevb;
 	}
 	else{
 		assert(false);
-
+		throw std::runtime_error("mesh has a border");
 	}
+}
+
+wingedEdge & wingedEdge::getNext_bc( int vertex )
+{
+	wingedEdge * result= getNext(vertex);
+
+	if(result == NULL){
+		result = getPrev(vertex);
+		while(result->getPrev(vertex)!=NULL){
+			result = result->getPrev(vertex);
+		}
+	}
+	return *result;
+}
+
+wingedEdge & wingedEdge::getPrev_bc( int vertex )
+{
+	wingedEdge * result= getPrev(vertex);
+	
+	if(result == NULL){
+		result = getNext(vertex);
+		while(result->getNext(vertex)!=NULL){
+			result = result->getNext(vertex);
+		}
+	}
+	return *result;
 }
 
 int wingedEdge::orientation( int j )
@@ -133,5 +162,96 @@ int wingedEdge::otherVertex( int vertex )
 	assert(false);
 	return -1;
 }
+
+bool wingedEdge::isOnBorder()
+{
+	//assert((preva == NULL) || (prevb == NULL));// == (fc_p_n.a ==-1 ||fc_p_n.b ==-1));
+	//return preva == NULL || prevb == NULL;
+	return fc_p_n.a==-1 || fc_p_n.b == -1;
+}
+
+
+bool wingedEdge::isFirstEdge( int vertex )
+{
+	if(v_a_b.a == vertex){
+		return preva == NULL;
+	}
+	else if( v_a_b.b == vertex ){
+		return prevb == NULL;
+	}
+	else{
+		return false;
+
+	}
+}
+
+bool wingedEdge::isLastEdge( int vertex )
+{
+	if(v_a_b.a == vertex){
+		return nexta == NULL;
+	}
+	else if( v_a_b.b == vertex ){
+		return nextb == NULL;
+	}
+	else{
+		return false;
+	}
+}
+
+bool wingedEdge::operator<( const wingedEdge & other ) const
+{
+	return v_a_b < other.v_a_b;
+}
+
+bool wingedEdge::operator==( const wingedEdge & other ) const
+{
+	return v_a_b == other.v_a_b;
+}
+
+void wingedEdge::setIndex( int ind )
+{
+	myIndex = ind;
+}
+
+int wingedEdge::getIndex()
+{
+	return myIndex;
+}
+
+wingedEdge * wingedEdge::nextBorderEdge()
+{
+	//next face oriented oposite to edge.
+	//so, looking for next border edge at start vertex
+	if(fc_p_n.a == -1){
+		assert(preva == NULL);
+		return & getPrev_bc(start());
+	}
+	//next fce oriented according to edge
+	else if(fc_p_n.b == -1){
+		assert(prevb== NULL);
+		return & getPrev_bc(end());
+	}
+	else{
+		return NULL;
+	}
+}
+
+int wingedEdge::getFirstBoundaryVertex()
+{
+	if(fc_p_n.a == -1){
+		return start();
+	}
+	else if(fc_p_n.b == -1){
+		return end();
+	}
+	else{
+		//invalid use of this method.
+		assert(false);
+		return -1;
+	}
+}
+
+
+
 
 

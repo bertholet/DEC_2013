@@ -103,7 +103,7 @@ vector<tuple3f> & wfMesh::getNormals()
 void wfMesh::addOrthogonalNoise( float max )
 {
 	for(unsigned int i = 0; i < vertices.size(); i++){
-		vertices[i] += normals_per_vertex[i] *( ((float)rand())/RAND_MAX * max );
+		vertices[i] += normals_per_vertex[i] *(( ((float)rand())/RAND_MAX -0.5f)* max );
 	}
 }
 

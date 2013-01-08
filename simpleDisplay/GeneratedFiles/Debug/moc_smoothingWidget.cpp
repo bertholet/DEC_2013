@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'smoothingWidget.h'
 **
-** Created: Thu 3. Jan 15:41:28 2013
+** Created: Sun 6. Jan 19:33:14 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_smoothingWidget[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       5,   14, // methods
+       7,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -36,6 +36,8 @@ static const uint qt_meta_data_smoothingWidget[] = {
       57,   16,   16,   16, 0x0a,
       71,   16,   16,   16, 0x0a,
       96,   16,   16,   16, 0x0a,
+     118,   16,   16,   16, 0x0a,
+     129,   16,   16,   16, 0x0a,
 
        0        // eod
 };
@@ -44,6 +46,7 @@ static const char qt_meta_stringdata_smoothingWidget[] = {
     "smoothingWidget\0\0updateTimeStep()\0"
     "startDirectSmoothing()\0doSmoothing()\0"
     "startImplicitSmoothing()\0doImplicitSmoothing()\0"
+    "addNoise()\0updateNoise()\0"
 };
 
 void smoothingWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -57,6 +60,8 @@ void smoothingWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         case 2: _t->doSmoothing(); break;
         case 3: _t->startImplicitSmoothing(); break;
         case 4: _t->doImplicitSmoothing(); break;
+        case 5: _t->addNoise(); break;
+        case 6: _t->updateNoise(); break;
         default: ;
         }
     }
@@ -95,9 +100,9 @@ int smoothingWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 5)
+        if (_id < 7)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 7;
     }
     return _id;
 }

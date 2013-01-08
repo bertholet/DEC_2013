@@ -7,7 +7,11 @@
 #include <cusp/version.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/print.h>
-#include <cusp/krylov/cg.h>
+//#include <cusp/krylov/cg.h>
+#include <cusp/krylov/bicgstab.h>
+
+//#include <cusp/precond/smoothed_aggregation.h>
+//#include <cusp/precond/ainv.h>
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
@@ -53,21 +57,32 @@ void CUDASOLVER_EXPORT mySolver::solve( floatVector & x, floatVector & b )
 	cusp::csr_matrix<int,float,cusp::device_memory> & A = *myMatrix;
 
 	// allocate storage for solution (x) and right hand side (b)
-    cusp::array1d<float, cusp::device_memory> x_(x.begin(), x.end());
+    cusp::array1d<float, cusp::device_memory> x_(x.size(), 0);//x_(x.begin(), x.end());
 	cusp::array1d<float, cusp::device_memory> b_(b.begin(), b.end());
 
     // set stopping criteria:
     //  iteration_limit    = 100
     //  relative_tolerance = 1e-3
-    cusp::verbose_monitor<float> monitor(b_, 100, 1e-3);
+    cusp::convergence_monitor<float> monitor(b_, 1000, 1e-6);
 
     // set preconditioner (identity)
     cusp::identity_operator<float, cusp::device_memory> M(A.num_rows, A.num_rows);
+	//cusp::precond::scaled_bridson_ainv<float, cusp::device_memory> M(A, .1);
+	//cusp::precond::smoothed_aggregation<int, float, cusp::device_memory> M(A);
 
     // solve the linear system A * x = b with the Conjugate Gradient method
-    cusp::krylov::cg(A, x_, b_, monitor, M);
+   // cusp::krylov::cg(A, x_, b_, monitor, M);
+	cusp::krylov::bicgstab(A, x_, b_, monitor, M);
+	
+	monitor.print();
 
-	cusp::print(b_);
+
+	//looks frigging inefficient
+	for(unsigned int i = 0; i < x.size(); i++){
+		x[i] = x_[i];
+	}
+
+	//cusp::print(b_);
 }
 
 

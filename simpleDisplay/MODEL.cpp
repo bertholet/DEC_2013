@@ -53,7 +53,7 @@ wingedMesh* MODEL::getMesh()
 void MODEL::loadMesh( const char* file )
 {
 	wfMesh * amesh = new wfMesh(file);
-
+	amesh->normalize();
 	wingedMesh * wingedM = new wingedMesh(amesh);
 
 	//model takes care of the memory management of mesh and wingedMesh

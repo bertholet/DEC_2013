@@ -2,6 +2,7 @@
 #include "tuple3.h"
 #include <limits>
 
+#include "wingedEdge.h"
 
 tuple3f::tuple3f(void)
 {
@@ -200,7 +201,7 @@ void tuple3f::operator -= (float &other){
 	z -= other;
 }
 
-float tuple3f::operator[]( unsigned int i )
+float& tuple3f::operator[]( unsigned int i )
 {
 	switch(i){
 		case 0: 
@@ -211,7 +212,6 @@ float tuple3f::operator[]( unsigned int i )
 			return z;
 		default:
 			throw std::runtime_error("illegal argument in tuple3 []");
-			return std::numeric_limits<float>::quiet_NaN();
 	}
 }
 
@@ -272,6 +272,28 @@ int tuple3i::orientation( tuple2i & edge )
 	return 0;
 }
 
+int tuple3i::orientation( wingedEdge & edge )
+{
+	return orientation(edge.getTuple());
+}
+
+int & tuple3i::operator[]( unsigned int i )
+{
+	switch(i){
+	case 0: 
+		return a;
+	case 1: 
+		return b;
+	case 2: 
+		return c;
+	default:
+		throw std::runtime_error("illegal argument in tuple3i []");
+//		return -2;
+	}
+}
+
+
+
 /*int tuple3i::orientation( wingedEdge & edge )
 {
 	return orientation(edge.getTuple());
@@ -287,7 +309,7 @@ int tuple3i::orientation( tuple2i & edge )
 
 tuple2i::tuple2i( void )
 {
-
+	a= b=-1;
 }
 
 tuple2i::tuple2i( int x_, int y_ )

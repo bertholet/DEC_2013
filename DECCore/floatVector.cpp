@@ -17,3 +17,14 @@ floatVector::floatVector( std::vector<tuple3f> & vals, int what )
 floatVector::~floatVector(void)
 {
 }
+
+void floatVector::set( std::vector<tuple3f> & vals, int what )
+{
+	if(vals.size() != this->size()){
+		this->resize(vals.size(), 0);
+	}
+
+	for(unsigned int i = 0; i < size(); i++){
+		(*this)[i] = vals[i][what];
+	}
+}

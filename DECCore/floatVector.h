@@ -10,5 +10,7 @@ public:
 	//make a vector of floats of the what = 0,1,2 component of vals
 	floatVector(std::vector<tuple3f> & vals, int what);
 	~floatVector(void);
+
+	void set(std::vector<tuple3f> & vals, int what);
 };
 

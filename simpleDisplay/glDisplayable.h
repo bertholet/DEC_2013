@@ -7,7 +7,7 @@
 #include <QMatrix4x4>
 #include "Observer.h"
 
-
+#include "colorMap.h"
 //extern template Observer<meshMsg>;
 
 class glDisplayable: 
@@ -25,6 +25,8 @@ public:
 	QMatrix4x4 & getModel2world();
 	void rot( float angle, float axisX, float axisY,float axisZ );
 
+	void sendColorMap(colorMap &map);
+
 
 	virtual void update(void * src, meshMsg msg);
 
@@ -41,7 +43,7 @@ private:
 	QMatrix4x4 model2world, normalMatrix;
 
 	QGLShaderProgram m_shader; //actually part of a vao, but thats hidden.
-	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_normalIndexBuffer;
+	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_colorBuffer;
 	std::vector<Observer<glDispMessage> * > observer;
 	bool prepareShaderProgram( const QString & vspath, const QString & fspath , const QString & gspath = "");
 };

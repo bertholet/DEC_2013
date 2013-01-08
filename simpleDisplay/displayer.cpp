@@ -174,21 +174,19 @@ void Displayer::resizeGL(int w, int h)
 	projMatrix.perspective(60, (0.f + w)/h,1,1000);
 }
 
-void Displayer::setMode( DisplayMode aMode )
+/*void Displayer::setMode( DisplayMode aMode )
 {
 	this->mode = aMode;
 	this->updateGL();
-}
+}*/
 
 //////////////////////////////////////////////////////////////////////////
 //the displayer will take care of freeing map
-/*void Displayer::setColormap( colorMap * map )
+void Displayer::setColormap( colorMap & map )
 {
-	if(this->map != NULL){
-		delete this->map;
-	}
-	this->map = map;
-}*/
+	myDisplayable->sendColorMap(map);
+	this->updateGL();
+}
 
 void Displayer::mouseMoveEvent( QMouseEvent* event )
 {

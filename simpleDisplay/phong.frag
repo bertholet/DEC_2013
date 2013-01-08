@@ -7,7 +7,7 @@ uniform vec3 light;
 uniform vec3 color;
 
 
-in vec3 normal_;
+in vec3 normal_, color_;
 in vec3 position;
 out vec4 fragColor;
  
@@ -19,7 +19,7 @@ void main( void )
 	vec3 normal = normalize(normal_);
 	vec3 r= normalize(reflect(l,normal));
 	vec3 v = normalize(-eye - position); 
-	vec3 color_ = color;
+	//vec3 color_ = color;
 
 	float k_d = 0.8;
 	float k_s = 2.3;

@@ -92,33 +92,33 @@ void tests::testAndSaveDECMatrices()
 
 void tests::testWfWingedMesh()
 {
-	wfMesh myMesh = wfMesh();
+	wfMesh * myMesh = new wfMesh();
 
-	myMesh = ball(1,3,2);
-	myMesh.updateObserver(CONNECTIVITY_CHANGED);
+	*myMesh = ball(1,3,2);
+	myMesh->updateObserver(CONNECTIVITY_CHANGED);
 
 
-	std::cout << "Hello, my Mesh has " << myMesh.getVertices().size() << " vertices\n";
+	std::cout << "Hello, my Mesh has " << myMesh->getVertices().size() << " vertices\n";
 	std::cout << "Now, enter a number and press Enter\n";
 	int a;
 	std::cin >> a;
 
-	wingedMesh wingedM(&myMesh);
+	wingedMesh wingedM(myMesh);
 	std::cout << "Hello, winged Mesh is created " << wingedM.getEdges().size() << " edges\n I iterate over the 0 nbrhood: \n";
 	wingedEdge e0 = wingedM.getEdges()[wingedM.getv2e()[0][0]];
 	cout << "(" << e0.start() << "," << e0.end() << ")";
-	wingedEdge e = e0.getNext(0);
+	wingedEdge e = e0.getNext_bc(0);
 	while(!(e0 == e)){
 		cout << "(" << e.start() << "," << e.end() << ")";
-		e= e.getNext(0);
+		e= e.getNext_bc(0);
 	}
 	cout << "\n Reverse order:\n";
 
-	e = e0.getPrev(0);
+	e = e0.getPrev_bc(0);
 	cout << "(" << e0.start() << "," << e0.end() << ")";
 	while(!(e0 == e)){
 		cout << "(" << e.start() << "," << e.end() << ")";
-		e= e.getPrev(0);
+		e= e.getPrev_bc(0);
 	}
 
 	std::cout << "\nNow, enter a number and press Enter\n";
