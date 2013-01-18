@@ -56,8 +56,22 @@ public:
 	wingedEdge & getAnEdge( int vertex );
 
 	//////////////////////////////////////////////////////////////////////////
+	// The length of the edge
+	//////////////////////////////////////////////////////////////////////////
+	float length( wingedEdge & edge );
+	float calcBorderLength( int borderNr );
+	//////////////////////////////////////////////////////////////////////////
+	//Compute the angle on the mesh surface, according to orientation
+	//////////////////////////////////////////////////////////////////////////
+	float angle( wingedEdge & edge, wingedEdge & nextEdge );
+
+	//////////////////////////////////////////////////////////////////////////
 	// one edge per boundary component is returned
 	std::vector<wingedEdge*> & getBoundaryEdges();
+	std::vector<int> & getBoundarySizes();
+
+	//is the vertex on the border?
+	bool isOnBorder( int vertex );
 
 	void findBoundary();
 
@@ -91,5 +105,6 @@ private:
 	wingedEdge * edgePointer( wingedEdge & halfedge );
 
 	void putOuterBoundaryToPositionZero();
+	float flatAngle( wingedEdge & edg, wingedEdge & nextEdg );
 };
 

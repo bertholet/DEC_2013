@@ -12,6 +12,7 @@ MODEL::MODEL(void)
 
 	d0 = d1 = border1 =star0 = star1 = star0_mixed = 
 		star1_mixed = laplace0_mixed = coderiv1_mixed = 
+		coderiv1_ignoreBorder = laplace0_ignoreBorder=
 		NULL;
 	invalidateAll();
 }
@@ -31,6 +32,12 @@ MODEL * MODEL::getModel()
 		MODEL::instance = new MODEL();
 	}
 	return MODEL::instance;
+}
+
+void MODEL::freeModel()
+{
+	delete MODEL::instance;
+	MODEL::instance = NULL;
 }
 
 void MODEL::setMesh( wingedMesh * aMesh )
@@ -107,7 +114,12 @@ void MODEL::freeAll()
 	if(coderiv1_mixed_valid!= INVALID){
 		delete coderiv1_mixed;
 	}
-
+	if(laplace0_ignoreBorder_valid!= INVALID){
+		delete laplace0_ignoreBorder;
+	}
+	if(coderiv1_ignoreBorder_valid!= INVALID){
+		delete coderiv1_ignoreBorder;
+	}
 	invalidateAll();
 }
 
@@ -122,6 +134,8 @@ void MODEL::invalidateAll()
 		star0_mixed_valid =  
 		star1_mixed_valid = 
 		coderiv1_mixed_valid =
+		coderiv1_ignoreBorder_valid=
+		laplace0_ignoreBorder_valid =
 		laplace0_mixed_valid =INVALID;
 }
 
@@ -131,33 +145,13 @@ void MODEL::unrefreshedStars()
 	star1_valid = (star1_valid != INVALID? UNREFRESHED: INVALID);
 	star0_mixed_valid =  (star0_mixed_valid != INVALID? UNREFRESHED: INVALID);
 	star1_mixed_valid = (star1_mixed_valid != INVALID? UNREFRESHED: INVALID);
+	laplace0_ignoreBorder_valid = (laplace0_ignoreBorder_valid != INVALID? UNREFRESHED: INVALID);
 	laplace0_mixed_valid = (laplace0_mixed_valid != INVALID? UNREFRESHED: INVALID);
 	coderiv1_mixed_valid = (coderiv1_mixed_valid != INVALID? UNREFRESHED: INVALID);
+	coderiv1_ignoreBorder_valid =(coderiv1_ignoreBorder_valid != INVALID? UNREFRESHED: INVALID);
 }
 
-cpuCSRMatrix & MODEL::getLaplace0_mixed()
-{
-	if(laplace0_mixed_valid == VALID){
-		return *laplace0_mixed;
-	}
-	else{
-		if(laplace0_mixed_valid== INVALID){
-			laplace0_mixed = new cpuCSRMatrix();
-		}
-		cout<< "**************Laplace********\n";
-		QTime timer;
-		timer.start();
-		cpuCSRMatrix & cod = getCoderiv1_mixed();
-		cout << "coderivative: " << timer.restart()<<"\n";
-		cpuCSRMatrix & d = getD0();
-		cout << "D0: " << timer.restart()<<"\n";
-		*laplace0_mixed =cod*d;
-		cout << "cod*D0: " << timer.restart()<<"\n";
-		laplace0_mixed_valid = VALID;
-		return *laplace0_mixed;
-	}
 
-}
 
 cpuCSRMatrix & MODEL::getCoderiv1_mixed()
 {
@@ -251,6 +245,69 @@ cpuCSRMatrix & MODEL::getStar0_mixed()
 		cout << "*star0 created: " << timer.restart() <<"\n";
 		star0_mixed_valid = VALID;
 		return *star0_mixed;
+	}
+}
+
+cpuCSRMatrix & MODEL::getLaplace0_mixed()
+{
+	if(laplace0_mixed_valid == VALID){
+		return *laplace0_mixed;
+	}
+	else{
+		if(laplace0_mixed_valid== INVALID){
+			laplace0_mixed = new cpuCSRMatrix();
+		}
+		cout<< "**************Laplace********\n";
+		QTime timer;
+		timer.start();
+		cpuCSRMatrix & cod = getCoderiv1_mixed();
+		cout << "coderivative: " << timer.restart()<<"\n";
+		cpuCSRMatrix & d = getD0();
+		cout << "D0: " << timer.restart()<<"\n";
+		*laplace0_mixed =cod*d;
+		cout << "cod*D0: " << timer.restart()<<"\n";
+		laplace0_mixed_valid = VALID;
+		return *laplace0_mixed;
+	}
+
+}
+
+
+cpuCSRMatrix & MODEL::getCoderiv1_ignoreBoundary()
+{
+	if(coderiv1_ignoreBorder_valid == VALID){
+		return *coderiv1_ignoreBorder;
+	}
+	else{
+		QTime timer;
+		timer.start();
+		if(coderiv1_ignoreBorder_valid == INVALID){
+			coderiv1_ignoreBorder = new cpuCSRMatrix();
+		}
+
+		*coderiv1_ignoreBorder = DDGMatrices::coderiv1_mixed_ignoreBoundary(*myMesh);
+		cout << "*coderiv1_ignoreBorder created: " << timer.restart() <<"\n";
+		coderiv1_ignoreBorder_valid = VALID;
+		return *coderiv1_ignoreBorder;
+	}
+}
+
+cpuCSRMatrix & MODEL::getLaplace0_ignoreBoundary()
+{
+	if(laplace0_ignoreBorder_valid == VALID){
+		return *laplace0_ignoreBorder;
+	}
+	else{
+		QTime timer;
+		timer.start();
+		if(laplace0_ignoreBorder_valid == INVALID){
+			laplace0_ignoreBorder = new cpuCSRMatrix();
+		}
+
+		*laplace0_ignoreBorder = getCoderiv1_ignoreBoundary() * getD0();
+		cout << "*laplace0_ignoreBoundary created: " << timer.restart() <<"\n";
+		laplace0_ignoreBorder_valid = VALID;
+		return *laplace0_ignoreBorder;
 	}
 }
 

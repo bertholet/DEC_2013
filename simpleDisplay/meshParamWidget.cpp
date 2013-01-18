@@ -1,11 +1,12 @@
 #include "meshParamWidget.h"
 #include <QPushButton>
 #include <QVBoxLayout>
-#include <QLabel>
-//#include "TutteEmbedding.h"
-//#include "TutteWeights.h"
-#include "MODEL.h"
 #include <QComboBox>
+#include <QLabel>
+
+#include "application_meshParam.h"
+#include "MODEL.h"
+
 
 
 meshParamWidget::meshParamWidget(QWidget *parent)
@@ -13,14 +14,16 @@ meshParamWidget::meshParamWidget(QWidget *parent)
 {
 	outerMode =0;
 	weightMode = 0;
-	QPushButton * butt = new QPushButton("One Circle Border");
-	connect(butt, SIGNAL(released()), this, SLOT(circleBorder()));
-	QPushButton * butt_neuman = new QPushButton("Neumann Borders");
-	connect(butt_neuman, SIGNAL(released()), this, SLOT(neumannBorder()));
-	QPushButton * butt2 = new QPushButton("Conformal Borders");
-	connect(butt2, SIGNAL(released()), this, SLOT(conformalBorder()));
+	QPushButton * butt = new QPushButton("One Border");
+	connect(butt, SIGNAL(released()), this, SLOT(oneBorder()));
+	
+	QPushButton * butt_neuman = new QPushButton("Multiple Borders");
+	connect(butt_neuman, SIGNAL(released()), this, SLOT(multipleBorders()));
+	
+	/*QPushButton * butt2 = new QPushButton("Conformal Borders");
+	connect(butt2, SIGNAL(released()), this, SLOT(conformalBorder()));*/
 	QLabel * label1 = new QLabel("Outer Border: ");
-	QLabel * label2 = new QLabel("Weights: ");
+	//QLabel * label2 = new QLabel("Weights: ");
 
 	QComboBox * comboBox = new QComboBox();
 	comboBox->setEditable(false);
@@ -30,22 +33,22 @@ meshParamWidget::meshParamWidget(QWidget *parent)
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setBorderMode(int)));
 
 
-	QComboBox * comboBox2 = new QComboBox();
+	/*QComboBox * comboBox2 = new QComboBox();
 	comboBox2->setEditable(false);
 	comboBox2->addItem("Cotan Voronoi");
 	comboBox2->addItem("Cotan Mixed");
 	comboBox2->addItem("Mean Value");
 	comboBox2->addItem("Uniform");
-	connect(comboBox2, SIGNAL(currentIndexChanged(int)), this, SLOT(setWeightMode(int)));
+	connect(comboBox2, SIGNAL(currentIndexChanged(int)), this, SLOT(setWeightMode(int)));*/
 
 	QVBoxLayout * layout = new QVBoxLayout();
 	layout->addWidget(butt);
 	layout->addWidget(butt_neuman);
 	layout->addWidget(label1);
 	layout->addWidget(comboBox);
-	layout->addWidget(label2);
+	/*layout->addWidget(label2);
 	layout->addWidget(comboBox2);
-	layout->addWidget(butt2);
+	layout->addWidget(butt2);*/
 	this->setLayout(layout);
 }
 
@@ -53,68 +56,51 @@ meshParamWidget::~meshParamWidget(void)
 {
 }
 
-void meshParamWidget::circleBorder( void )
+void meshParamWidget::oneBorder( void )
 {
-/*	TutteEmbedding embedding;
+	application_meshParam meshParam;
 
+	int nrBorders = MODEL::getModel()->getMesh()->getBoundaryEdges().size();
 
-	wfMesh * myMesh = MODEL::getModel()->getMesh()->getWfMesh();
-	int nrBorders = Model::getModel()->getMeshInfo()->getBorder().size();
-
-	if(myMesh != NULL && nrBorders == 1){
-		embedding.calcTexturePos(*myMesh);
-	}*/
+	if(nrBorders == 1){
+		switch(outerMode){
+		case 0:
+			meshParam.calcTexturePos(*MODEL::getModel(), & application_meshParam::circleBorder);
+			break;
+		case 1:
+			meshParam.calcTexturePos(*MODEL::getModel(), 
+				& application_meshParam::distWeightCircleBorder);
+			break;
+		case 2:
+			meshParam.calcTexturePos(*MODEL::getModel(), 
+				& application_meshParam::conformalBorder);
+			break;
+		}
+	}
 }
 
-void meshParamWidget::neumannBorder( void )
+void meshParamWidget::multipleBorders( void )
 {
-	/*TutteEmbedding embedding;
-	embedding.calcTexturePos_NaturalBorder(*Model::getModel()->getMeshInfo());*/
+	application_meshParam meshParam;
+	int nrBorders = MODEL::getModel()->getMesh()->getBoundaryEdges().size();
+	if(nrBorders >= 1){
+		switch(outerMode){
+		case 0:
+			meshParam.calcTexturePosMultiborder(*MODEL::getModel(), & application_meshParam::circleBorder);
+			break;
+		case 1:
+			meshParam.calcTexturePosMultiborder(*MODEL::getModel(), 
+				& application_meshParam::distWeightCircleBorder);
+			break;
+		case 2:
+			meshParam.calcTexturePosMultiborder(*MODEL::getModel(), 
+				& application_meshParam::conformalBorder);
+			break;
+		}
+	}
 }
 
-void meshParamWidget::conformalBorder( void )
-{
-	/*TutteEmbedding embedding;
 
-	mesh * myMesh = Model::getModel()->getMesh();
-	int nrBorders = Model::getModel()->getMeshInfo()->getBorder().size();
-
-	double (*weights ) (int, int,
-		mesh &,
-		vector<int>& ,//nbr_i
-		vector<int>&,//fc_i
-		vector<int>& //border
-		);
-	void (* borderFunc)( vector<tuple3f> & ,//outerPos
-	vector<int> &, //border
-	mesh &);
-
-	if(weightMode == 0){
-		weights= TutteWeights::cotan_weights_divAvor;
-	}
-	else if(weightMode == 1){
-		weights= TutteWeights::cotan_weights_divAmix;
-	}
-	else if(weightMode == 2){
-		weights= TutteWeights::unnormed_meanvalue_weights;
-	}
-	else{
-		weights= TutteWeights::uniform_weights;
-	}
-
-	if(outerMode == 0){
-		borderFunc = TutteWeights::circleBorder;
-	}
-	else if(outerMode == 1){
-		borderFunc = TutteWeights::distWeightCircBorder;
-	}
-	else{
-		borderFunc = TutteWeights::angleApproxBorder;
-	}
-	if(myMesh != NULL && nrBorders >0){
-		embedding.calcTexturePos_multiBorder(*myMesh,weights,borderFunc );//TutteWeights::unnormed_meanvalue_weights);
-	}*/
-}
 
 void meshParamWidget::setBorderMode( int mode )
 {
@@ -122,8 +108,4 @@ void meshParamWidget::setBorderMode( int mode )
 	outerMode = mode;
 }
 
-void meshParamWidget::setWeightMode( int mode )
-{
-	weightMode = mode;
-	//throw std::exception("The method or operation is not implemented.");
-}
+

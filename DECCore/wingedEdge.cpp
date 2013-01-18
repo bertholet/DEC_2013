@@ -218,9 +218,13 @@ int wingedEdge::getIndex()
 	return myIndex;
 }
 
-wingedEdge * wingedEdge::nextBorderEdge()
+wingedEdge * wingedEdge::previousBorderEdge()
 {
-	//next face oriented oposite to edge.
+	//To get the orientation induced by the manifold it is
+	//enough to know that next and previous face are ordered 
+	//according to the orientation of the manifold.
+
+	//next face oriented opposite to edge.
 	//so, looking for next border edge at start vertex
 	if(fc_p_n.a == -1){
 		assert(preva == NULL);
@@ -236,6 +240,30 @@ wingedEdge * wingedEdge::nextBorderEdge()
 	}
 }
 
+
+wingedEdge * wingedEdge::nextBorderEdge()
+{
+	//To get the orientation induced by the manifold it is
+	//enough to know that next and previous face are ordered 
+	//according to the orientation of the manifold.
+
+	//prev face oriented opposite to edge.
+	//so, looking for next border edge at start vertex
+	if(fc_p_n.a == -1){
+		assert(nextb == NULL);
+		return & getNext_bc(end());
+	}
+	//next fce oriented according to edge
+	else if(fc_p_n.b == -1){
+		assert(nexta== NULL);
+		return & getNext_bc(start());
+	}
+	else{
+		return NULL;
+	}
+}
+
+
 int wingedEdge::getFirstBoundaryVertex()
 {
 	if(fc_p_n.a == -1){
@@ -249,6 +277,17 @@ int wingedEdge::getFirstBoundaryVertex()
 		assert(false);
 		return -1;
 	}
+}
+
+int wingedEdge::and( wingedEdge & other )
+{
+	if(start() == other.start() || start() == other.end()){
+		return start();
+	}
+	else if(end() == other.start() || end() == other.end()){
+		return end();
+	}
+	return -1;
 }
 
 

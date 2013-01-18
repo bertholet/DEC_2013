@@ -12,9 +12,7 @@ public:
 	int weightMode;
 
 public slots:
-	void conformalBorder(void);
-	void neumannBorder( void );
-	void circleBorder(void);
+	void oneBorder(void);
+	void multipleBorders( void );
 	void setBorderMode( int mode );
-	void setWeightMode( int mode );
 };

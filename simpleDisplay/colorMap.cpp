@@ -1,5 +1,5 @@
 #include "colorMap.h"
-
+#include "application_meshParam.h"
 
 colorMap::colorMap(void)
 {
@@ -57,4 +57,41 @@ std::vector<tuple3f> & constColor::getColors()
 constColor::constColor( wfMesh & m, tuple3f color )
 {
 	cols.resize(m.getVertices().size(), color);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//Anglemap
+//////////////////////////////////////////////////////////////////////////
+angleMap::angleMap( wingedMesh & m )
+{
+	cols.resize(m.getVertices().size(), tuple3f(1,1,1));
+	std::vector<float> angles, lambdas;
+	wingedEdge *edge, *first;
+	int index;
+	for(int i = 0; i < m.getBoundaryEdges().size(); i++){
+
+		application_meshParam::computeAnglesAndLambdas(m,
+			angles, lambdas, i, i==0);
+
+		index=0;
+		edge= m.getBoundaryEdges()[i];
+		first= edge;
+		do{
+			cols[edge->getFirstBoundaryVertex()] = (angles[index] < 3.1415? tuple3f(0,0,1):tuple3f(1,0,0));
+			edge= edge->nextBorderEdge();
+			index++;
+		}while(edge!=first);
+	}
+	
+}
+
+angleMap::~angleMap()
+{
+
+}
+
+std::vector<tuple3f> & angleMap::getColors()
+{
+	return cols;
 }

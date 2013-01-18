@@ -42,6 +42,7 @@ MainWindow::~MainWindow()
 {
 	fclose(stdout);
 	FreeConsole();
+	MODEL::freeModel();
 }
 
 /************************************************************************/
@@ -234,12 +235,11 @@ void MainWindow::setDisplayMode( int mode )
 		this->myGLDisp->setColormap(
 			borderMap(* MODEL::getModel()->getMesh()));
 	}
-/*	else if(mode == 3){
-		Model & model = *Model::getModel();
-		this->myGLDisp->setColormap((colorMap *) new curvColormap(* Model::getModel()->getMesh()));
-		this->myGLDisp->setMode(COLORMAPMODE);
+	else if(mode == 3){
+		this->myGLDisp->setColormap(
+			angleMap(* MODEL::getModel()->getMesh()));
 	}
-	else if(mode == 4){
+/*	else if(mode == 4){
 		Model & model = *Model::getModel();
 		this->myGLDisp->setMode(MOUSEINPUTMODE);
 	}

@@ -169,13 +169,14 @@ void wingedMesh::initEdges(void)
 
 int wingedMesh::edgeIndex( wingedEdge & edge )
 {
-	return lower_bound(edges.begin(),edges.end(), edge) - edges.begin();
+	int index = lower_bound(edges.begin(),edges.end(), edge) - edges.begin();
+	return (index ==edges.size()||edges[index]!=edge ? -1:index);
 }
 
 wingedEdge * wingedMesh::edgePointer( wingedEdge & halfedge )
 {
 	int idx = edgeIndex(halfedge);
-	if(idx == edges.size()){
+	if(idx <0){
 		return NULL;
 	}
 	return &edges[idx];
@@ -278,7 +279,11 @@ void wingedMesh::checkAreaRatios()
 	
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Boundary Methods
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 void wingedMesh::findBoundary()
 {
 	bool * marked = new bool[edges.size()];
@@ -343,6 +348,78 @@ void wingedMesh::putOuterBoundaryToPositionZero()
 std::vector<wingedEdge*> & wingedMesh::getBoundaryEdges()
 {
 	return boundaryEdges;
+}
+
+std::vector<int> & wingedMesh::getBoundarySizes()
+{
+	return boundarySizes;
+}
+
+float wingedMesh::length( wingedEdge & edge )
+{
+	return (myMesh->getVertices()[edge.end()] - myMesh->getVertices()[edge.start()]).norm();
+}
+
+float wingedMesh::calcBorderLength( int borderNr )
+{
+	if(borderNr >= boundaryEdges.size()){
+		return 0;
+	}
+	wingedEdge * start, * edge;
+	float ln=0;
+	edge = start = boundaryEdges[borderNr];
+	do{
+		ln+= length(*edge);
+		edge = edge->nextBorderEdge();
+	}while(start!=edge);
+
+	return ln;
+}
+
+float wingedMesh::angle( wingedEdge & first, wingedEdge & last )
+{
+	std::vector<tuple3f> & verts = myMesh->getVertices();
+	int vertex= first.and(last);
+	/*int actual = first.otherVertex(vert);
+	int nextVertex;
+	int last = last.otherVertex(vert);*/
+
+	tuple3f &center = verts[vertex];
+
+	float angle = 0;
+	//iterate over 1-Neighborhood.
+	wingedEdge * edg= &first, *nextEdg; 
+	do 
+	{
+		nextEdg = edg->getNext(vertex);
+		assert(nextEdg != NULL);
+		angle += flatAngle(*edg, *nextEdg);
+		edg = nextEdg;
+	} while (*nextEdg != last);
+
+	return angle;
+}
+
+float wingedMesh::flatAngle( wingedEdge & edg, wingedEdge & nextEdg )
+{
+	int vertex = edg.and(nextEdg);
+	int last = edg.otherVertex(vertex);
+	int next = nextEdg.otherVertex(vertex);
+
+	std::vector<tuple3f> & verts = myMesh->getVertices();
+	return tuple3f::angle(verts[last], verts[vertex], verts[next]);
+}
+
+bool wingedMesh::isOnBorder( int vertex )
+{
+	std::vector<int> & edgs = v2e[vertex];
+
+	for(int i = 0; i < edgs.size(); i++){
+		if(edges[edgs[i]].isOnBorder()){
+			return true;
+		}
+	}
+	return false;
 }
 
 

@@ -30,6 +30,16 @@ public:
 	virtual std::vector<tuple3f> & getColors();
 };
 
+class angleMap:public colorMap{
+private:
+	std::vector<tuple3f> cols;
+public:
+	angleMap(wingedMesh & m);
+	~angleMap();
+
+	virtual std::vector<tuple3f> & getColors();
+};
+
 /*class curvatureMap:public colorMap{
 private:
 	std::vector<tuple3f> cols;

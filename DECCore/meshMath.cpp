@@ -49,13 +49,6 @@ float meshMath::aVoronoi( int vertex, wingedMesh & mesh )
 			tempcot2 = 0;
 		}
 
-	/*	if(!prevIsNeighbor){
-			tempcot1 = 0;
-		}
-		if(!nextIsNeighbor){
-			tempcot2 = 0;
-		}*/
-
 		Avornoi += (tempcot1 +
 			tempcot2) *
 			(verts[vertex]-verts[actualVert]).normSqr();
@@ -104,33 +97,40 @@ float meshMath::dualEdge_edge_ratio( int edgeNr, wingedMesh & mesh )
 }
 
 
-float meshMath::dualEdge_edge_ratio_mixed( int edgeNr, wingedMesh & mesh )
+float meshMath::dualEdge_edge_ratio_mixed( int edgeNr, wingedMesh & mesh, dualEdgeType what )
 {
+
 	wingedEdge & edge = mesh.getEdges()[edgeNr];
 	int vertex1 = edge.start();
 	int vertex2 = edge.end();
-	int prev = edge.getPrev_bc(vertex1).otherVertex(vertex1);//meshOperation::getPrevious_bc(i, j, m, &prevIsNeighbor);	
-	int next = edge.getNext_bc(vertex1).otherVertex(vertex1);
+	int prev;
+	int next;
+	switch(what){
+	case END_VERTEX_BORDER_COMPLETION:
+		prev= edge.getPrev_bc(vertex2).otherVertex(vertex2);
+		next= edge.getNext_bc(vertex2).otherVertex(vertex2);
+		break;
+	default:
+		prev= edge.getPrev_bc(vertex1).otherVertex(vertex1);
+		next= edge.getNext_bc(vertex1).otherVertex(vertex1);
+	}
+
 
 	vector<tuple3f> & verts = mesh.getVertices();
 
-	float cot_alpha1 = (edge.isFirstEdge(vertex1) ? 
+	float cot_alpha1 = (edge.isFirstEdge(vertex1) && !what== NO_COMPLETION ? 
 				0:
 				tuple3f::cotPoints(verts[vertex2], verts[prev], verts[vertex1]));
 
-	float cot_alpha2 = (edge.isLastEdge(vertex1)?
+	float cot_alpha2 = (edge.isLastEdge(vertex1) && !what== NO_COMPLETION?
 				0:
 				tuple3f::cotPoints(verts[vertex1], verts[next], verts[vertex2]));
 
-	/*float cot_alpha1 = (prevIsNeighbor? 
-		tuple3f::cotPoints(verts[j], verts[prev], verts[i]):
-	0);
-	float cot_alpha2 = (nextIsNeighbor? 
-		tuple3f::cotPoints(verts[i], verts[next], verts[j]):
-	0);*/
-
+/*	float	cot_alpha1 = tuple3f::cotPoints(verts[vertex2], verts[prev], verts[vertex1]);
+	float	cot_alpha2 = tuple3f::cotPoints(verts[vertex1], verts[next], verts[vertex2]);*/
+				
 	cot_alpha1 = (cot_alpha1 >0? cot_alpha1: 0);
-	cot_alpha2 = (cot_alpha2 >0? cot_alpha2: 0);
+	cot_alpha2 = (cot_alpha2 >0? cot_alpha2: 0);/**/
 
 	return (cot_alpha1 + cot_alpha2)/2;
 }
@@ -189,6 +189,57 @@ float meshMath::area( int faceNr, wingedMesh & mesh )
 	return res;
 }
 
+void meshMath::calcAllMixedAreas_ignoreBorder( wingedMesh &m, std::vector<float> &AMixed )
+{
+	vector<tuple3i>& faces = m.getFaces();
+	vector<tuple3f>& verts = m.getVertices();
+	float areaT, aMix, cot1, cot2;
+	//	AMixed.reserve(m.getVertices().size());
+	AMixed.resize(m.getVertices().size(), 0);
+	int nrVertices = m.getVertices().size(), vertex_nbr1, vertex_nbr2;
+
+	wingedEdge * edge, *first, *next;
+
+	for(int vert = 0; vert < nrVertices; vert++){
+		aMix = 0;
+
+		//iterate over the neightborhood...
+		edge = first = & m.getAnEdge(vert);
+		next= & edge->getNext_bc(vert);
+		do{
+			//the vertices to be considered.
+			vertex_nbr1 = edge->otherVertex(vert);
+			vertex_nbr2 = next->otherVertex(vert);
+			//triangleArea
+			areaT = tuple3f::cross((verts[vertex_nbr1] - verts[vert]),(verts[vertex_nbr2] - verts[vert])).norm()/2;
+
+
+			if(tuple3f::a_bDotc_b(verts[vertex_nbr1], verts[vert], verts[vertex_nbr2]) <0 )
+			{
+				aMix += areaT/2;
+			}
+			else if(tuple3f::a_bDotc_b(verts[vertex_nbr1], verts[vertex_nbr2], verts[vert]) <0 ||
+				tuple3f::a_bDotc_b(verts[vertex_nbr2], verts[vertex_nbr1], verts[vert])<0)
+			{
+				aMix += areaT/4;
+			}
+			else{
+				cot1 = tuple3f::cotPoints(verts[vertex_nbr1], verts[vertex_nbr2], verts[vert]);
+				cot1 = (cot1 >0 ? cot1: -cot1);
+				cot2 = tuple3f::cotPoints(verts[vert], verts[vertex_nbr1], verts[vertex_nbr2]);
+				cot2 = (cot2 >0 ? cot2: -cot2);
+				aMix += cot1 * (verts[vert]-verts[vertex_nbr1]).normSqr() +
+					cot2 * (verts[vert]-verts[vertex_nbr2]).normSqr();
+			}
+
+			edge= next;
+			next= & next->getNext_bc(vert);
+		}while(edge!= first);
+
+		AMixed[vert] = aMix/8;
+	}
+
+}
 
 void meshMath::calcAllMixedAreas( wingedMesh &m, std::vector<float> &AMixed )
 {

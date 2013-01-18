@@ -11,6 +11,8 @@ public:
 
 	static cpuCSRMatrix border2(wingedMesh & aMesh);
 	static cpuCSRMatrix border1(wingedMesh & aMesh);
+	//
+	static cpuCSRMatrix border1_halfedges( wingedMesh & aMesh );
 
 	static cpuCSRMatrix d0( wingedMesh & aMesh );
 	static cpuCSRMatrix d1( wingedMesh & aMesh );
@@ -25,23 +27,57 @@ public:
 	static cpuCSRMatrix star1( wingedMesh & aMesh );
 	//1 / volume
 	static cpuCSRMatrix star2( wingedMesh & aMesh );
+	
+	//////////////////////////////////////////////////////////////////////////
 	//mixed Area based star matrices
-	static cpuCSRMatrix star0_mixed( wingedMesh & aMesh, std::vector<float> & buffer);
+	// star0 can optionally be computed such that voronoi areas at boundary vertices are computed 
+	//according to the assumptions in the method star1_mixed_halfedges
+	//////////////////////////////////////////////////////////////////////////
+	static cpuCSRMatrix star0_mixed( wingedMesh & aMesh, std::vector<float> & buffer, bool ignoreBorder = true);
 	static cpuCSRMatrix star1_mixed( wingedMesh & aMesh, std::vector<float> & buffer);
-	static cpuCSRMatrix coderiv1_mixed( wingedMesh & aMesh , std::vector<float> & buffer);
-	static cpuCSRMatrix coderiv1_mixed( wingedMesh & aMesh , std::vector<float> & buffer, cpuCSRMatrix & _border1);
 
-	//The coderivatives, simple concatenations of the star
-	// Fast memory efficient computation.
+	//////////////////////////////////////////////////////////////////////////
+	//a variant which allows the dual edge, edge ratios
+	// on boundary edges depend on the way you add an additional triangle
+	// to the outside of a mesh. Say you consider the boundary edge (i,j), lying
+	// on the border segment formed by the vertices p,i,j,n. Then you could either
+	// add the triangle p,i,j or i,j,n and compute the ratios with either of those additional
+	// triangles.
+	//
+	// the returned matrix has size (2*nrEdges x nrEdges), the upper half being the same as star1, considering
+	// triengles (p,i,j) for every border edge (i,j)
+	// the lower half considering triangles (i,j,n).
+	//for inner vertices the upper and the lower matrix coincide.
+	//////////////////////////////////////////////////////////////////////////
+	
+	static cpuCSRMatrix star1_mixed_halfedges( wingedMesh & aMesh);
+
+	//////////////////////////////////////////////////////////////////////////
+	//co derivative computation. Buffer is just a float vector that will be used during
+	//internal calculations. If coderiv1_mixed is used often, like this the buffer can
+	//be reused and does not need to be reallocated.
+	//Optionally a precomuted matrix border1 can be used in order not to recompute it.
+	//////////////////////////////////////////////////////////////////////////
+	static cpuCSRMatrix coderiv1( wingedMesh & aMesh );
+	static cpuCSRMatrix coderiv2( wingedMesh & aMesh );
+	//As the coderivative is a simple concatenation of matrices these matrices can
+	//be used.This is a faster memory efficient computation.
 	static void coderiv1(
 		cpuCSRMatrix & star_1, 
 		cpuCSRMatrix & border_1,
 		cpuCSRMatrix & star_0,
 		cpuCSRMatrix & target);
-	//The coderivatives, simple concatenations of the star
-	// abd d matrices.
-	static cpuCSRMatrix coderiv1( wingedMesh & aMesh );
-	static cpuCSRMatrix coderiv2( wingedMesh & aMesh );
+	//The coderivative1 using mixed star1 matrices.
+	static cpuCSRMatrix coderiv1_mixed( wingedMesh & aMesh , std::vector<float> & buffer);
+	static cpuCSRMatrix coderiv1_mixed( wingedMesh & aMesh , std::vector<float> & buffer, cpuCSRMatrix & _border1);
+	//////////////////////////////////////////////////////////////////////////
+	//variant of the coderivative. Boundary vertices are treated as if they 
+	//had a full neighborhood of  triangles. This one uses the border1_halfedges
+	//and star1_mixed_halfedge matrices in the concatenation. see also their
+	//method descriptions.
+	//////////////////////////////////////////////////////////////////////////
+	static cpuCSRMatrix coderiv1_mixed_ignoreBoundary( wingedMesh & aMesh);
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// creates an identity Matrix of the appropriate k-form space dimension.
@@ -49,6 +85,13 @@ public:
 	static cpuCSRMatrix id0(wingedMesh & aMesh);
 	static cpuCSRMatrix id1(wingedMesh & aMesh);
 	static cpuCSRMatrix id2(wingedMesh & aMesh);
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Laplace operator using coderiv1 ignore boundary matrix.
+	//////////////////////////////////////////////////////////////////////////
+	static cpuCSRMatrix laplaceIgnoreBoundary(wingedMesh & aMesh);
+	
 
 /*	static cpuCSRMatrix onesBorder(std::vector<std::vector<int>> & border, int n, int m);
 

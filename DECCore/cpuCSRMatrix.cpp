@@ -224,6 +224,40 @@ void cpuCSRMatrix::add( int i, int j, float val )
 	}
 }
 
+
+void cpuCSRMatrix::set( int i , int j, float val )
+{
+	int bs = ia[i];
+	bool added = false;
+	for(int k = bs; k < ia[i+1]; k++){
+		if(ja[k] == j){
+			a[k]= val;
+			added = true;
+			break;
+		}
+	}
+
+	if(!added){
+		assert(false);
+		throw std::runtime_error("Error in pardisoMatrix::add : (i,j) not a Matrix Entry");
+	}
+}
+
+float cpuCSRMatrix::get( int i , int j )
+{
+	int bs = ia[i];
+	for(int k = bs; k < ia[i+1]; k++){
+		if(ja[k] == j){
+			return a[k];
+		}
+	}
+	return 0;
+}
+
+
+
+
+
 void cpuCSRMatrix::addLine(std::vector<int> & js, std::vector<float> & vals){
 	assert(js.size()  == vals.size());
 	if(ia.size() == 0){
@@ -425,26 +459,26 @@ cpuCSRMatrix cpuCSRMatrix::operator+( cpuCSRMatrix & B )
 		for(j1 = Aia_start, j2 = Bia_start; j1 <Aia_stop || j2 < Bia_stop;){
 			if(j2 >= Bia_stop || this->ja[j1]< B.ja[j2] && j1 < Aia_stop){
 				val = this->a[j1];
-				if(val!=0){
+//				if(val!=0){
 					AnB.japush_back(this->ja[j1]);
 					AnB.apush_back(val);
-				}
+//				}
 				j1++;
 			}
 			else if (j1 >= Aia_stop || this->ja[j1]> B.ja[j2] && j2 < Bia_stop){
 				val = B.a[j2];
-				if(val!= 0){
+//				if(val!= 0){
 					AnB.japush_back(B.ja[j2]);
 					AnB.apush_back(val);
-				}
+//				}
 				j2++;
 			}
 			else{
 				val = B.a[j2] + this->a[j1];
-				if(val != 0){
+//				if(val != 0){
 					AnB.japush_back(B.ja[j2]);
 					AnB.apush_back(val);
-				}
+//				}
 				j1++;
 				j2++;
 			}
@@ -675,6 +709,46 @@ void cpuCSRMatrix::diagAppend( cpuCSRMatrix & mat )
 	assert(this->m = newm);
 
 }
+
+
+void cpuCSRMatrix::append( cpuCSRMatrix & mat )
+{
+	assert(&mat != this);
+	int newm = m;
+	int newn = n + mat.n;
+	//int oldm = m;
+	//int oldn = n;
+	int oldszA = a.size();
+
+	//the values...
+	for(unsigned int i = 0; i < mat.a.size(); i++){
+		this->apush_back(mat.a[i]);
+	}
+	//the indices
+	for(unsigned int i = 1; i < mat.ia.size(); i++){
+		this->iapush_back(mat.ia[i] + oldszA);
+	}
+	//the j indices
+	for(unsigned int i = 0; i < mat.ja.size(); i++){
+		this->japush_back(mat.ja[i]);
+	}
+	assert(this->n = newn);
+	assert(this->m = newm);
+}
+
+
+
+void cpuCSRMatrix::normalizeLines()
+{
+	float val;
+	for(int i = 0; i < getn(); i++){
+		val = get(i,i);
+		if((1.f/val)*0 == 0){
+			scaleLine(i,1.f/val);
+		}
+	}
+}
+
 
 
 

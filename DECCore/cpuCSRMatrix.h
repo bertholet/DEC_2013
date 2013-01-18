@@ -133,6 +133,9 @@ public:
 	// ELSE an assertion will fail and an error be thrown
 	//////////////////////////////////////////////////////////////////////////
 	void add( int i, int j, float val );
+	void set(int i , int j, float val);
+	float get(int i , int j);
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// set line line to 0.... 1 ... 0 where line is the line in 0 based notation
@@ -207,9 +210,16 @@ public:
 
 	void forceNrColumns( int nrColumns );
 	void getLine( int line, std::vector<int> & target_ind, std::vector<float> & target_vals );
+	
 	//appends the matrix mat at the right bottom corner of this matrix
 	void diagAppend( cpuCSRMatrix & mat );
+	void append(cpuCSRMatrix & mat);
 	void scaleLine( int line, float scale );
+	//////////////////////////////////////////////////////////////////////////
+	//Normalizes the matrix rows such that the absolute value of the diagonal
+	//elements is one.
+	//////////////////////////////////////////////////////////////////////////
+	void normalizeLines();
 	//adds val to all elemetns on the diagonal
 	void addOnDiagonal( float val );
 };

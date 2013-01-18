@@ -57,7 +57,7 @@ void CUDASOLVER_EXPORT mySolver::solve( floatVector & x, floatVector & b )
 	cusp::csr_matrix<int,float,cusp::device_memory> & A = *myMatrix;
 
 	// allocate storage for solution (x) and right hand side (b)
-    cusp::array1d<float, cusp::device_memory> x_(x.size(), 0);//x_(x.begin(), x.end());
+    cusp::array1d<float, cusp::device_memory> x_(b.size(), 0);//x_(x.begin(), x.end());
 	cusp::array1d<float, cusp::device_memory> b_(b.begin(), b.end());
 
     // set stopping criteria:
@@ -78,6 +78,7 @@ void CUDASOLVER_EXPORT mySolver::solve( floatVector & x, floatVector & b )
 
 
 	//looks frigging inefficient
+	x.resize(b.size(),0);
 	for(unsigned int i = 0; i < x.size(); i++){
 		x[i] = x_[i];
 	}

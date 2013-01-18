@@ -45,22 +45,43 @@ class border1_Creator: public matrixCreator
 {
 
 	wingedMesh * mesh;
+	bool halfedgeMode;
+	int nrEdges;
 
 public:
 	border1_Creator(wingedMesh & aMesh){
 		mesh = & aMesh;
+		halfedgeMode = false;
+		nrEdges= aMesh.getEdges().size();
 	}
 
 	float val(int i , int j){
 		// i is the row, j the edge
-		wingedEdge & edge =mesh->getEdges()[j];
+		wingedEdge & edge =mesh->getEdges()[(halfedgeMode?j%nrEdges: j)];
 		return (float) edge.orientation(i);
+	}
+
+	void setHalfedgeMode(bool what){
+		halfedgeMode = what;
 	}
 
 	// row: its the vertex number; 
 	void indices(int row, std::vector<int> & target){
 		target.clear();
 		target =  mesh->getv2e()[row];
+
+		if(halfedgeMode){
+			std::vector<wingedEdge> & edges = mesh->getEdges();
+			int orientation;
+			for(unsigned int i = 0; i < target.size(); i++){
+				orientation = edges[target[i]].orientation(row);
+				assert(orientation != 0);
+				if(orientation == 1){
+					target[i]+=edges.size();
+				}
+			}
+			sort(target.begin(), target.end());
+		}
 	}
 };
 
@@ -155,12 +176,19 @@ public:
 
 class star1mixedCreator: public matrixCreator
 {
-
+private:
 	wingedMesh * mesh;
+	meshMath::dualEdgeType type;
 
 public:
+
 	star1mixedCreator(wingedMesh & aMesh){
 		mesh = & aMesh;
+		type =meshMath::NO_COMPLETION;
+	}
+
+	void set(meshMath::dualEdgeType what){
+		type= what;
 	}
 
 	float val(int i , int j){
@@ -170,7 +198,7 @@ public:
 
 		//tuple2i & edge = (*mesh->getHalfedges())[i];
 		// i is the row
-		return meshMath::dualEdge_edge_ratio_mixed(i,*mesh);
+		return meshMath::dualEdge_edge_ratio_mixed(i,*mesh, type);
 	}
 
 	// row: its the vertex number; 
@@ -428,6 +456,18 @@ cpuCSRMatrix DDGMatrices::border1( wingedMesh & aMesh )
 	return border1_;
 }
 
+cpuCSRMatrix DDGMatrices::border1_halfedges( wingedMesh & aMesh )
+{
+	cpuCSRMatrix border1_;
+	int nrVertices = aMesh.getVertices().size();
+	border1_Creator c(aMesh);
+	c.setHalfedgeMode(true);
+	border1_.initMatrix(c, nrVertices);
+
+	//	cpuCSRMatrix border_1 = cpuCSRMatrix::transpose(d0(aMesh));
+	return border1_;
+}
+
 cpuCSRMatrix DDGMatrices::border2( wingedMesh & aMesh )
 {
 	cpuCSRMatrix border_2= d1(aMesh);
@@ -463,9 +503,13 @@ cpuCSRMatrix DDGMatrices::dual_d0( wingedMesh & aMesh )
 // this is minus d0 transformed
 cpuCSRMatrix DDGMatrices::dual_d1( wingedMesh & aMesh )
 {
-	cpuCSRMatrix d_0= d0(aMesh);
+	/*cpuCSRMatrix d_0= d0(aMesh);
 	d_0*=(-1);//^1
-	return (cpuCSRMatrix::transpose(d_0));
+	return (cpuCSRMatrix::transpose(d_0));*/
+	cpuCSRMatrix border_1;
+	border_1.initMatrix(border1_Creator(aMesh),aMesh.getVertices().size());
+	border_1*=-1;
+	return border_1;
 }
 
 
@@ -519,20 +563,37 @@ cpuCSRMatrix DDGMatrices::star2( wingedMesh & aMesh )
 	return star2;
 }
 
-cpuCSRMatrix DDGMatrices::star0_mixed( wingedMesh & aMesh, std::vector<float> & buffer )
+cpuCSRMatrix DDGMatrices::star0_mixed( wingedMesh & aMesh, std::vector<float> & buffer, bool ignoreBorder )
 {
-	meshMath::calcAllMixedAreas(aMesh, buffer);
+	if(!ignoreBorder){
+		meshMath::calcAllMixedAreas(aMesh, buffer);
+	}
+	else{
+		meshMath::calcAllMixedAreas_ignoreBorder(aMesh, buffer);
+	}
 	cpuCSRMatrix id;
 	id.initMatrix(diagCreator(buffer), aMesh.getVertices().size());
 	return id;
 }
 
-cpuCSRMatrix DDGMatrices::star1_mixed( wingedMesh & aMesh, std::vector<float> & buffer )
+cpuCSRMatrix DDGMatrices::star1_mixed( wingedMesh & aMesh, std::vector<float> & buffer)
 {
 	cpuCSRMatrix star1;
 	int nrEdges = aMesh.getEdges().size();
 	star1.initMatrix(star1mixedCreator(aMesh), nrEdges);
 	return star1;
+}
+
+cpuCSRMatrix DDGMatrices::star1_mixed_halfedges( wingedMesh & aMesh)
+{
+	star1mixedCreator c(aMesh);
+	c.set(meshMath::START_VERTEX_BORDER_COMPLETION);
+	cpuCSRMatrix top, bot;
+	top.initMatrix(c, aMesh.getEdges().size());
+	c.set(meshMath::END_VERTEX_BORDER_COMPLETION);
+	bot.initMatrix(c, aMesh.getEdges().size());
+	top.append(bot);
+	return top;
 }
 
 cpuCSRMatrix DDGMatrices::coderiv1_mixed( wingedMesh & aMesh, std::vector<float> & buffer )
@@ -553,6 +614,18 @@ cpuCSRMatrix DDGMatrices::coderiv1_mixed( wingedMesh & aMesh, std::vector<float>
 
 	return star_0_inv * border1_ * star_1;
 }
+
+
+cpuCSRMatrix DDGMatrices::coderiv1_mixed_ignoreBoundary( wingedMesh & aMesh )
+{
+	cpuCSRMatrix star1_he= star1_mixed_halfedges(aMesh);
+	cpuCSRMatrix border1_he = border1_halfedges(aMesh);
+
+	cpuCSRMatrix star_0_inv = star0_mixed(aMesh, std::vector<float>());
+	star_0_inv.elementWiseInv();
+	return star_0_inv * border1_he * star1_he;
+}
+
 
 cpuCSRMatrix DDGMatrices::coderiv1_mixed( wingedMesh & aMesh, std::vector<float> & buffer, cpuCSRMatrix & border1_ )
 {
@@ -652,6 +725,111 @@ cpuCSRMatrix DDGMatrices::id2( wingedMesh & aMesh )
 	id.initMatrix(idCreator(), aMesh.getFaces().size());
 	return id;
 }
+
+
+
+/*double cotan_weights_divAmix( int i, int j, wingedMesh & m )
+{
+	
+
+	if(i==j){
+		return -1;
+	}
+
+	std::vector<int>::iterator idx;
+	int prev, next;
+	int edgeIndex =	m.edgeIndex(wingedEdge(i<j?i:j,i<j?j:i));
+	if(edgeIndex <0){
+		return 0;
+	}
+
+	//jth vertex is a neighbor of i
+	std::vector<tuple3f> & verts =m.getVertices();
+	float cot_alpha1, cot_alpha2;//, tempcot1, tempcot2;
+	int nbr;
+	wingedEdge *prevEdge, *nextEdge, *edge = & m.getEdges()[edgeIndex], *firstEdge;
+	assert( *edge == wingedEdge(i<j?i:j,i<j?j:i));
+
+	prevEdge = & edge->getPrev_bc(i);
+	nextEdge = & edge->getNext_bc(i);
+
+	prev =prevEdge->otherVertex(i);	
+	next = nextEdge->otherVertex(i);
+
+	cot_alpha1 = tuple3f::cotPoints(verts[j], verts[prev], verts[i]);
+	cot_alpha2 = tuple3f::cotPoints(verts[i], verts[next], verts[j]);
+	
+	return (cot_alpha1 + cot_alpha2)/2 / meshMath::aVoronoi(i,m);//
+	
+}
+
+
+cpuCSRMatrix DDGMatrices::laplaceOld( wingedMesh & m )
+{
+	cpuCSRMatrix mat;
+	bool a_ii_added;
+	int count = 0, nrVertices = m.getVertices().size(), offset;
+	std::vector<int>::iterator j;
+
+	float factor;
+	wingedEdge *edge, *firstEdge;
+
+	mat.iapush_back(0);
+
+	std::vector<int> nbrs_i;
+	for(int i = 0; i < nrVertices;i++){
+		
+		firstEdge = edge = & m.getAnEdge(i%nrVertices);
+		nbrs_i.clear();
+		do{
+			nbrs_i.push_back(edge->otherVertex(i%nrVertices));
+			edge = & edge->getNext_bc(i%nrVertices);
+		}while(edge!=firstEdge);
+		sort(nbrs_i.begin(), nbrs_i.end());
+
+		offset = (i<nrVertices?0:nrVertices);
+
+		a_ii_added = false;
+		//calculate normation factor
+		factor = 0;
+		for(j = nbrs_i.begin(); j!=nbrs_i.end(); j++){
+			factor += cotan_weights_divAmix(i%nrVertices,*j,m);
+
+		}
+
+
+		for(j = nbrs_i.begin(); j!=nbrs_i.end(); j++){
+			if(i< *j + offset &&! a_ii_added){
+				mat.japush_back(i);
+				a_ii_added = true;
+				mat.apush_back(cotan_weights_divAmix(i%nrVertices,i%nrVertices,m));
+			}
+			mat.japush_back((*j)+offset );
+			//note the following makes sense because the sum of vals = 0 means there is only a diagonal element..
+			mat.apush_back((factor <0.0001? 0: cotan_weights_divAmix(i%nrVertices,*j,m)/factor));
+
+		}
+
+		if(!a_ii_added){
+			mat.japush_back(i);
+			a_ii_added = true;
+			mat.apush_back(cotan_weights_divAmix(i%nrVertices,i%nrVertices,m));
+		}
+		mat.iapush_back(mat.getja().size());
+	}
+	return mat;
+}*/
+
+cpuCSRMatrix DDGMatrices::laplaceIgnoreBoundary( wingedMesh & aMesh )
+{
+	return coderiv1_mixed_ignoreBoundary(aMesh) * d0(aMesh);
+}
+
+
+
+
+
+
 
 
 /*
