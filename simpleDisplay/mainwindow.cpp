@@ -5,7 +5,8 @@
 //#include "mesh.h"
 //#include "curvVisualizingMesh.h"
 //#include "generatemeshgui.h"
-//#include "vectorfieldcontrolwidget.h"
+
+#include "vectorfieldWidget.h"
 #include "smoothingWidget.h"
 #include "glDisplayable.h"
 #include "meshParamWidget.h"
@@ -103,17 +104,24 @@ void MainWindow::setupComponents(QGLFormat & format)
 void MainWindow::setupQTabs() 
 {
 	this->tabs = new QTabWidget(this);
-	QWidget * tab1Widget = new smoothingWidget();
-	tabs->addTab(tab1Widget, "Smoothing");
+
+
+	vectorfieldWidget * vfWidget = new vectorfieldWidget();
+	//vfWidget->setMainWindow(this);
+	tabs->addTab(vfWidget, "Vector Fields");
 
 	QWidget * paramWidget = new meshParamWidget();
 	tabs->addTab(paramWidget, "Mesh Parametrization");
 
-/*	vectorFieldControlWidget * tab2Widget = new vectorFieldControlWidget();
-	tab2Widget->setMainWindow(this);
-	tabs->addTab(tab2Widget, "Vector Fields");
 
-	fluidcontWidget = new fluidControlWidget();
+	QWidget * tab1Widget = new smoothingWidget();
+	tabs->addTab(tab1Widget, "Smoothing");
+
+
+
+
+
+	/*fluidcontWidget = new fluidControlWidget();
 	tabs->addTab(fluidcontWidget, "Fluid Simulation");*/
 
 
@@ -289,13 +297,13 @@ void MainWindow::setMouseMode( int state )
 
 void MainWindow::setVFieldMode( int state)
 {
-	if(state == 0){//unchecked
+	/*if(state == 0){//unchecked
 		this->myGLDisp->setNormedFieldDisplay(false);
 	}
 	if(state == 2){//checked
 		this->myGLDisp->setNormedFieldDisplay(true);
 	}
-	this->update();
+	this->update();*/
 }
 
 void MainWindow::resetStrokes()
@@ -306,8 +314,8 @@ void MainWindow::resetStrokes()
 
 void MainWindow::lineWidthChanged()
 {
-	this->myGLDisp->setLineWidth((0.f + this->linewidthSlider->value())/SLIDER_STEPSPERUNIT);
-	this->update();
+	/*this->myGLDisp->setLineWidth((0.f + this->linewidthSlider->value())/SLIDER_STEPSPERUNIT);
+	this->update();*/
 }
 
 void MainWindow::fieldLengthChanged()
@@ -326,6 +334,6 @@ void MainWindow::showArrows( int val)
 
 void MainWindow::setSmoothMode( int what )
 {
-	this->myGLDisp->setSmooth(what==2);
-	this->update();
+	/*this->myGLDisp->setSmooth(what==2);
+	this->update();*/
 }

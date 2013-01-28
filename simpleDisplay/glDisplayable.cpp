@@ -8,30 +8,30 @@
 #include <algorithm>
 
 
-glDisplayable::glDisplayable(wfMesh * mesh):
- m_vertexBuffer( QGLBuffer::VertexBuffer ), m_IndexBuffer(QGLBuffer::IndexBuffer), 
-	 m_normalBuffer(QGLBuffer::VertexBuffer), m_colorBuffer(QGLBuffer::VertexBuffer)
+glDisplayable::glDisplayable(wfMesh * mesh)//:
+// m_vertexBuffer( QGLBuffer::VertexBuffer ), m_IndexBuffer(QGLBuffer::IndexBuffer), 
+//	 m_normalBuffer(QGLBuffer::VertexBuffer), m_colorBuffer(QGLBuffer::VertexBuffer)
 {
-	myMesh = mesh;
+//	myMesh = mesh;
 	model2world.setToIdentity();
 	normalMatrix = model2world;
 	
 	//myMesh->normalize();
 
-	myMesh->attach(this);
+//	myMesh->attach(this);
 
 }
 
 
 glDisplayable::~glDisplayable(void)
 {
-	myMesh->detatch(this);
+	//myMesh->detatch(this);
 }
 
-void glDisplayable::sendToGPU()
+/*void glDisplayable::sendToGPU()
 {
 
-// Set the clear color to black
+
 	if(myMesh->getVertices().size() == 0){
 		return;
 	}
@@ -126,7 +126,7 @@ void glDisplayable::sendToGPU()
 
 
 
-}
+}*/
 
 bool glDisplayable::prepareShaderProgram( const QString & vspath, const QString & fspath , const QString & gspath)
 {
@@ -156,7 +156,7 @@ bool glDisplayable::prepareShaderProgram( const QString & vspath, const QString 
 
 
 
-void glDisplayable::draw(QMatrix4x4 & world2view, QVector3D & eye)
+/*void glDisplayable::draw(QMatrix4x4 & world2view, QVector3D & eye)
 {
 	if(myMesh->getVertices().size() == 0){
 		return;
@@ -173,12 +173,19 @@ void glDisplayable::draw(QMatrix4x4 & world2view, QVector3D & eye)
 	glDebuggingStuff::didIDoWrong();
 
 	glDrawElements(GL_TRIANGLES,3*myMesh->getFaces().size(),GL_UNSIGNED_INT,0);
-}
+}*/
 
 QMatrix4x4 & glDisplayable::getModel2world()
 {
 	return model2world;
 }
+
+
+QMatrix4x4 & glDisplayable::getNormalMatrix()
+{
+	return normalMatrix;
+}
+
 
 void glDisplayable::rot( float angle, float axisX, float axisY,float axisZ )
 {
@@ -189,7 +196,7 @@ void glDisplayable::rot( float angle, float axisX, float axisY,float axisZ )
 	normalMatrix = model2world.inverted();
 }
 
-void glDisplayable::update( void * src, meshMsg msg )
+/*void glDisplayable::update( void * src, meshMsg msg )
 {
 	if(msg == POS_CHANGED && src == myMesh){
 		if(m_vertexBuffer.usagePattern() != QGLBuffer::DynamicDraw){
@@ -204,7 +211,7 @@ void glDisplayable::update( void * src, meshMsg msg )
 		myMesh = & dummyMesh;
 		dummyMesh.attach(this);
 	}
-}
+}*/
 
 
 /************************************************************************/
@@ -237,11 +244,79 @@ void glDisplayable::updateObserver(glDispMessage msg )
 	}
 }
 
-void glDisplayable::sendColorMap( colorMap &map )
+void glDisplayable::setUpBuffer( const char *name, QGLBuffer & buffer, std::vector<tuple3f> & values, QGLBuffer::UsagePattern type )
+{
+	if ( !m_shader.bind() )
+	{
+		qWarning() << "Could not bind shader program to context";
+		return;
+	}
+	glDebuggingStuff::didIDoWrong();
+
+	if(!buffer.isCreated()){
+		buffer.create();
+		buffer.setUsagePattern( type );
+		glDebuggingStuff::didIDoWrong();
+	}
+
+
+	if ( !buffer.bind() )
+	{
+		qWarning() << "Could not bind vertex buffer to the context";
+		return;
+	}
+	buffer.allocate( &(values[0].x), 3 * values.size()* sizeof( float ) );
+
+	glDebuggingStuff::didIDoWrong();
+
+	m_shader.setAttributeBuffer( name, GL_FLOAT, 0, 3 );
+	m_shader.enableAttributeArray( name);
+	glDebuggingStuff::didIDoWrong();
+	
+}
+
+void glDisplayable::setUpIndexBuffer(QGLBuffer & buffer, std::vector<tuple3i> & values, QGLBuffer::UsagePattern type )
+{
+	if ( !m_shader.bind() )
+	{
+		qWarning() << "Could not bind shader program to context";
+		return;
+	}
+	glDebuggingStuff::didIDoWrong();
+
+
+	buffer.create();
+	buffer.setUsagePattern( type);
+
+	glDebuggingStuff::didIDoWrong();
+
+	if ( !buffer.bind() )
+	{
+		qWarning() << "Could not bind vertex buffer to the context";
+		return;
+	}
+	buffer.allocate( &(values[0].a), 3 * values.size()* sizeof( int ) );
+
+	glDebuggingStuff::didIDoWrong();
+}
+
+void glDisplayable::setUniformValue( const char *name, QMatrix4x4 & mat )
+{
+	m_shader.bind();
+	m_shader.setUniformValue(name, mat);
+}
+
+void glDisplayable::setUniformValue( const char *name, QVector3D & vec )
+{
+	m_shader.bind();
+	m_shader.setUniformValue(name, vec);
+}
+
+/*void glDisplayable::sendColorMap( colorMap &map )
 {
 	if(!m_colorBuffer.isCreated()){
 		m_colorBuffer.create();
-		m_colorBuffer.setUsagePattern( QGLBuffer::StaticDraw );
+		m_colorBuffer.setUsagePattern( QGLBuffer::DynamicDraw );
 		glDebuggingStuff::didIDoWrong();
 	}
 
@@ -257,8 +332,15 @@ void glDisplayable::sendColorMap( colorMap &map )
 		return;
 	}
 	m_colorBuffer.allocate( &(map.getColors()[0].x), 3 * myMesh->getVertices().size()* sizeof( float ) );
+	//m_colorBuffer.write(0,&(map.getColors()[0].x), 3 * myMesh->getVertices().size()* sizeof( float ) );
 
 	m_shader.setAttributeBuffer( "color", GL_FLOAT, 0, 3 );
 	m_shader.enableAttributeArray( "color" );
 	glDebuggingStuff::didIDoWrong();
-}
+	
+}*/
+
+/*tuple3i * glDisplayable::intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position )
+{
+	return myMesh->intersect(start,stop,closestVertex,face,*position);
+}*/

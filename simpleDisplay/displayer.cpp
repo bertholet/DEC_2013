@@ -14,33 +14,19 @@ Displayer::Displayer(QGLFormat & format, QWidget *parent)
 	this->setMinimumWidth(300);
 	this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-	myDisplayable = new glDisplayable(MODEL::getModel()->getMesh()->getWfMesh());
+	myDisplayable = new glDisplayableMesh(MODEL::getModel()->getMesh()->getWfMesh());
 	myDisplayable->attach(this);
 
-	//	mode = EDGEMODE;
 	mouseMode = TRACKBALLMODE;
+	strokeListener.setStrokedObject(*this);
+	strokeListener.addStrokeProcessor(mousestrokemap);
+	mousestrokemap.associateTo(* MODEL::getModel()->getMesh()->getWfMesh());
 
 	eye = QVector3D(0, 0 ,4);
 	up = QVector3D(0,1,0);
 	camMatrix.lookAt(eye, QVector3D(0,0,0), up );
 	projMatrix.perspective(60, this->width()/this->height(),1,500);
 
-//	this->tex = new squareTexture();
-
-	//this->map = NULL;
-	//this->tmmap = new triangleMarkupMap();
-
-
-	//Model::getModel()->attach(this);
-
-	displayVField = true;
-	normedVField = true;
-	displayVectors = true;
-	displayPointCloud = true;
-
-
-	
-	//strokeListener = new mouseStrokeListener(tmmap, this);
 }
 
 Displayer::~Displayer()
@@ -58,7 +44,8 @@ Displayer::~Displayer()
 void Displayer::display( wfMesh * aMesh )
 {
 	delete myDisplayable;
-	myDisplayable = new glDisplayable(aMesh);
+	myDisplayable = new glDisplayableMesh(aMesh);
+	mousestrokemap.associateTo(*aMesh);
 	myDisplayable->sendToGPU();
 	myDisplayable->attach(this);
 	
@@ -85,71 +72,6 @@ void Displayer::initializeGL()
 
 	glEnable(GL_DEPTH_TEST);
 
-/*	glEnable(GL_POINT_SMOOTH);
-	glEnable(GL_LINE_SMOOTH);
-	//antialias
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glEnable(GL_POLYGON_SMOOTH);
-//	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-
-
-	//bg color
-	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-
-	//////////////////////////////////////////////////////////////////////////
-	// textures for fluid sim
-	//////////////////////////////////////////////////////////////////////////
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	GLuint tex_id;
-	glGenTextures(1, &tex_id);
-	glBindTexture(GL_TEXTURE_1D, tex_id);
-
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-
-	GLfloat Texture4[4][3] =
-	{
-
-	//	{ 0.f, 0.f, 0.f },
-		{ 0.1f, 0.1f, 0.1f },
-		{ 0.8f,0.8f,0.8f }, // Blue
-		{ 0.8f, 0.8f, 0.8f }, // Green
-		{ 0.1f, 0.1f, 0.1f },
-		{ 0.f, 0.f, 0.f },
-		{ 0.f, 0.f, 0.f },
-		{ 0.f, 0.f, 0.f },
-		{ 1, 1, 1 }, // Blue
-		{ 1, 1, 1 }, // Green
-		{ 0.f, 0.f, 0.f },
-		{ 0.f, 0.f, 0.f }
-	};
-
-
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 4 ,0,GL_RGB, GL_FLOAT, 
-		Texture4);
-
-	//Load 2dTexture 
-	//GLuint tex_id;
-	glTexEnvf(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glGenTextures(1, &tex_id);
-	glBindTexture(GL_TEXTURE_2D, tex_id);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->szx,tex->szy,0,GL_RGBA, GL_FLOAT, 
-	//	&(tex->checkboard[0]));
-	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-
-	//glEnable(GL_TEXTURE_1D);
-
-	//////////////////////////////////////////////////////////////////////////
-
-	glLineWidth(3.0);
-	glPointSize(3.f);*/
 }
 
 void Displayer::paintGL()
@@ -180,8 +102,6 @@ void Displayer::resizeGL(int w, int h)
 	this->updateGL();
 }*/
 
-//////////////////////////////////////////////////////////////////////////
-//the displayer will take care of freeing map
 void Displayer::setColormap( colorMap & map )
 {
 	myDisplayable->sendColorMap(map);
@@ -193,19 +113,22 @@ void Displayer::mouseMoveEvent( QMouseEvent* event )
 	if(mouseMode == TRACKBALLMODE){
 		tBallListener.onMouseMove(event, *myDisplayable);
 	}
-	/*else if(mouseMode == INPUTMODE){
-		this->strokeListener->onMouseMove(event);
-	}*/
+	else if(mouseMode == INPUTMODE){
+		strokeListener.onMouseMove(event);
+		myDisplayable->sendColorMap(mousestrokemap);
+		this->updateGL();
+	}
 }
 
 void Displayer::mousePressEvent( QMouseEvent* event )
 {
+	this->grabKeyboard();
 	if(mouseMode == TRACKBALLMODE){
 		tBallListener.onMousePress(event);
 	}
-	/*else if(mouseMode == INPUTMODE){
-		this->strokeListener->onMousePress(event);
-	}*/
+	else if(mouseMode == INPUTMODE){
+		strokeListener.onMousePress(event);
+	}
 }
 
 void Displayer::setMouseMode( MouseInputMode aMode )
@@ -219,7 +142,7 @@ void Displayer::setMouseMode( MouseInputMode aMode )
 	updateGL();
 }*/
 
-void Displayer::setNormedFieldDisplay( bool what )
+/*void Displayer::setNormedFieldDisplay( bool what )
 {
 	this->normedVField = what;
 }
@@ -227,26 +150,20 @@ void Displayer::setNormedFieldDisplay( bool what )
 void Displayer::setLineWidth( float param1 )
 {
 	glLineWidth(param1);
-}
+}*/
 
 void Displayer::wheelEvent( QWheelEvent* ev )
 {
-	/*if(mode == COLORMAPMODE && mouseMode == COLORMAPSCROLL){
-		this->map->scrollAction(ev->delta());
-	}
-	else{
-		Model::getModel()->getMesh()->move((0.f + ev->delta())/800);
-	}*/
 	camMatrix.setToIdentity();
 	eye -= eye.normalized()*0.002 * ev->delta();
 	camMatrix.lookAt(eye,QVector3D(),up);
 	updateGL();
 }
 
-void Displayer::setPointCloudDisplay( bool what)
+/*void Displayer::setPointCloudDisplay( bool what)
 {
 	this->displayPointCloud = what;
-}
+}*/
 
 /*void Displayer::update( void * src, Model::modelMsg msg )
 {
@@ -255,7 +172,7 @@ void Displayer::setPointCloudDisplay( bool what)
 	}
 }*/
 
-void Displayer::setVectorDisplay( bool )
+/*void Displayer::setVectorDisplay( bool )
 {
 	this->displayVectors = true;
 	updateGL();
@@ -264,13 +181,54 @@ void Displayer::setVectorDisplay( bool )
 void Displayer::setSmooth( bool param1 )
 {
 	this->smoothShading = param1;
-}
+}*/
 
 void Displayer::update( void * src, glDisplayable::glDispMessage msg )
 {
 	if(src == myDisplayable && msg == glDisplayable::REFRESH_DISPLAY){
 		updateGL();
 	}
+}
+
+
+void Displayer::keyPressEvent( QKeyEvent * event )
+{
+	if(event->key()==Qt::Key_Control){
+		setMouseMode(INPUTMODE);
+		setColormap(mousestrokemap);
+	}
+
+}
+
+void Displayer::keyReleaseEvent( QKeyEvent * event )
+{
+	if(event->key()==Qt::Key_Control){
+		setMouseMode(TRACKBALLMODE);
+	}
+}
+
+void Displayer::getProjectionMatrix( GLdouble proj[16] )
+{
+	projMatrix.transposed().copyDataTo(proj);
+	//projMatrix.copyDataTo( proj);
+}
+
+void Displayer::getModelViewMatrix( GLdouble model[16] )
+{
+	QMatrix4x4 bla;
+	bla = camMatrix * myDisplayable->getModel2world();
+	bla.transposed().copyDataTo(model);
+	//bla.copyDataTo( model);
+}
+
+void Displayer::getViewport( GLint viewPort[4] )
+{
+	glGetIntegerv(GL_VIEWPORT, viewPort);
+}
+
+tuple3i * Displayer::intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position )
+{
+	return myDisplayable->intersect(start,stop,closestVertex, face, position );
 }
 
 

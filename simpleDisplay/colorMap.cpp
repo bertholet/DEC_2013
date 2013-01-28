@@ -95,3 +95,39 @@ std::vector<tuple3f> & angleMap::getColors()
 {
 	return cols;
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Stroke Map
+//////////////////////////////////////////////////////////////////////////
+strokeMap::strokeMap():basecolor(0.8,0.8,0.8)
+{
+	cols.push_back(basecolor);
+}
+
+strokeMap::~strokeMap()
+{
+
+}
+
+std::vector<tuple3f> & strokeMap::getColors()
+{
+	return cols;
+}
+
+void strokeMap::process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos )
+{
+	cols[intersec_vertex % cols.size()].set(0,1,0);
+}
+
+void strokeMap::reset()
+{
+	cols.assign(cols.size(), basecolor);
+}
+
+void strokeMap::associateTo( wfMesh & m )
+{
+	if(cols.size()!= m.getVertices().size()){
+		cols.assign(m.getVertices().size(),basecolor);
+	}
+}
+

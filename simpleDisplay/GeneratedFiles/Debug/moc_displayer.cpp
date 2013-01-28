@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'displayer.h'
 **
-** Created: Fri 18. Jan 10:46:10 2013
+** Created: Mon 28. Jan 10:43:08 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -70,6 +70,8 @@ void *Displayer::qt_metacast(const char *_clname)
         return static_cast<void*>(const_cast< Displayer*>(this));
     if (!strcmp(_clname, "Observer<glDisplayable::glDispMessage>"))
         return static_cast< Observer<glDisplayable::glDispMessage>*>(const_cast< Displayer*>(this));
+    if (!strcmp(_clname, "mouseStrokeable"))
+        return static_cast< mouseStrokeable*>(const_cast< Displayer*>(this));
     return QGLWidget::qt_metacast(_clname);
 }
 
