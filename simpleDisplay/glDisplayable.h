@@ -40,9 +40,10 @@ private:
 	QMatrix4x4 model2world, normalMatrix;
 	std::vector<Observer<glDispMessage> * > observer;
 
+	
+protected:
 	QGLShaderProgram m_shader; //actually part of a vao, but thats hidden.
 
-protected:
 	bool prepareShaderProgram( const QString & vspath, const QString & fspath , const QString & gspath = "");
 	
 	void setUniformValue(const char *name, QMatrix4x4 & mat);
@@ -52,3 +53,12 @@ protected:
 	
 };
 
+class glDisplayableIntersectable:public glDisplayable
+{
+public:
+	glDisplayableIntersectable(wfMesh * bla):glDisplayable(bla){}
+	virtual ~glDisplayableIntersectable(){}
+	virtual void sendColorMap( colorMap &map )=0;
+	virtual tuple3i * intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position )=0;
+	virtual wfMesh * getWfMesh() = 0;
+};

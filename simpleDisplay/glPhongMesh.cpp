@@ -1,38 +1,39 @@
-#include "glDisplayableMesh.h"
+#include "glPhongMesh.h"
 #include "glDebuggingStuff.h"
-#include <QGLContext>
 
-glDisplayableMesh::glDisplayableMesh(wfMesh * mesh):glDisplayableIntersectable(mesh),
-m_vertexBuffer( QGLBuffer::VertexBuffer ), m_IndexBuffer(QGLBuffer::IndexBuffer), 
+glPhongMesh::glPhongMesh( wfMesh * aMesh ):glDisplayableIntersectable(aMesh),
+	m_vertexBuffer( QGLBuffer::VertexBuffer ), m_IndexBuffer(QGLBuffer::IndexBuffer), 
 	m_normalBuffer(QGLBuffer::VertexBuffer), m_colorBuffer(QGLBuffer::VertexBuffer)
 {
-	myMesh = mesh;
-	mesh->attach(this);
+	myMesh = aMesh;
+	aMesh->attach(this);
 }
 
 
-glDisplayableMesh::~glDisplayableMesh(void)
+glPhongMesh::~glPhongMesh(void)
 {
 	myMesh->detatch(this);
 	/*m_vertexBuffer.release();
 	m_colorBuffer.release();
 	m_IndexBuffer.release();
 	m_normalBuffer.release();*/
+
 }
 
-tuple3i * glDisplayableMesh::intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position )
+tuple3i * glPhongMesh::intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position )
 {
 	return myMesh->intersect(start,stop,closestVertex,face,*position);
 }
 
-void glDisplayableMesh::sendToGPU()
+void glPhongMesh::sendToGPU()
 {
 	if(myMesh->getVertices().size() == 0){
 		return;
 	}
 
 	// Prepare a complete shader program...
-	if ( !prepareShaderProgram( "./flat.vert", "./flat.frag", "./flat.geo" ) ){
+	if ( !prepareShaderProgram( "./phong.vert", "./phong.frag", "./phong.geo") ){
+	//if ( !prepareShaderProgram( "./flat.vert", "./flat.frag", "./flat.geo" ) ){
 		glDebuggingStuff::didIDoWrong();
 		return;
 	}
@@ -45,25 +46,17 @@ void glDisplayableMesh::sendToGPU()
 
 	this->sendColorMap(constColor(*myMesh, tuple3f(0.8,0.3,0.3)));
 
-	// Prepare a complete shader program...
-	if ( !prepareShaderProgram( "./flat.vert", "./flat.frag", "./flat.geo" ) ){
-		glDebuggingStuff::didIDoWrong();
-		return;
-	}
-
 	// Set up additional uniforms
 	setUniformValue("light_pos", QVector3D(0,-4,4));
 	setUniformValue("light", QVector3D(1,1,1));
 }
 
-void glDisplayableMesh::draw( QMatrix4x4 & world2view, QVector3D & eye)
+void glPhongMesh::draw( QMatrix4x4 & cam2View,QVector3D & eye )
 {
 	if(myMesh->getVertices().size() == 0){
 		return;
 	}
-
-
-	setUniformValue("MVmat", world2view * getModel2world());
+	setUniformValue("MVmat", cam2View * getModel2world());
 	setUniformValue("model2World", getModel2world());
 	setUniformValue("normalMat", getNormalMatrix());
 	setUniformValue("eye", eye);
@@ -94,6 +87,7 @@ void glDisplayableMesh::draw( QMatrix4x4 & world2view, QVector3D & eye)
 
 	glDrawElements(GL_TRIANGLES, 3*myMesh->getFaces().size(),GL_UNSIGNED_INT,0);
 
+
 	m_shader.disableAttributeArray("vertex");
 	m_shader.disableAttributeArray("normal");
 	m_shader.disableAttributeArray("color");
@@ -101,8 +95,7 @@ void glDisplayableMesh::draw( QMatrix4x4 & world2view, QVector3D & eye)
 	glDebuggingStuff::didIDoWrong();
 }
 
-
-void glDisplayableMesh::update( void * src, meshMsg msg )
+void glPhongMesh::update( void * src, meshMsg msg )
 {
 	if(msg == POS_CHANGED && src == myMesh){
 		if(m_vertexBuffer.usagePattern() != QGLBuffer::DynamicDraw){
@@ -119,14 +112,12 @@ void glDisplayableMesh::update( void * src, meshMsg msg )
 	}
 }
 
-
-void glDisplayableMesh::sendColorMap( colorMap &map )
+void glPhongMesh::sendColorMap( colorMap &map )
 {
 	setUpBuffer("color", m_colorBuffer,map.getColors(),QGLBuffer::DynamicDraw);
-
 }
 
-wfMesh * glDisplayableMesh::getWfMesh()
+wfMesh * glPhongMesh::getWfMesh()
 {
 	return myMesh;
 }

@@ -10,7 +10,7 @@ MODEL::MODEL(void)
 	myMesh = new wingedMesh(new ball(1, 10,5));
 	myMesh->getWfMesh()->attach(this);
 
-	d0 = d1 = border1 =star0 = star1 = star0_mixed = 
+	d0 = d1 = border1 =star0 = star1 = star0_mixed = id0 =
 		star1_mixed = laplace0_mixed = coderiv1_mixed = 
 		coderiv1_ignoreBorder = laplace0_ignoreBorder=
 		NULL;

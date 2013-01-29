@@ -2,8 +2,8 @@
 
 //uniform int nrLights;
 uniform vec3 eye;
-uniform vec3 light_pos;
-uniform vec3 light;
+uniform vec3 light_pos;//
+uniform vec3 light;//
 //uniform vec3 color;
 
 
@@ -33,5 +33,5 @@ void main( void )
 			+ ambient *color,1) ;
 
 
-	//fragColor = vec4( normal_ ,1);
+	//fragColor = vec4( abs(normal_g) ,1);
 }

@@ -50,6 +50,8 @@ public:
 	virtual void getViewport( GLint viewPort[4] );
 	virtual tuple3i * intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position );
 
+	void setSmooth( bool smooth );
+
 protected:
 	void initializeGL();
 	void resizeGL(int width, int height);
@@ -62,12 +64,8 @@ protected:
 
 	virtual void update( void * src, glDisplayable::glDispMessage msg );
 
-
-
-
-
 private:
-	glDisplayableMesh * myDisplayable;
+	glDisplayableIntersectable * myDisplayable;
 
 	QVector3D eye;
 	QVector3D up;

@@ -4,11 +4,11 @@
 #include <QGLBuffer>
 #include "colorMap.h"
 
-class glDisplayableMesh:public glDisplayable
+class glDisplayableMesh:public glDisplayableIntersectable
 {
 public:
 	glDisplayableMesh(wfMesh *);
-	~glDisplayableMesh(void);
+	virtual ~glDisplayableMesh(void);
 
 	void sendToGPU();
 	void draw(QMatrix4x4 & cam2View,QVector3D & eye);
@@ -16,6 +16,17 @@ public:
 
 	void sendColorMap( colorMap &map );
 	tuple3i * intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position );
+
+	virtual wfMesh * getWfMesh();
+
+	void switchStyle(bool what){
+		if(what){
+			prepareShaderProgram("./phong.vert", "./phong.frag", "./phong.geo");
+		}
+		else{
+			prepareShaderProgram("./flat.vert", "./flat.frag", "./flat.geo");
+		}
+	}
 
 private:
 	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_colorBuffer;

@@ -14,6 +14,7 @@
 
 #include "MODEL.h"
 #include "mySolver.h"
+#include "glDebuggingStuff.h"
 
 #define SLIDER_STEPSPERUNIT 20
 
@@ -80,7 +81,7 @@ void MainWindow::setupComponents(QGLFormat & format)
 
 	cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Normed Field",this);
-	cbox3 = new QCheckBox("Flat",this);
+	cbox3 = new QCheckBox("Smooth",this);
 	butt = new QPushButton("Reset", this);
 	cBoxArrow = new QCheckBox("Arrows", this);
 	cBoxArrow->setChecked(false);
@@ -186,6 +187,7 @@ void MainWindow::layoutGui()
 /************************************************************************/
 void MainWindow::update()
 {
+	glDebuggingStuff::didIDoWrong();
 	this->myGLDisp->updateGL();
 }
 
@@ -334,6 +336,6 @@ void MainWindow::showArrows( int val)
 
 void MainWindow::setSmoothMode( int what )
 {
-	/*this->myGLDisp->setSmooth(what==2);
-	this->update();*/
+	this->myGLDisp->setSmooth(what==2);
+	this->update();
 }

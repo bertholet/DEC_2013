@@ -4,6 +4,7 @@
 #include <QtGui/QMouseEvent>
 #include "glDebuggingStuff.h"
 #include "MODEL.h"
+#include "glPhongMesh.h"
 //#include "fluidSimulation.h"
 
 Displayer::Displayer(QGLFormat & format, QWidget *parent)
@@ -14,7 +15,7 @@ Displayer::Displayer(QGLFormat & format, QWidget *parent)
 	this->setMinimumWidth(300);
 	this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-	myDisplayable = new glDisplayableMesh(MODEL::getModel()->getMesh()->getWfMesh());
+	myDisplayable = /**/new glDisplayableMesh(MODEL::getModel()->getMesh()->getWfMesh());//*/ new glPhongMesh(MODEL::getModel()->getMesh()->getWfMesh());//
 	myDisplayable->attach(this);
 
 	mouseMode = TRACKBALLMODE;
@@ -48,6 +49,7 @@ void Displayer::display( wfMesh * aMesh )
 	mousestrokemap.associateTo(*aMesh);
 	myDisplayable->sendToGPU();
 	myDisplayable->attach(this);
+	glDebuggingStuff::didIDoWrong();
 	
 }
 
@@ -83,7 +85,7 @@ void Displayer::paintGL()
 	//glDrawArrays( GL_TRIANGLES, 0, 3 );
 	myDisplayable->draw(projMatrix*camMatrix, eye);
 
-	glDebuggingStuff::didIDoWrong();
+	//glDebuggingStuff::didIDoWrong();
 
 	
 }
@@ -229,6 +231,24 @@ void Displayer::getViewport( GLint viewPort[4] )
 tuple3i * Displayer::intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position )
 {
 	return myDisplayable->intersect(start,stop,closestVertex, face, position );
+}
+
+void Displayer::setSmooth( bool smooth )
+{
+//	((glDisplayableMesh*) myDisplayable)->switchStyle(smooth);
+	
+	wfMesh * msh = myDisplayable->getWfMesh();
+	delete myDisplayable;
+	if(smooth){
+		myDisplayable =  new glPhongMesh(msh);
+		myDisplayable->sendToGPU();
+		myDisplayable->attach(this);
+	}
+	else{
+		myDisplayable = new glDisplayableMesh(msh);
+		myDisplayable->sendToGPU();
+			myDisplayable->attach(this);
+	}
 }
 
 

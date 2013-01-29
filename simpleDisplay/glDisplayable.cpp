@@ -26,6 +26,9 @@ glDisplayable::glDisplayable(wfMesh * mesh)//:
 glDisplayable::~glDisplayable(void)
 {
 	//myMesh->detatch(this);
+
+	m_shader.release();
+	m_shader.removeAllShaders();
 }
 
 /*void glDisplayable::sendToGPU()
@@ -131,6 +134,7 @@ glDisplayable::~glDisplayable(void)
 bool glDisplayable::prepareShaderProgram( const QString & vspath, const QString & fspath , const QString & gspath)
 {
 	// First we load and compile the vertex shader...
+	m_shader.removeAllShaders();
 	bool result = m_shader.addShaderFromSourceFile( QGLShader::Vertex, vspath );
 	if ( !result )
 		qWarning() << m_shader.log();
@@ -151,6 +155,11 @@ bool glDisplayable::prepareShaderProgram( const QString & vspath, const QString 
 	if ( !result )
 		qWarning() << "Could not link shader program:" << m_shader.log();
 
+	if(!m_shader.bind()){
+		qWarning() << "Could not bind shader program to the context";
+	}
+
+	glDebuggingStuff::didIDoWrong();
 	return result;
 }
 
@@ -302,14 +311,20 @@ void glDisplayable::setUpIndexBuffer(QGLBuffer & buffer, std::vector<tuple3i> & 
 
 void glDisplayable::setUniformValue( const char *name, QMatrix4x4 & mat )
 {
-	m_shader.bind();
+	if(!m_shader.bind()){
+		qWarning() << "Could not bind shader program to the context";
+	}
 	m_shader.setUniformValue(name, mat);
+	glDebuggingStuff::didIDoWrong();
 }
 
 void glDisplayable::setUniformValue( const char *name, QVector3D & vec )
 {
-	m_shader.bind();
+	if(!m_shader.bind()){
+		qWarning() << "Could not bind shader program to the context";
+	}
 	m_shader.setUniformValue(name, vec);
+	glDebuggingStuff::didIDoWrong();
 }
 
 /*void glDisplayable::sendColorMap( colorMap &map )
