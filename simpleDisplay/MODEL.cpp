@@ -10,9 +10,12 @@ MODEL::MODEL(void)
 	myMesh = new wingedMesh(new ball(1, 10,5));
 	myMesh->getWfMesh()->attach(this);
 
-	d0 = d1 = border1 =star0 = star1 = star0_mixed = id0 =
-		star1_mixed = laplace0_mixed = coderiv1_mixed = 
-		coderiv1_ignoreBorder = laplace0_ignoreBorder=
+	d0 = d1 = border1 =border2
+		=id0 
+		=star0 = star1 = star2 =
+		star0_mixed = star1_mixed = 
+		coderiv1_mixed = coderiv1_ignoreBorder = 
+		laplace0_mixed = laplace0_ignoreBorder=
 		NULL;
 	invalidateAll();
 }
@@ -93,6 +96,9 @@ void MODEL::freeAll()
 	if(border1_valid!= INVALID){
 		delete border1;
 	}
+	if(border2_valid!= INVALID){
+		delete border2;
+	}
 	if(d1_valid!= INVALID){
 		delete d1;
 	}
@@ -107,6 +113,9 @@ void MODEL::freeAll()
 	}
 	if(star1_mixed_valid!= INVALID){
 		delete star1_mixed;
+	}
+	if(star2_valid!= INVALID){
+		delete star2;
 	}
 	if(laplace0_mixed_valid!= INVALID){
 		delete laplace0_mixed;
@@ -128,9 +137,11 @@ void MODEL::invalidateAll()
 	d0_valid = 
 		d1_valid = 
 		border1_valid=
+		border2_valid =
 		id0_valid =
 		star0_valid = 
 		star1_valid = 
+		star2_valid =
 		star0_mixed_valid =  
 		star1_mixed_valid = 
 		coderiv1_mixed_valid =
@@ -145,6 +156,7 @@ void MODEL::unrefreshedStars()
 	star1_valid = (star1_valid != INVALID? UNREFRESHED: INVALID);
 	star0_mixed_valid =  (star0_mixed_valid != INVALID? UNREFRESHED: INVALID);
 	star1_mixed_valid = (star1_mixed_valid != INVALID? UNREFRESHED: INVALID);
+	star2_valid = (star2_valid != INVALID? UNREFRESHED: INVALID);
 	laplace0_ignoreBorder_valid = (laplace0_ignoreBorder_valid != INVALID? UNREFRESHED: INVALID);
 	laplace0_mixed_valid = (laplace0_mixed_valid != INVALID? UNREFRESHED: INVALID);
 	coderiv1_mixed_valid = (coderiv1_mixed_valid != INVALID? UNREFRESHED: INVALID);
@@ -189,6 +201,26 @@ cpuCSRMatrix & MODEL::getD0()
 		return *d0;
 	}
 }
+
+
+cpuCSRMatrix & MODEL::getD1()
+{
+	if(d1_valid == VALID){
+		return *d1;
+	}
+	else{
+		if(d1_valid == INVALID){
+			d1 = new cpuCSRMatrix();
+		}
+		QTime timer;
+		timer.start();
+		*d1 = DDGMatrices::d1(*myMesh);
+		cout << "* D1 creation: " << timer.restart()<<"\n";
+		d1_valid = VALID;
+		return *d1;
+	}
+}
+
 
 cpuCSRMatrix & MODEL::getBorder1()
 {
@@ -309,6 +341,11 @@ cpuCSRMatrix & MODEL::getLaplace0_ignoreBoundary()
 		laplace0_ignoreBorder_valid = VALID;
 		return *laplace0_ignoreBorder;
 	}
+}
+
+cpuCSRMatrix & MODEL::getBorder2()
+{
+
 }
 
 

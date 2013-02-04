@@ -114,6 +114,51 @@ public:
 	}
 };
 
+class border2_Creator: public matrixCreator
+{
+
+	wingedMesh * mesh;
+
+public:
+	border2_Creator(wingedMesh & aMesh){
+		mesh = & aMesh;
+	}
+
+	float val(int i , int j){
+		// i is the row, i.e. the edge
+		// j is the face
+		// returns the relative orientation
+		tuple3i & fc =(mesh->getFaces())[j];
+
+		return (float) fc.orientation((mesh->getEdges())[i].v_a_b);
+	}
+
+	// row: is the edge number; 
+	void indices(int row, std::vector<int> & target){
+		target.clear();
+		tuple2i & nbrFcs = mesh->getEdges()[row].getAdjFaces();
+
+		if(nbrFcs.a>=0){
+			if(nbrFcs.b> nbrFcs.a){
+				target.push_back(nbrFcs.a);
+				target.push_back(nbrFcs.b);
+			}
+			else if(nbrFcs.b >= 0){
+				target.push_back(nbrFcs.b);
+				target.push_back(nbrFcs.a);
+			}
+			else{
+				target.push_back(nbrFcs.a);
+			}
+		}
+		else{
+			assert(nbrFcs.b >= 0);
+			target.push_back(nbrFcs.b);
+		}
+
+	}
+};
+
 
 class star0Creator: public matrixCreator
 {
@@ -470,8 +515,12 @@ cpuCSRMatrix DDGMatrices::border1_halfedges( wingedMesh & aMesh )
 
 cpuCSRMatrix DDGMatrices::border2( wingedMesh & aMesh )
 {
-	cpuCSRMatrix border_2= d1(aMesh);
-	return cpuCSRMatrix::transpose(border_2);
+	cpuCSRMatrix border_2;
+	border_2.initMatrix(border2_Creator(aMesh), aMesh.getEdges().size());
+	//cpuCSRMatrix border_2= d1(aMesh);
+	
+	//return cpuCSRMatrix::transpose(border_2);
+	return border_2;
 }
 
 

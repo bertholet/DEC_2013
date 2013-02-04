@@ -290,6 +290,11 @@ int wingedEdge::and( wingedEdge & other )
 	return -1;
 }
 
+tuple2i & wingedEdge::getAdjFaces()
+{
+	return fc_p_n;
+}
+
 
 
 

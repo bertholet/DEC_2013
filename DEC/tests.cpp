@@ -33,7 +33,6 @@ void tests::testAndSaveDECMatrices()
 	//myreader.initializeMesh(myMesh);
 	
 	myMesh = ball(1,3,2);
-	myMesh.updateObserver(CONNECTIVITY_CHANGED);
 
 	wingedMesh wingedM(&myMesh);
 	std::cout << "Hello, creating d0 matrix\n";
@@ -53,6 +52,18 @@ void tests::testAndSaveDECMatrices()
 	std::cout << "Saving matrix\n";
 	d0d_matrix.saveMatrix("d0d_.m");
 	std::cout << "Size is : " << d0d_matrix.getm() << ", " << d0d_matrix.getn()<<"\n\n";
+
+	std::cout << "Hello, creating border1 matrix\n";
+	cpuCSRMatrix border1_matrix = DDGMatrices::border1(wingedM);
+	std::cout << "Saving matrix\n";
+	border1_matrix.saveMatrix("border1_.m");
+	std::cout << "Size is : " << border1_matrix.getm() << ", " << border1_matrix.getn()<<"\n\n";
+
+	std::cout << "Hello, creating border2 matrix\n";
+	cpuCSRMatrix border2_matrix = DDGMatrices::border2(wingedM);
+	std::cout << "Saving matrix\n";
+	border2_matrix.saveMatrix("border2_.m");
+	std::cout << "Size is : " << border2_matrix.getm() << ", " << border2_matrix.getn()<<"\n\n";
 
 	std::cout << "Hello, creating duald1 matrix\n";
 	cpuCSRMatrix d1d_matrix = DDGMatrices::dual_d1(wingedM);

@@ -36,7 +36,9 @@ public:
 	void freeAll();
 
 	cpuCSRMatrix & getD0();
+	cpuCSRMatrix & getD1();
 	cpuCSRMatrix & getBorder1();
+	cpuCSRMatrix & getBorder2();
 
 	cpuCSRMatrix & getStar1_mixed();
 	cpuCSRMatrix & getStar0_mixed();
@@ -53,16 +55,19 @@ private:
 	wingedMesh * myMesh;
 
 	enum validity {INVALID, UNREFRESHED, VALID};
-	cpuCSRMatrix *d0, *d1,*border1, *id0, *star0, *star1, 
-		*star0_mixed, *star1_mixed, *laplace0_mixed, * coderiv1_mixed, *coderiv1_ignoreBorder,
-		*laplace0_ignoreBorder;
+	cpuCSRMatrix *d0, *d1, *border1, *border2,
+		*id0, 
+		*star0, *star1, *star2,
+		*star0_mixed, *star1_mixed, * coderiv1_mixed, *coderiv1_ignoreBorder,
+		*laplace0_mixed, *laplace0_ignoreBorder;
 	cpuCSRMatrix bufferMatrix;
 	//to track the validity of the stored matrices.
-	validity d0_valid,d1_valid, border1_valid, id0_valid,
-		star0_valid,star1_valid, 
+	validity d0_valid,d1_valid, border1_valid, border2_valid,
+		id0_valid,
+		star0_valid,star1_valid, star2_valid,
 		star0_mixed_valid, star1_mixed_valid, 
-		laplace0_mixed_valid, coderiv1_mixed_valid,
-		coderiv1_ignoreBorder_valid, laplace0_ignoreBorder_valid;
+		coderiv1_mixed_valid,coderiv1_ignoreBorder_valid, 
+		laplace0_mixed_valid, laplace0_ignoreBorder_valid;
 
 
 	//matrix management
