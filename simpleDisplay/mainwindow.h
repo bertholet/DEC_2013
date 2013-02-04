@@ -6,7 +6,10 @@
 #include "displayer.h"
 #include <QSlider>
 #include <QGLFormat>
+#include "Resetable.h"
 //#include "fluidcontrolwidget.h"
+
+
 
 class MainWindow : public QMainWindow
 {
@@ -17,7 +20,13 @@ public:
 	~MainWindow();
 
 	void update();
+	Displayer * getDisplayer();
 
+
+	void subscribeResetable(Resetable * r);
+	void unSubscribeResetable(Resetable * r);
+	void subscribeResizables(Resizable * r);
+	void unSubscribeResizable(Resizable * r);
 private:
 	QMenu * fileMenu;
 	QAction * openObjFileAct;
@@ -30,13 +39,15 @@ private:
 //	fluidControlWidget * fluidcontWidget;
 
 	QCheckBox * cbox;
-	QPushButton * butt;
+	QPushButton * butt_reset;
 	QCheckBox * cbox2;
 	QCheckBox * cbox3;
 	QCheckBox * cBoxArrow;
 	QSlider * fieldSlider;
 	QSlider * linewidthSlider;
 
+	std::vector<Resetable * > resetables;
+	std::vector<Resizable * > resizables;
 
 	void setupQTabs();
 	void setupMenubar() ;
@@ -49,7 +60,7 @@ private slots:
 	void openObjFile();
 	void generateMesh();
 	void setDisplayMode(int);
-	void resetStrokes();
+	void reset();
 
 	void setMouseMode(int state);
 	void setVFieldMode( int );
@@ -58,5 +69,6 @@ private slots:
 	void showArrows( int );
 	void setSmoothMode( int what );
 };
+
 
 #endif // MAINWINDOW_H

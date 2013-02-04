@@ -11,7 +11,7 @@ trackBallListener::~trackBallListener(void)
 {
 }
 
-void trackBallListener::onMouseMove( QMouseEvent* event, glDisplayable & target )
+void trackBallListener::onMouseMove( QMouseEvent* event, glDisplayable & target, std::vector<glDisplayable*> & furtherTargets)
 {
 	float x,y,z;
 	float min = (displyer->width() > displyer->height()? displyer->height(): displyer->width());
@@ -47,6 +47,12 @@ void trackBallListener::onMouseMove( QMouseEvent* event, glDisplayable & target 
 	target.rot(angle,axisx/axisnrm,
 		axisy/axisnrm,
 		axisz/axisnrm);
+
+	for(int i = 0; i < furtherTargets.size(); i++){
+		furtherTargets[i]->rot(angle,axisx/axisnrm,
+			axisy/axisnrm,
+			axisz/axisnrm);
+	}
 
 	displyer->updateGL();
 

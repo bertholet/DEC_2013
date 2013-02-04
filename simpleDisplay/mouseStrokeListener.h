@@ -2,6 +2,8 @@
 #include <QMouseEvent>
 #include <QGLWidget>
 #include "tuple3.h"
+#include "Resetable.h"
+#include "colorMap.h"
 
 class mouseStrokeable
 {
@@ -16,6 +18,7 @@ class mouseStrokeProcessor
 {
 public:
 	virtual void process(int intersec_vertex, int intersec_face, tuple3f & intersec_pos)=0;
+	virtual void processOnPress(int intersec_vertex, int intersec_face, tuple3f & intersec_pos)=0;
 };
 
 
@@ -30,6 +33,9 @@ private:
 	GLdouble p1x,p1y,p1z;
 	tuple3f start, stop, intersec_pos;
 	int intersec_face, intersec_vertex;
+
+
+	bool resolve(QMouseEvent* event);
 public:
 	mouseStrokeListener(void);
 	~mouseStrokeListener(void);
@@ -42,3 +48,46 @@ public:
 	void onMousePress(QMouseEvent* event );
 };
 
+
+class directionCollector:public mouseStrokeProcessor, public Resetable
+{
+private:
+	tuple3f last_pos;
+	std::vector<int> faces;
+	std::vector<tuple3f> directions;
+	std::vector<tuple3f> positions;
+	bool isActive;
+public:
+	directionCollector();
+	
+	virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
+	virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
+	void reset();
+
+	void setActive(bool what);
+	std::vector<tuple3f>* getPositions();
+	std::vector<tuple3f>* getDirections();
+};
+
+class vertexCollector: public mouseStrokeProcessor, public Resetable
+{
+
+private:
+	std::vector<int> vertices;
+	bool isActive;
+	markupMap * myMap;
+	tuple3f col;
+public:
+	vertexCollector();
+
+	virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
+	virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
+	void reset();
+	void mapTo( markupMap * map, tuple3f color);
+
+	void setActive(bool what);
+};

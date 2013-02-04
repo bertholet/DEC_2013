@@ -4,27 +4,39 @@
 #include <QSlider>
 #include <QCheckBox>
 #include "mainwindow.h"
+#include "mouseStrokeListener.h"
+#include "glVectorfield.h"
 
 class vectorfieldWidget : public QWidget//, public Observer<Model::modelMsg>
 {
 	Q_OBJECT
 
 public:
-	vectorfieldWidget(QWidget *parent = 0);
+	vectorfieldWidget(MainWindow *parent);
 	~vectorfieldWidget();
 
 	//void setMainWindow(MainWindow *);
 private:
-	QSlider * gfWeihgtSlider;
 	MainWindow * mainWindow;
+
+	QSlider * gfWeihgtSlider;
 	QSlider * flowSlider;
+	QSlider * gfLengthSlider;
+
 	QCheckBox * cBoxDirectional;
 
-	int weightStep, srcFlowStep;
-	QSlider * gfLengthSlider;
-	int lengthStep;
-	int weightMax;
+	int weightStep, srcFlowStep, lengthStep, weightMax;
+
 	bool useBorderMat;
+
+	glVectorfield * myFieldDisplay;
+	vertexCollector sources, sinks;
+	directionCollector dirs;
+
+
+	void setupSliders();
+	void layoutGui();
+
 //	void initSolver();
 private slots:
 	void genAxisAllignedField();

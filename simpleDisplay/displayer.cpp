@@ -5,6 +5,10 @@
 #include "glDebuggingStuff.h"
 #include "MODEL.h"
 #include "glPhongMesh.h"
+#include "glVectorfield.h"
+#include <algorithm>
+
+#include <QGLContext>
 //#include "fluidSimulation.h"
 
 Displayer::Displayer(QGLFormat & format, QWidget *parent)
@@ -18,9 +22,12 @@ Displayer::Displayer(QGLFormat & format, QWidget *parent)
 	myDisplayable = /**/new glDisplayableMesh(MODEL::getModel()->getMesh()->getWfMesh());//*/ new glPhongMesh(MODEL::getModel()->getMesh()->getWfMesh());//
 	myDisplayable->attach(this);
 
+	/*glVfield = new glVectorfield(MODEL::getModel()->getMesh()->getWfMesh());
+	otherDisplayables.push_back(glVfield);*/
+
 	mouseMode = TRACKBALLMODE;
 	strokeListener.setStrokedObject(*this);
-	strokeListener.addStrokeProcessor(mousestrokemap);
+//	strokeListener.addStrokeProcessor(mousestrokemap);
 	mousestrokemap.associateTo(* MODEL::getModel()->getMesh()->getWfMesh());
 
 	eye = QVector3D(0, 0 ,4);
@@ -28,11 +35,14 @@ Displayer::Displayer(QGLFormat & format, QWidget *parent)
 	camMatrix.lookAt(eye, QVector3D(0,0,0), up );
 	projMatrix.perspective(60, this->width()/this->height(),1,500);
 
+
+
 }
 
 Displayer::~Displayer()
 {
 	delete myDisplayable;
+	//deleteAllDisplayables();
 	/*if(this->map != NULL){
 		delete map;
 	}
@@ -44,6 +54,8 @@ Displayer::~Displayer()
 
 void Displayer::display( wfMesh * aMesh )
 {
+	//deleteAllDisplayables();
+
 	delete myDisplayable;
 	myDisplayable = new glDisplayableMesh(aMesh);
 	mousestrokemap.associateTo(*aMesh);
@@ -51,6 +63,9 @@ void Displayer::display( wfMesh * aMesh )
 	myDisplayable->attach(this);
 	glDebuggingStuff::didIDoWrong();
 	
+	for(int i = 0; i < subscr_displayables.size(); i++ ){
+		subscr_displayables[i]->set(myDisplayable->getModel2world(), myDisplayable->getNormalMatrix());
+	}
 }
 
 void Displayer::initializeGL()
@@ -70,6 +85,9 @@ void Displayer::initializeGL()
 
 	glDebuggingStuff::didIDoWrong();
 
+	sendOtherDisplayablesToGPU();
+	glDebuggingStuff::didIDoWrong();
+
 	//modelViewMatrix = projMatrix*camMatrix * myDisplayable.getModel2world();
 
 	glEnable(GL_DEPTH_TEST);
@@ -78,12 +96,15 @@ void Displayer::initializeGL()
 
 void Displayer::paintGL()
 {
+	glDebuggingStuff::didIDoWrong();
 	// Clear the buffer with the current clearing color
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// Draw stuff
-	//glDrawArrays( GL_TRIANGLES, 0, 3 );
+
 	myDisplayable->draw(projMatrix*camMatrix, eye);
+
+	drawOtherDisplayables();
 
 	//glDebuggingStuff::didIDoWrong();
 
@@ -113,7 +134,7 @@ void Displayer::setColormap( colorMap & map )
 void Displayer::mouseMoveEvent( QMouseEvent* event )
 {
 	if(mouseMode == TRACKBALLMODE){
-		tBallListener.onMouseMove(event, *myDisplayable);
+		tBallListener.onMouseMove(event, *myDisplayable, subscr_displayables);
 	}
 	else if(mouseMode == INPUTMODE){
 		strokeListener.onMouseMove(event);
@@ -235,9 +256,9 @@ tuple3i * Displayer::intersect( tuple3f & start, tuple3f & stop, int * closestVe
 
 void Displayer::setSmooth( bool smooth )
 {
-//	((glDisplayableMesh*) myDisplayable)->switchStyle(smooth);
+	((glDisplayableMesh*) myDisplayable)->switchStyle(smooth);
 	
-	wfMesh * msh = myDisplayable->getWfMesh();
+	/*wfMesh * msh = myDisplayable->getWfMesh();
 	delete myDisplayable;
 	if(smooth){
 		myDisplayable =  new glPhongMesh(msh);
@@ -248,7 +269,72 @@ void Displayer::setSmooth( bool smooth )
 		myDisplayable = new glDisplayableMesh(msh);
 		myDisplayable->sendToGPU();
 			myDisplayable->attach(this);
+	}*/
+}
+
+/*void Displayer::deleteAllDisplayables()
+{
+	for(int i = 0; i < otherDisplayables.size(); i++){
+		delete otherDisplayables[i];
 	}
+	otherDisplayables.clear();
+}*/
+
+void Displayer::sendOtherDisplayablesToGPU()
+{
+	for(int i = 0; i < subscr_displayables.size(); i++){
+		subscr_displayables[i]->sendToGPU();
+	}
+}
+
+void Displayer::drawOtherDisplayables()
+{
+	for(int i = 0; i < subscr_displayables.size(); i++){
+		subscr_displayables[i]->draw(projMatrix*camMatrix, eye);
+	}
+}
+
+void Displayer::setVFLength( float param1 )
+{
+	/*if(glVfield != NULL){
+		glVfield->setLength(param1);
+	}*/
+}
+
+void Displayer::subscribeDisplayable( glDisplayable * disp )
+{
+	subscr_displayables.push_back(disp);
+	if(!disp->linkedAndReady()&& QGLContext::currentContext()!= NULL && QGLContext::currentContext()->isValid()){
+		disp->sendToGPU();
+	}
+}
+
+void Displayer::unsubscribeDisplayable( glDisplayable * disp )
+{
+	std::vector<glDisplayable*>::iterator it = std::find(subscr_displayables.begin(), subscr_displayables.end(), disp);
+	if(it!=subscr_displayables.end()){
+		subscr_displayables.erase(it);
+	}
+	else{
+		cout << "\n**Warning: Unsubscribing unexisting displayable\n";
+	}
+
+}
+
+void Displayer::subscribeToMousestrokes( mouseStrokeProcessor *c )
+{
+	//subscr_strokeProcessors.push_back(c);
+	strokeListener.addStrokeProcessor(*c);
+}
+
+void Displayer::unsubscribeToMousestrokes( mouseStrokeProcessor *c )
+{
+	strokeListener.removeStrokeProcessor(*c);
+}
+
+markupMap & Displayer::getMarkupMap()
+{
+	return mousestrokemap;
 }
 
 

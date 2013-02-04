@@ -1,7 +1,6 @@
 #ifndef DISPLAYER_H
 #define DISPLAYER_H
 
-//#include "Model.h"
 #include <QGLWidget>
 #include <QGLFormat>
 
@@ -12,13 +11,13 @@
 
 #include <QMatrix4x4>
 #include "colorMap.h"
-//#include "trackBallListener.h"
+
+#include "glVectorfield.h"
 
 //#include "Observer.h"
 //#include "Model.h"
 //#include "squareTexture.h"
 
-//enum DisplayMode {EDGEMODE,FLATMODE,COLORMAPMODE, MOUSEINPUTMODE, FLUIDSIMMODE, TEXMODE, TEXMODE2,TEXMODE3};
 enum MouseInputMode {TRACKBALLMODE,INPUTMODE, COLORMAPSCROLL};
 
 class Displayer : public QGLWidget,Observer<glDisplayable::glDispMessage>, mouseStrokeable//public Observer<Model::modelMsg>
@@ -36,13 +35,15 @@ public:
 	//void setMode(DisplayMode aMode);
 	void setMouseMode(MouseInputMode aMode);
 	void setColormap(colorMap & map);
+	void setSmooth( bool smooth );
+	void setVFLength( float length);
+
+	markupMap & getMarkupMap();
 	//void setNormedFieldDisplay(bool);
 	//void setPointCloudDisplay(bool);
 	//void setVectorDisplay(bool);
-//	void resetStrokes();
 	//void setLineWidth( float param1 );
 //	void update(void * src, Model::modelMsg msg);
-	//void setSmooth( bool param1 );
 
 
 	virtual void getProjectionMatrix( GLdouble proj[16] );
@@ -50,7 +51,13 @@ public:
 	virtual void getViewport( GLint viewPort[4] );
 	virtual tuple3i * intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position );
 
-	void setSmooth( bool smooth );
+
+	void subscribeDisplayable(glDisplayable * disp);
+	void unsubscribeDisplayable(glDisplayable * disp);
+
+
+	void subscribeToMousestrokes(mouseStrokeProcessor *c);
+	void unsubscribeToMousestrokes(mouseStrokeProcessor *c);
 
 protected:
 	void initializeGL();
@@ -63,9 +70,17 @@ protected:
 	void keyReleaseEvent ( QKeyEvent * event);
 
 	virtual void update( void * src, glDisplayable::glDispMessage msg );
+	//void deleteAllDisplayables();
+	void sendOtherDisplayablesToGPU();
+	void drawOtherDisplayables();
 
 private:
 	glDisplayableIntersectable * myDisplayable;
+	//glVectorfield * glVfield;
+
+	//subscribers
+	std::vector<glDisplayable*> subscr_displayables;
+	std::vector<mouseStrokeProcessor*> subscr_strokeProcessors;
 
 	QVector3D eye;
 	QVector3D up;
@@ -73,7 +88,7 @@ private:
 
 	//DisplayMode mode;
 	MouseInputMode mouseMode;
-	strokeMap mousestrokemap;
+	markupMap mousestrokemap;
 
 	//colorMap * map;
 	//triangleMarkupMap * tmmap;
@@ -93,5 +108,7 @@ private:
 	//for the trackball
 //	float lastx, lasty, lastz;
 };
+
+
 
 #endif // DISPLAYER_H

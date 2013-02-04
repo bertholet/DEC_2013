@@ -99,35 +99,48 @@ std::vector<tuple3f> & angleMap::getColors()
 //////////////////////////////////////////////////////////////////////////
 // Stroke Map
 //////////////////////////////////////////////////////////////////////////
-strokeMap::strokeMap():basecolor(0.8,0.8,0.8)
+markupMap::markupMap():basecolor(0.8,0.8,0.8)
 {
 	cols.push_back(basecolor);
 }
 
-strokeMap::~strokeMap()
+markupMap::~markupMap()
 {
 
 }
 
-std::vector<tuple3f> & strokeMap::getColors()
+std::vector<tuple3f> & markupMap::getColors()
 {
 	return cols;
 }
 
-void strokeMap::process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos )
+/*void markupMap::process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos )
 {
 	cols[intersec_vertex % cols.size()].set(0,1,0);
 }
+void markupMap::processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos )
+{
+	process(intersec_vertex,intersec_face,intersec_pos);
+}*/
 
-void strokeMap::reset()
+
+void markupMap::reset()
 {
 	cols.assign(cols.size(), basecolor);
 }
 
-void strokeMap::associateTo( wfMesh & m )
+void markupMap::associateTo( wfMesh & m )
 {
 	if(cols.size()!= m.getVertices().size()){
 		cols.assign(m.getVertices().size(),basecolor);
+	}
+}
+
+
+void markupMap::mark( int vertex, tuple3f &col )
+{
+	if(cols.size()> vertex){
+		cols[vertex] = col;
 	}
 }
 

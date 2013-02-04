@@ -10,7 +10,7 @@ public:
 	trackBallListener(QGLWidget * display);
 	~trackBallListener(void);
 
-	void onMouseMove(QMouseEvent* event, glDisplayable & target );
+	void onMouseMove(QMouseEvent* event, glDisplayable & target, std::vector<glDisplayable*> & furtherTargets = std::vector<glDisplayable*>() );
 	void onMousePress(QMouseEvent* event );
 
 private:

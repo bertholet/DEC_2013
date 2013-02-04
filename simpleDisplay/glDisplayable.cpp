@@ -8,7 +8,7 @@
 #include <algorithm>
 
 
-glDisplayable::glDisplayable(wfMesh * mesh)//:
+glDisplayable::glDisplayable()//:
 // m_vertexBuffer( QGLBuffer::VertexBuffer ), m_IndexBuffer(QGLBuffer::IndexBuffer), 
 //	 m_normalBuffer(QGLBuffer::VertexBuffer), m_colorBuffer(QGLBuffer::VertexBuffer)
 {
@@ -27,8 +27,8 @@ glDisplayable::~glDisplayable(void)
 {
 	//myMesh->detatch(this);
 
-	m_shader.release();
-	m_shader.removeAllShaders();
+	//m_shader.release();
+	//m_shader.removeAllShaders();
 }
 
 /*void glDisplayable::sendToGPU()
@@ -325,6 +325,43 @@ void glDisplayable::setUniformValue( const char *name, QVector3D & vec )
 	}
 	m_shader.setUniformValue(name, vec);
 	glDebuggingStuff::didIDoWrong();
+}
+
+void glDisplayable::setUniformValue( const char *name, float val )
+{
+	if(!m_shader.bind()){
+		qWarning() << "Could not bind shader program to the context";
+	}
+	m_shader.setUniformValue(name, val);
+	glDebuggingStuff::didIDoWrong();
+}
+
+void glDisplayable::enableBuffer( const char *name, QGLBuffer & buffer )
+{
+	if(!buffer.bind()){
+		qWarning() << "*** Could not bind buffer";
+	}
+	m_shader.setAttributeArray(name, GL_FLOAT,0,3);
+	m_shader.enableAttributeArray(name);
+	glDebuggingStuff::didIDoWrong();
+
+}
+
+void glDisplayable::disableBuffer( const char * name )
+{
+	m_shader.disableAttributeArray(name);
+	glDebuggingStuff::didIDoWrong();
+}
+
+bool glDisplayable::linkedAndReady()
+{
+	return m_shader.isLinked();
+}
+
+void glDisplayable::set( QMatrix4x4 & m2w, QMatrix4x4 &normalMat )
+{
+	model2world = m2w;
+	normalMatrix = normalMat;
 }
 
 /*void glDisplayable::sendColorMap( colorMap &map )

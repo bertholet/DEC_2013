@@ -65,6 +65,7 @@ void MainWindow::setupMenubar()
 void MainWindow::setupComponents(QGLFormat & format) 
 {
 	myGLDisp = new Displayer(format, this);
+	this->subscribeResetable( & (myGLDisp->getMarkupMap()));
 
 	comboBox = new QComboBox();
 	comboBox->setEditable(false);
@@ -82,7 +83,7 @@ void MainWindow::setupComponents(QGLFormat & format)
 	cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Normed Field",this);
 	cbox3 = new QCheckBox("Smooth",this);
-	butt = new QPushButton("Reset", this);
+	butt_reset = new QPushButton("Reset", this);
 	cBoxArrow = new QCheckBox("Arrows", this);
 	cBoxArrow->setChecked(false);
 
@@ -107,7 +108,7 @@ void MainWindow::setupQTabs()
 	this->tabs = new QTabWidget(this);
 
 
-	vectorfieldWidget * vfWidget = new vectorfieldWidget();
+	vectorfieldWidget * vfWidget = new vectorfieldWidget(this);
 	//vfWidget->setMainWindow(this);
 	tabs->addTab(vfWidget, "Vector Fields");
 
@@ -140,7 +141,7 @@ void MainWindow::addAction()
 	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
 	connect(cbox2, SIGNAL(stateChanged(int)), this, SLOT(setVFieldMode(int)));
 	connect(cbox3, SIGNAL(stateChanged(int)), this, SLOT(setSmoothMode(int)));
-	connect(butt, SIGNAL(released()), this, SLOT(resetStrokes()));
+	connect(butt_reset, SIGNAL(released()), this, SLOT(reset()));
 
 	connect(linewidthSlider, SIGNAL(sliderReleased()), this, SLOT(lineWidthChanged()));
 	connect(fieldSlider, SIGNAL(sliderReleased()), this, SLOT(fieldLengthChanged()));
@@ -158,7 +159,7 @@ void MainWindow::layoutGui()
 	rightLayout->addWidget(tabs);
 	QHBoxLayout * sublayout = new QHBoxLayout();
 	sublayout->addWidget(cbox);
-	sublayout->addWidget(butt);
+	sublayout->addWidget(butt_reset);
 	rightLayout->addLayout(sublayout);
 	sublayout = new QHBoxLayout();
 	sublayout->addWidget(cbox2);
@@ -308,10 +309,12 @@ void MainWindow::setVFieldMode( int state)
 	this->update();*/
 }
 
-void MainWindow::resetStrokes()
+void MainWindow::reset()
 {
-	//this->myGLDisp->resetStrokes();
-	//Model::getModel()->getInputCollector().clear();
+	for(int i = 0; i < resetables.size(); i++){
+		resetables[i]->reset();
+	}
+	this->update();
 }
 
 void MainWindow::lineWidthChanged()
@@ -322,8 +325,13 @@ void MainWindow::lineWidthChanged()
 
 void MainWindow::fieldLengthChanged()
 {
-	/*Model::getModel()->setDisplayLength( pow(100, (0.f + this->fieldSlider->value())/SLIDER_STEPSPERUNIT -1) - 0.01);
-	this->update();*/
+	float howmuch=  pow(100, (0.f + this->fieldSlider->value())/SLIDER_STEPSPERUNIT -1) - 0.01;
+	myGLDisp->setVFLength( pow(100, (0.f + this->fieldSlider->value())/SLIDER_STEPSPERUNIT -1) - 0.01);
+
+	for(int i = 0; i< resizables.size(); i++){
+		resizables[i]->setLength(howmuch);
+	}
+	this->update();
 }
 
 void MainWindow::showArrows( int val)
@@ -338,4 +346,35 @@ void MainWindow::setSmoothMode( int what )
 {
 	this->myGLDisp->setSmooth(what==2);
 	this->update();
+}
+
+Displayer * MainWindow::getDisplayer()
+{
+	return myGLDisp;
+}
+
+void MainWindow::subscribeResetable( Resetable * r )
+{
+	resetables.push_back(r);
+}
+
+void MainWindow::unSubscribeResetable( Resetable * r )
+{
+	std::vector<Resetable*>::iterator it = std::find(resetables.begin(), resetables.end(), r);
+	if(it!= resetables.end()){
+		resetables.erase(it);
+	}
+}
+
+void MainWindow::subscribeResizables( Resizable * r )
+{
+	resizables.push_back(r);
+}
+
+void MainWindow::unSubscribeResizable( Resizable * r )
+{
+	std::vector<Resizable*>::iterator it = std::find(resizables.begin(), resizables.end(), r);
+	if(it!= resizables.end()){
+		resizables.erase(it);
+	}
 }

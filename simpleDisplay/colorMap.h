@@ -1,7 +1,8 @@
 #pragma once
 #include <vector>
 #include "wingedMesh.h"
-#include "mouseStrokeListener.h"
+//#include "mouseStrokeListener.h"
+#include "Resetable.h"
 
 class colorMap
 {
@@ -42,18 +43,21 @@ public:
 };
 
 
-class strokeMap:public colorMap,public mouseStrokeProcessor
+class markupMap:public colorMap, public Resetable
 {
 private:
 	tuple3f basecolor;
 	std::vector<tuple3f> cols;
 public:
-	strokeMap();
-	~strokeMap();
+	markupMap();
+	~markupMap();
 	void associateTo(wfMesh & m_);
 	void reset();
+	void mark(int vertex, tuple3f &col);
 	virtual std::vector<tuple3f> & getColors();
-	virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+	//virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
+	//virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
 
 };
 /*class curvatureMap:public colorMap{
