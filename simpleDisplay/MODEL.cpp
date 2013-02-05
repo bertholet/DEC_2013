@@ -242,6 +242,45 @@ cpuCSRMatrix & MODEL::getBorder1()
 	}
 }
 
+cpuCSRMatrix & MODEL::getBorder2()
+{
+	if(border2_valid == VALID){
+		return *border2;
+	}
+	else{
+		QTime timer;
+		timer.start();
+		if(border2_valid == INVALID){
+			border2 = new cpuCSRMatrix();
+		}
+
+		*border2 = DDGMatrices::border2(*myMesh);//cpuCSRMatrix::transpose(getD0());
+
+		cout << "*Border2 created: " << timer.restart() <<"\n";
+		border2_valid = VALID;
+		return *border2;
+	}
+}
+
+cpuCSRMatrix & MODEL::getStar2()
+{
+	if(star2_valid == VALID){
+		return *star2;
+	}
+	else{
+		QTime timer;
+		timer.start();
+
+		if(star2_valid == INVALID){
+			star2 = new cpuCSRMatrix();
+		}
+		*star2 = DDGMatrices::star2(*myMesh);
+		cout << "*star2 created: " << timer.restart() <<"\n";
+		star2_valid = VALID;
+		return *star2;
+	}
+}
+
 cpuCSRMatrix & MODEL::getStar1_mixed()
 {
 	if(star1_mixed_valid == VALID){
@@ -343,9 +382,6 @@ cpuCSRMatrix & MODEL::getLaplace0_ignoreBoundary()
 	}
 }
 
-cpuCSRMatrix & MODEL::getBorder2()
-{
 
-}
 
 

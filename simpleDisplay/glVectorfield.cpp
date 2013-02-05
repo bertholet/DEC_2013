@@ -135,4 +135,8 @@ void glVectorfield::display( std::vector<tuple3f>* pos, std::vector<tuple3f>* di
 {
 	positions = pos;
 	directions = dir;
+
+	if(linkedAndReady()){
+		updateBuffersOnGPU();
+	}
 }

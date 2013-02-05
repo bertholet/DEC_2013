@@ -29,9 +29,11 @@ private:
 
 	bool useBorderMat;
 
-	glVectorfield * myFieldDisplay;
+	glVectorfield * vfSelectionDisplay, *computedVFDisplay;
 	vertexCollector sources, sinks;
 	directionCollector dirs;
+
+	std::vector<tuple3f> vf_dirs, vf_pos;
 
 
 	void setupSliders();
@@ -39,7 +41,6 @@ private:
 
 //	void initSolver();
 private slots:
-	void genAxisAllignedField();
 	void solveVField();
 	void sourceSelection( bool active );
 	void sinkSelection( bool active );

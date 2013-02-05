@@ -42,6 +42,8 @@ public:
 
 	cpuCSRMatrix & getStar1_mixed();
 	cpuCSRMatrix & getStar0_mixed();
+	cpuCSRMatrix & getStar2();
+
 
 	cpuCSRMatrix & getCoderiv1_mixed();
 	cpuCSRMatrix & getCoderiv1_ignoreBoundary();
@@ -73,5 +75,6 @@ private:
 	//matrix management
 	void invalidateAll();
 	void unrefreshedStars();
+
 };
 

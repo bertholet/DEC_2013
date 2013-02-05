@@ -20,7 +20,7 @@ public:
 	virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
 	virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
 	void updateBuffersOnGPU();
-	void updateDirectionsOnGPU();
+	///void updateDirectionsOnGPU();
 	void display( std::vector<tuple3f>* pos, std::vector<tuple3f>* dir );
 private:
 	wfMesh * myMesh;

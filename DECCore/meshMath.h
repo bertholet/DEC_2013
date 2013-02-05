@@ -28,5 +28,7 @@ public:
 	static void curvatureNormals(wingedMesh & m, std::vector<tuple3f> & target,
 		cpuCSRMatrix & d0_coderiv1mixed, std::vector<float> & buffer);
 
+	static void circumcenters(wingedMesh & mesh, std::vector<tuple3f> & target );
+	static void centroids( wingedMesh & mesh, std::vector<tuple3f> & target );
 };
 

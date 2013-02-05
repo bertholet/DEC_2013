@@ -244,6 +244,14 @@ void tuple3i::set( int x_, int y_, int z_ )
 	c=z_;
 }
 
+void tuple3i::set( tuple3i & other )
+{
+	a = other.a;
+	b= other.b;
+	c= other.c;
+}
+
+
 bool tuple3i::contains( tuple2i & tuple )
 {
 	return 	(tuple.a == a || tuple.a == b || tuple.a == c)&&

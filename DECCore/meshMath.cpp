@@ -118,11 +118,11 @@ float meshMath::dualEdge_edge_ratio_mixed( int edgeNr, wingedMesh & mesh, dualEd
 
 	vector<tuple3f> & verts = mesh.getVertices();
 
-	float cot_alpha1 = (edge.isFirstEdge(vertex1) && !what== NO_COMPLETION ? 
+	float cot_alpha1 = (edge.isFirstEdge(vertex1) && ! (what== NO_COMPLETION) ? 
 				0:
 				tuple3f::cotPoints(verts[vertex2], verts[prev], verts[vertex1]));
 
-	float cot_alpha2 = (edge.isLastEdge(vertex1) && !what== NO_COMPLETION?
+	float cot_alpha2 = (edge.isLastEdge(vertex1) && !(what== NO_COMPLETION)?
 				0:
 				tuple3f::cotPoints(verts[vertex1], verts[next], verts[vertex2]));
 
@@ -310,4 +310,50 @@ float meshMath::volume( wingedMesh &m )
 	}
 	volume = (volume < 0? -volume:volume);
 	return volume / 6;
+}
+
+void meshMath::circumcenters(wingedMesh & mesh, std::vector<tuple3f> & target )
+{
+	target.clear();
+	std::vector<tuple3i> & fcs =mesh.getFaces();
+	std::vector<tuple3f> & verts =mesh.getVertices();
+	target.reserve(fcs.size());
+	
+	std::vector<tuple3i>::iterator fc;
+	/*tuple3f normal_ac;
+	tuple3f normal_ab;
+	tuple3f normal;*/
+	tuple3f circumcenter;
+	float l_ab_sqr, l_bc_sqr, l_ca_sqr, bari_a,bari_b, bari_c, tot;
+	for(fc = fcs.begin(); fc != fcs.end(); fc++){
+		/*normal = (verts[fc->c] -verts[fc->a]).cross(verts[fc->b]-verts[fc->a]);
+		normal_ac = (verts[fc->c] -verts[fc->a]).cross(normal);
+		normal_ac.normalize();*/
+		l_ab_sqr = (verts[fc->b] -verts[fc->a]).normSqr();
+		l_bc_sqr = (verts[fc->c] -verts[fc->b]).normSqr();
+		l_ca_sqr = (verts[fc->a] -verts[fc->c]).normSqr();
+		bari_a = l_bc_sqr*(-l_bc_sqr + l_ca_sqr + l_ab_sqr);
+		bari_b = l_ca_sqr*(l_bc_sqr - l_ca_sqr + l_ab_sqr);
+		bari_c = l_ab_sqr*(l_bc_sqr + l_ca_sqr - l_ab_sqr);
+
+		tot = bari_a + bari_b + bari_c;
+		circumcenter = verts[fc->a] * (bari_a /tot) + verts[fc->b] * (bari_b /tot)
+			+ verts[fc->c] * (bari_c /tot);
+		target.push_back(circumcenter);
+	}
+}
+
+void meshMath::centroids( wingedMesh & mesh, std::vector<tuple3f> & target )
+{
+	target.clear();
+	std::vector<tuple3i> & fcs =mesh.getFaces();
+	std::vector<tuple3f> & verts =mesh.getVertices();
+	target.reserve(fcs.size());
+	
+	std::vector<tuple3i>::iterator fc;
+	for(fc = fcs.begin(); fc != fcs.end(); fc++){
+		target.push_back(verts[fc->a]*0.333333333 
+			+verts[fc->b]*0.333333333
+			+verts[fc->c]*0.333333333);
+	}
 }

@@ -60,15 +60,15 @@ private:
 public:
 	directionCollector();
 	
-	virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
-
-	virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
-
 	void reset();
-
 	void setActive(bool what);
 	std::vector<tuple3f>* getPositions();
 	std::vector<tuple3f>* getDirections();
+	std::vector<int>& getFaces();
+
+	virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+	virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
 };
 
 class vertexCollector: public mouseStrokeProcessor, public Resetable
@@ -82,12 +82,13 @@ private:
 public:
 	vertexCollector();
 
-	virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
-
-	virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
-
+	std::vector<int> &  getVertices();
+	void setActive(bool what);	
 	void reset();
 	void mapTo( markupMap * map, tuple3f color);
 
-	void setActive(bool what);
+
+	virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+	virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
 };

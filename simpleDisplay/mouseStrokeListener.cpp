@@ -145,6 +145,11 @@ std::vector<tuple3f>* directionCollector::getDirections()
 	return &directions;
 }
 
+std::vector<int>& directionCollector::getFaces()
+{
+	return faces;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 void vertexCollector::process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos )
@@ -187,4 +192,9 @@ void vertexCollector::mapTo( markupMap * map, tuple3f color )
 {
 	myMap = map;
 	col = color;
+}
+
+std::vector<int> & vertexCollector::getVertices()
+{
+	return vertices;
 }

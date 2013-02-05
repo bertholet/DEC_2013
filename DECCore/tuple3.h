@@ -97,6 +97,7 @@ public:
 	tuple3i(int x_, int y_, int z_);
 	~tuple3i(void);
 
+	void set(tuple3i & other);
 	void set(int x_, int y_, int z_);
 
 	bool contains(tuple2i & tuple);
