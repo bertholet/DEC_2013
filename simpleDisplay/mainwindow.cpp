@@ -146,6 +146,9 @@ void MainWindow::addAction()
 	connect(linewidthSlider, SIGNAL(sliderReleased()), this, SLOT(lineWidthChanged()));
 	connect(fieldSlider, SIGNAL(sliderReleased()), this, SLOT(fieldLengthChanged()));
 	connect(cBoxArrow, SIGNAL(stateChanged(int)), this, SLOT(showArrows(int)));
+
+
+	this->subscribeResetable( myGLDisp);
 }
 
 /************************************************************************/

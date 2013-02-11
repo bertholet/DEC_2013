@@ -130,3 +130,8 @@ wfMesh * glDisplayableMesh::getWfMesh()
 {
 	return myMesh;
 }
+
+std::string glDisplayableMesh::colorBufferName()
+{
+	return "color";
+}

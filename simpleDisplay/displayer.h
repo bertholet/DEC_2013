@@ -13,14 +13,15 @@
 #include "colorMap.h"
 
 #include "glVectorfield.h"
-
+#include "Resetable.h"
 //#include "Observer.h"
 //#include "Model.h"
 //#include "squareTexture.h"
 
 enum MouseInputMode {TRACKBALLMODE,INPUTMODE, COLORMAPSCROLL};
 
-class Displayer : public QGLWidget,Observer<glDisplayable::glDispMessage>, mouseStrokeable//public Observer<Model::modelMsg>
+class Displayer : public QGLWidget,Observer<glDisplayable::glDispMessage>, 
+	mouseStrokeable, public Resetable//public Observer<Model::modelMsg>
 {
 	Q_OBJECT
 
@@ -59,6 +60,8 @@ public:
 	void subscribeToMousestrokes(mouseStrokeProcessor *c);
 	void unsubscribeToMousestrokes(mouseStrokeProcessor *c);
 
+	virtual void reset();
+
 protected:
 	void initializeGL();
 	void resizeGL(int width, int height);
@@ -74,8 +77,10 @@ protected:
 	void sendOtherDisplayablesToGPU();
 	void drawOtherDisplayables();
 
+
+
 private:
-	glDisplayableIntersectable * myDisplayable;
+	glDisplayableMesh * myDisplayable;
 	//glVectorfield * glVfield;
 
 	//subscribers
@@ -89,6 +94,7 @@ private:
 	//DisplayMode mode;
 	MouseInputMode mouseMode;
 	markupMap mousestrokemap;
+	colorMap * actualMap;
 
 	//colorMap * map;
 	//triangleMarkupMap * tmmap;

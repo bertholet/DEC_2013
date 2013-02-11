@@ -26,15 +26,14 @@ tests::~tests(void)
 void tests::testAndSaveDECMatrices()
 {
 
-	wfMesh myMesh = wfMesh();
+	wfMesh * myMesh = new wfMesh("../objfiles/borderTiny.obj");
 
-//	OBIFileReader myreader;
-	//myreader.parse("../objfiles/teapotTex.obj");
-	//myreader.initializeMesh(myMesh);
-	
-	myMesh = ball(1,3,2);
 
-	wingedMesh wingedM(&myMesh);
+	*myMesh = ball(1,3,2);
+
+	wingedMesh wingedM(myMesh);
+
+
 	std::cout << "Hello, creating d0 matrix\n";
 	cpuCSRMatrix d0_matrix = DDGMatrices::d0(wingedM);
 	std::cout << "Saving matrix\n";
@@ -89,6 +88,17 @@ void tests::testAndSaveDECMatrices()
 	st2_matrix.saveMatrix("st2_.m");
 	std::cout << "Size is : " << st2_matrix.getm() << ", " << st2_matrix.getn()<<"\n\n";
 
+	std::cout << "Hello, creating border Diff Matrix\n";
+	cpuCSRMatrix bdiff_matrix = DDGMatrices::d1dual_star1_borderDiff(wingedM);
+	std::cout << "Saving matrix\n";
+	bdiff_matrix.saveMatrix("d1st1_bdiff.m");
+	std::cout << "Size is : " << bdiff_matrix.getm() << ", " << bdiff_matrix.getn()<<"\n\n";
+
+	std::cout << "Hello, creating border Diff transp Matrix\n";
+	cpuCSRMatrix bdiff_t_matrix = DDGMatrices::d1dual_star1_borderDiff_transp(wingedM);
+	std::cout << "Saving matrix\n";
+	bdiff_t_matrix.saveMatrix("d1st1_bdiff_t.m");
+	std::cout << "Size is : " << bdiff_t_matrix.getm() << ", " << bdiff_t_matrix.getn()<<"\n\n";
 
 	//operations
 	d0_matrix= d0_matrix*cpuCSRMatrix::transpose(d0_matrix);

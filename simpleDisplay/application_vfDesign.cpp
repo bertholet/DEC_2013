@@ -2,8 +2,11 @@
 #include "meshMath.h"
 
 
+#include "DDGMatrices.h"
+
 application_vfDesign::application_vfDesign(void)
 {
+	adaptToBorder = true;
 }
 
 
@@ -19,19 +22,26 @@ void application_vfDesign::computeField( MODEL & model,
 	std::vector<float> & edgeConstraints, 
 	oneForm & target )
 {
-  
-	cpuCSRMatrix duald1_border = model.getBorder1();
-	cpuCSRMatrix duald1_border_transposed = model.getD0();
+	cpuCSRMatrix & st1 = model.getStar1_mixed();
+
+	cpuCSRMatrix duald1_st1 =  model.getBorder1() *st1* -1;
+	cpuCSRMatrix duald1_st1_transp = st1 * model.getD0() * -1;
+	
+	cout << "\n computing VF....\n";
+	if(adaptToBorder){
+		cout << "*using border adaptation \n";
+		duald1_st1 = duald1_st1 - DDGMatrices::d1dual_star1_borderDiff(*model.getMesh());
+		duald1_st1_transp = duald1_st1_transp - DDGMatrices::d1dual_star1_borderDiff_transp(*model.getMesh());
+	}
 	cpuCSRMatrix star0_inv = model.getStar0_mixed();
 	star0_inv.elementWiseInv();
 
+	//computation of the matrix
 	cpuCSRMatrix mat = model.getBorder2()* model.getStar2() * model.getD1();
-	mat = mat +(model.getStar1_mixed()*duald1_border_transposed * star0_inv* (duald1_border) *model.getStar1_mixed());
+	mat = mat +(duald1_st1_transp * star0_inv* duald1_st1);
 
 	
-	//add constraint for the constrained edges
-//	std::vector<int> diag_ind;
-//	mat.getDiagonalIndices(diag_ind);
+	//adapt constraint for the constrained edges
 	float weight = 100;
 	float srcsink_flow = 10;
 
@@ -55,7 +65,8 @@ void application_vfDesign::computeField( MODEL & model,
 		wingedEdge* edg = & model.getMesh()->getAnEdge(vert);
 		wingedEdge* first= edg;
 		do{
-			b[edg->getIndex()] -= edg->orientation(vert) * srcsink_flow
+			//d1_dual is - border1, a sink has a negative weight, so +=
+			b[edg->getIndex()] += edg->orientation(vert) * srcsink_flow
 				*meshMath::dualEdge_edge_ratio(edg->getIndex(),* model.getMesh());
 			edg = & edg->getNext_bc(vert);
 		}
@@ -66,7 +77,7 @@ void application_vfDesign::computeField( MODEL & model,
 		wingedEdge* edg = & model.getMesh()->getAnEdge(vert);
 		wingedEdge* first= edg;
 		do{
-			b[edg->getIndex()] += edg->orientation(vert) * srcsink_flow
+			b[edg->getIndex()] -= edg->orientation(vert) * srcsink_flow
 				*meshMath::dualEdge_edge_ratio(edg->getIndex(),* model.getMesh());
 			edg = & edg->getNext_bc(vert);
 		}
@@ -83,4 +94,9 @@ void application_vfDesign::computeField( MODEL & model,
 	target.loadVector("vf_x");
 
 	//mat_border =	DDGMatrices::dual_d0(*msh) * DDGMatrices::star2(*msh) * DDGMatrices::d1(*msh);
+}
+
+void application_vfDesign::setAdaptToBorder( bool what )
+{
+	adaptToBorder = what;
 }

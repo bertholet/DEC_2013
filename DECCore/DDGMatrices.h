@@ -11,7 +11,9 @@ public:
 
 	static cpuCSRMatrix border2(wingedMesh & aMesh);
 	static cpuCSRMatrix border1(wingedMesh & aMesh);
-	//
+	
+	//this matrix is the border matrix but uses halfedges instead
+	//of endges. This is a vertex x (2*nrEdges) matrix.
 	static cpuCSRMatrix border1_halfedges( wingedMesh & aMesh );
 
 	static cpuCSRMatrix d0( wingedMesh & aMesh );
@@ -92,6 +94,12 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	static cpuCSRMatrix laplaceIgnoreBoundary(wingedMesh & aMesh);
 	
+	//////////////////////////////////////////////////////////////////////////
+	//The matrix as described in the Section Vector Field Design, which can
+	// be used in an incompressible setting to adapt the no divergence
+	// condition to be valid on boundary vertices.
+	static cpuCSRMatrix d1dual_star1_borderDiff(wingedMesh & aMEsh);
+	static cpuCSRMatrix d1dual_star1_borderDiff_transp( wingedMesh & aMEsh) ;
 
 /*	static cpuCSRMatrix onesBorder(std::vector<std::vector<int>> & border, int n, int m);
 

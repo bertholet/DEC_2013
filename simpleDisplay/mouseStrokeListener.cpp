@@ -175,6 +175,9 @@ void vertexCollector::processOnPress( int intersec_vertex, int intersec_face, tu
 void vertexCollector::reset()
 {
 	vertices.clear();
+	/*if(myMap!= NULL){
+		myMap->reset();
+	}*/
 }
 
 void vertexCollector::setActive( bool what )

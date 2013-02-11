@@ -112,7 +112,7 @@ public:
 	bool operator < (const wingedEdge & other) const;
 	bool operator == (const wingedEdge & other) const;
 	bool operator != (const wingedEdge & other) const;
-
+	int commonFace( wingedEdge & other );
 private:
 
 };

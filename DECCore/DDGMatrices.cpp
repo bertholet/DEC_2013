@@ -279,6 +279,129 @@ public:
 	}
 };
 
+class Op5sgnij_plus_0p5sgnjk_creator: public matrixCreator
+{
+wingedMesh * myMesh;
+std::vector<wingedEdge> & edges;
+int nrColumns;
+public:
+	Op5sgnij_plus_0p5sgnjk_creator(wingedMesh & aMesh):edges(aMesh.getEdges())
+	{
+		myMesh = & aMesh;
+		nrColumns = myMesh->getEdges().size();
+	}
+
+	virtual float val( int i , int j ) 
+	{
+		//i is the vertex, j the edge;
+		wingedEdge & edge =edges[j];
+		if(!edge.isOnBorder()){
+			return 0 ;
+		}
+
+		if(edge.start() != i && edge.end() != i ){
+			return 0;
+		}
+		if(edge.getAdjFaces().a <0){
+			return -0.5;
+		}
+		else if(edge.getAdjFaces().b<0){
+			return 0.5;
+		}
+		return 0;
+
+	}
+
+
+	virtual void indices( int row, std::vector<int> & target ) 
+	{
+		//row is a vertex i.e dual face
+		target.clear();
+		//target.push_back(min(row, nrColumns));
+
+		//pushback the potentially 2 adjacent boundary edges 
+		if(myMesh->isOnBorder(row)){
+			std::vector<int> & nbr_edgs = myMesh->getv2e()[row];
+			std::vector<wingedEdge> & edges = myMesh->getEdges();
+			for(unsigned int i = 0; i< nbr_edgs.size(); i++){
+				if(edges[nbr_edgs[i]].isOnBorder()){
+					target.push_back(nbr_edgs[i]);
+				}
+			}
+		}
+		sort(target.begin(), target.end());
+	}
+
+
+};
+
+class primal2dual_approx_creator:public matrixCreator
+{
+private:
+	wingedMesh * myMesh;
+	std::vector<wingedEdge> & edges;
+	std::vector<tuple3f> & verts;
+	std::vector<tuple3i> & fcs;
+public:
+	primal2dual_approx_creator(wingedMesh &aMesh):
+	edges(aMesh.getEdges()), verts(aMesh.getVertices()), fcs(aMesh.getFaces())
+	{
+		myMesh = &  aMesh;
+	}
+	virtual float val( int i , int j ) 
+	{
+		if(i==j){
+			return 0;
+		}
+		wingedEdge & edge = edges[i];
+		wingedEdge & other = edges[j];
+
+		int commonVertex = edge.and(other); 
+		if(commonVertex < 0){
+			return 0;
+		}
+
+		int commonFace = edge.commonFace(other);
+		if(commonFace < 0){
+			return 0;
+		}
+
+		return tuple3f::cotPoints(verts[other.otherVertex(commonVertex)],
+			verts[commonVertex],
+			verts[edge.otherVertex(commonVertex)]) * fcs[commonFace].orientation(edge);
+
+		//i is the index of the edge for which the dual is computed
+		//returned is the weight for the contribution of j
+		//this is the cotan of the angle oposite to 'other' times the orientation
+		//of the edge in the triangle 
+
+	}
+
+
+	virtual void indices( int row, std::vector<int> & target ) 
+	{
+		target.clear();
+	//	target.push_back(row);
+		wingedEdge & edge  = edges[row];
+		
+		if(!edge.isOnBorder()){
+			return;
+		}
+
+
+
+		if(edge.getAdjFaces().a <0){
+			target.push_back(edge.getNext(edge.start())->getIndex());
+			target.push_back(edge.getPrev(edge.end())->getIndex());
+		}
+		else if(edge.getAdjFaces().b <0){
+			target.push_back(edge.getNext(edge.end())->getIndex());
+			target.push_back(edge.getPrev(edge.start())->getIndex());
+		}
+		sort(target.begin(), target.end());
+	}
+};
+
 class diagCreator: public matrixCreator
 {
 
@@ -545,8 +668,10 @@ cpuCSRMatrix DDGMatrices::d1(wingedMesh & aMesh )
 // this is d1 transformed
 cpuCSRMatrix DDGMatrices::dual_d0( wingedMesh & aMesh )
 {
-	cpuCSRMatrix d1_=d1(aMesh);
-	return (cpuCSRMatrix::transpose(d1_));
+	//cpuCSRMatrix d1_=d1(aMesh);
+	//return (cpuCSRMatrix::transpose(d1_));
+
+	return border1(aMesh);
 }
 
 // this is minus d0 transformed
@@ -874,6 +999,29 @@ cpuCSRMatrix DDGMatrices::laplaceIgnoreBoundary( wingedMesh & aMesh )
 	return coderiv1_mixed_ignoreBoundary(aMesh) * d0(aMesh);
 }
 
+cpuCSRMatrix DDGMatrices::d1dual_star1_borderDiff( wingedMesh & aMEsh )
+{
+	cpuCSRMatrix mat_0p5sgn;
+	mat_0p5sgn.initMatrix(Op5sgnij_plus_0p5sgnjk_creator(aMEsh), aMEsh.getVertices().size());
+	mat_0p5sgn.forceNrColumns(aMEsh.getEdges().size());
+
+
+
+	cpuCSRMatrix primal2dual_approx;
+	primal2dual_approx.initMatrix(primal2dual_approx_creator(aMEsh), aMEsh.getEdges().size());
+	primal2dual_approx.forceNrColumns(aMEsh.getEdges().size());
+
+
+	return mat_0p5sgn*primal2dual_approx;
+}
+
+
+cpuCSRMatrix DDGMatrices::d1dual_star1_borderDiff_transp( wingedMesh & aMEsh )
+{
+	cpuCSRMatrix mat_0p5sgn = d1dual_star1_borderDiff(aMEsh);
+	mat_0p5sgn = cpuCSRMatrix::transpose(mat_0p5sgn);
+	return mat_0p5sgn;
+}
 
 
 

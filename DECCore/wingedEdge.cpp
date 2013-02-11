@@ -295,6 +295,17 @@ tuple2i & wingedEdge::getAdjFaces()
 	return fc_p_n;
 }
 
+int wingedEdge::commonFace( wingedEdge & other )
+{
+	if(fc_p_n.a>=0 && (fc_p_n.a == other.fc_p_n.a || fc_p_n.a == other.fc_p_n.b)){
+		return fc_p_n.a;
+	}
+	else if(fc_p_n.b>=0 &&(fc_p_n.b == other.fc_p_n.a || fc_p_n.b == other.fc_p_n.b)){
+		return fc_p_n.b;
+	}
+	return -1;
+}
+
 
 
 

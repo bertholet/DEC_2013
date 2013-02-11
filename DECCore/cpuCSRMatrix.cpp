@@ -419,7 +419,9 @@ cpuCSRMatrix cpuCSRMatrix::operator%( cpuCSRMatrix & B )
 
 
 		//adapt AB.ia
-		if(AB.ia.back() == AB.a.size()){
+		AB.iapush_back(AB.a.size());
+
+/*		if(AB.ia.back() == AB.a.size()){
 			emptyLineFound = true;
 		}
 		else if( !emptyLineFound){
@@ -429,11 +431,25 @@ cpuCSRMatrix cpuCSRMatrix::operator%( cpuCSRMatrix & B )
 			//cout << "Matrix degenerated!in pardisoMatrix%";
 			assert(false);
 			throw std::runtime_error("Matrix degenerated in pardisoMatrix::%");
-		}
+		}*/
 
 
 	}
 
+			/*if(AB.getm()!= B.getn()){
+			AB.forceNrColumns(B.getn());
+		}
+		//the last lines are empty...
+		if(AB.getn() != this->getn()){
+			for(int i = AB.ia.size(); i< this->getn(); i++){
+				AB.ia.push_back(AB.a.size());
+			}
+		}*/
+
+	//empty last column...
+	if(AB.getm()!= B.getn()){
+		AB.forceNrColumns(B.getn());
+	}
 
 	return AB;
 }

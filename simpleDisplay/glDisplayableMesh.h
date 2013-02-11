@@ -28,6 +28,8 @@ public:
 		}
 	}
 
+	virtual std::string colorBufferName();
+
 private:
 	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_colorBuffer;
 	wfMesh * myMesh;

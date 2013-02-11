@@ -140,3 +140,8 @@ void glVectorfield::display( std::vector<tuple3f>* pos, std::vector<tuple3f>* di
 		updateBuffersOnGPU();
 	}
 }
+
+void glVectorfield::reset()
+{
+	updateBuffersOnGPU();
+}

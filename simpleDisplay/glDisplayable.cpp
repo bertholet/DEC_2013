@@ -396,3 +396,8 @@ void glDisplayable::set( QMatrix4x4 & m2w, QMatrix4x4 &normalMat )
 {
 	return myMesh->intersect(start,stop,closestVertex,face,*position);
 }*/
+
+glDisplayableIntersectable::glDisplayableIntersectable( wfMesh * bla )
+{
+	actualMap = NULL;
+}

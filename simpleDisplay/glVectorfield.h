@@ -3,7 +3,7 @@
 #include "mouseStrokeListener.h"
 #include "Resetable.h"
 
-class glVectorfield:public glDisplayable, public mouseStrokeProcessor, public Resizable
+class glVectorfield:public glDisplayable, public mouseStrokeProcessor, public Resizable, public Resetable
 {
 public:
 	glVectorfield();
@@ -22,6 +22,9 @@ public:
 	void updateBuffersOnGPU();
 	///void updateDirectionsOnGPU();
 	void display( std::vector<tuple3f>* pos, std::vector<tuple3f>* dir );
+
+	virtual void reset();
+
 private:
 	wfMesh * myMesh;
 	vector<tuple3f>*  positions;

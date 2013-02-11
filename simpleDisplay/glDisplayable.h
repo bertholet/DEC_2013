@@ -60,8 +60,10 @@ protected:
 
 class glDisplayableIntersectable:public glDisplayable
 {
+private:
+	colorMap * actualMap;
 public:
-	glDisplayableIntersectable(wfMesh * bla){}
+	glDisplayableIntersectable(wfMesh * bla);
 	virtual ~glDisplayableIntersectable(){}
 	virtual void sendColorMap( colorMap &map )=0;
 	virtual tuple3i * intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position )=0;

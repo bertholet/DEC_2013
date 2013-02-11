@@ -127,9 +127,20 @@ void Displayer::resizeGL(int w, int h)
 
 void Displayer::setColormap( colorMap & map )
 {
+	actualMap = &map;
 	myDisplayable->sendColorMap(map);
 	this->updateGL();
 }
+
+
+void Displayer::reset()
+{
+	if(actualMap != NULL){
+		myDisplayable->sendColorMap(*actualMap);
+		this->updateGL();
+	}
+}
+
 
 void Displayer::mouseMoveEvent( QMouseEvent* event )
 {
@@ -336,5 +347,8 @@ markupMap & Displayer::getMarkupMap()
 {
 	return mousestrokemap;
 }
+
+
+
 
 

@@ -46,6 +46,7 @@ vectorfieldWidget::vectorfieldWidget(MainWindow *parent)
 	mainWindow->subscribeResetable(&dirs);
 	mainWindow->subscribeResetable(&sources);
 	mainWindow->subscribeResetable(&sinks);
+	
 	mainWindow->subscribeResizables(vfSelectionDisplay);
 	mainWindow->subscribeResizables(computedVFDisplay);
 	
@@ -114,6 +115,7 @@ void vectorfieldWidget::solveVField()
 
 	//set up local vars
 	application_vfDesign vf_design;
+	vf_design.setAdaptToBorder(useBorderMat);
 	oneForm field(MODEL::getModel()->getMesh());
 
 	// do the vector field computation
