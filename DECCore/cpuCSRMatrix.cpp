@@ -504,6 +504,7 @@ cpuCSRMatrix cpuCSRMatrix::operator+( cpuCSRMatrix & B )
 		//adapt AB.ia
 		AnB.iapush_back(AnB.a.size());
 	}
+	AnB.forceNrColumns(getm());
 	return AnB;
 }
 
@@ -559,6 +560,7 @@ cpuCSRMatrix cpuCSRMatrix::operator-( cpuCSRMatrix & B )
 		//adapt AB.ia
 		AnB.iapush_back(AnB.a.size());
 	}
+	AnB.forceNrColumns(getm());
 	return AnB;
 }
 

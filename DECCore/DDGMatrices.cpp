@@ -348,32 +348,44 @@ public:
 	{
 		myMesh = &  aMesh;
 	}
-	virtual float val( int i , int j ) 
+	virtual float val( int k , int l ) 
 	{
-		if(i==j){
+		if(k==l){
 			return 0;
 		}
-		wingedEdge & edge = edges[i];
-		wingedEdge & other = edges[j];
+		wingedEdge & edge_ij = edges[k];
+		wingedEdge & other = edges[l];
 
-		int commonVertex = edge.and(other); 
+		if(!edge_ij.isOnBorder()){
+			return 0;
+		}
+
+		int commonVertex = edge_ij.and(other); 
 		if(commonVertex < 0){
 			return 0;
 		}
 
-		int commonFace = edge.commonFace(other);
+		int commonFace = edge_ij.commonFace(other);
 		if(commonFace < 0){
 			return 0;
 		}
+		
 
-		return tuple3f::cotPoints(verts[other.otherVertex(commonVertex)],
+		int sign = edge_ij.orientation(commonVertex) //to decide wether its a positive or negative contribution
+			* fcs[commonFace].orientation(other); //to make up for the orientation of the other edge
+		
+		assert(sign != 0);
+		return tuple3f::cotPoints(
 			verts[commonVertex],
-			verts[edge.otherVertex(commonVertex)]) * fcs[commonFace].orientation(edge);
+			verts[edge_ij.otherVertex(commonVertex)],
+			verts[other.otherVertex(commonVertex)]) * sign;
 
 		//i is the index of the edge for which the dual is computed
-		//returned is the weight for the contribution of j
-		//this is the cotan of the angle oposite to 'other' times the orientation
-		//of the edge in the triangle 
+		//returned is the weight for the contribution of the edge j
+		//this is plus or minus the cotan of the angle oposite to 'other' times the orientation
+		//of the other edge in the triangle 
+		// the plus/minus sign is determined by deciding if the other edge is the next or
+		//previous edge on the triangle.
 
 	}
 
@@ -671,7 +683,7 @@ cpuCSRMatrix DDGMatrices::dual_d0( wingedMesh & aMesh )
 	//cpuCSRMatrix d1_=d1(aMesh);
 	//return (cpuCSRMatrix::transpose(d1_));
 
-	return border1(aMesh);
+	return border2(aMesh);
 }
 
 // this is minus d0 transformed
@@ -1011,7 +1023,7 @@ cpuCSRMatrix DDGMatrices::d1dual_star1_borderDiff( wingedMesh & aMEsh )
 	primal2dual_approx.initMatrix(primal2dual_approx_creator(aMEsh), aMEsh.getEdges().size());
 	primal2dual_approx.forceNrColumns(aMEsh.getEdges().size());
 
-
+	//primal2dual_approx.saveMatrix("vf_p2d_.m");
 	return mat_0p5sgn*primal2dual_approx;
 }
 

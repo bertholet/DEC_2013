@@ -202,8 +202,9 @@ void OBIFileReader::checkAllVerticesUsed( void )
 	}
 	
 	cout << "Analysed parsed Mesh... " << unusedVertices.size() << " Vertices unused\n";
-
-
+/*	for(int i = unusedVertices.size() -1 ; i >=0; i--){
+		vertices.erase(vertices.begin() + unusedVertices[i]);
+	}*/
 	delete[] arr;
 }
 

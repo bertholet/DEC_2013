@@ -30,5 +30,6 @@ public:
 
 	static void circumcenters(wingedMesh & mesh, std::vector<tuple3f> & target );
 	static void centroids( wingedMesh & mesh, std::vector<tuple3f> & target );
+	static void centroid( wingedMesh & mesh, int faceNr, tuple3f & target );
 };
 

@@ -10,6 +10,8 @@ public:
 	oneForm(wingedMesh * mesh);
 	~oneForm(void);
 
+	void onesOnBoundary();
+	void onesOnInnerEdges();
 	void toVField(std::vector<tuple3f> & target);
 
 private:

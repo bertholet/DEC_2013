@@ -85,3 +85,21 @@ void oneForm::toVField( std::vector<tuple3f> & target )
 		target[i].set(result);
 	}
 }
+
+void oneForm::onesOnBoundary()
+{
+	int sz = myMesh->getEdges().size();
+	resize(sz);
+	for(int i = 0; i < sz; i++){
+		(*this)[i] = (myMesh->getEdges()[i].isOnBorder()? 1:0);
+	}
+}
+
+void oneForm::onesOnInnerEdges()
+{
+	int sz = myMesh->getEdges().size();
+	resize(sz);
+	for(int i = 0; i < sz; i++){
+		(*this)[i] = (myMesh->getEdges()[i].isOnBorder()? 0:1);
+	}
+}

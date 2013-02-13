@@ -267,7 +267,7 @@ tuple3i * Displayer::intersect( tuple3f & start, tuple3f & stop, int * closestVe
 
 void Displayer::setSmooth( bool smooth )
 {
-	((glDisplayableMesh*) myDisplayable)->switchStyle(smooth);
+	((glDisplayableMesh*) myDisplayable)->switchStyle((smooth==true? glDisplayableMesh::PHONG : glDisplayableMesh::FLAT));
 	
 	/*wfMesh * msh = myDisplayable->getWfMesh();
 	delete myDisplayable;
@@ -346,6 +346,16 @@ void Displayer::unsubscribeToMousestrokes( mouseStrokeProcessor *c )
 markupMap & Displayer::getMarkupMap()
 {
 	return mousestrokemap;
+}
+
+void Displayer::showLines()
+{
+	myDisplayable->switchStyle(glDisplayableMesh::LINES);
+}
+
+void Displayer::setLineWidth( float wdth )
+{
+	glLineWidth(wdth);
 }
 
 

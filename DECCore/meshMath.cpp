@@ -90,8 +90,10 @@ float meshMath::dualEdge_edge_ratio( int edgeNr, wingedMesh & mesh )
 		tuple3f::cotPoints(verts[i], verts[next], verts[j]):
 	0);*/
 
-	cot_alpha1 = (cot_alpha1 >0? cot_alpha1: -cot_alpha1);
-	cot_alpha2 = (cot_alpha2 >0? cot_alpha2: -cot_alpha2);
+
+//.... well.....
+/*	cot_alpha1 = (cot_alpha1 >0? cot_alpha1: -cot_alpha1);
+	cot_alpha2 = (cot_alpha2 >0? cot_alpha2: -cot_alpha2);*/
 
 	return (cot_alpha1 + cot_alpha2)/2;
 }
@@ -356,4 +358,13 @@ void meshMath::centroids( wingedMesh & mesh, std::vector<tuple3f> & target )
 			+verts[fc->b]*0.333333333
 			+verts[fc->c]*0.333333333);
 	}
+}
+
+void meshMath::centroid( wingedMesh & mesh, int faceNr, tuple3f & target )
+{
+	std::vector<tuple3f> & verts =mesh.getVertices();
+	tuple3i * fc = & mesh.getFaces()[faceNr];
+	target.set(verts[fc->a]*0.333333333 
+		+verts[fc->b]*0.333333333
+		+verts[fc->c]*0.333333333);
 }

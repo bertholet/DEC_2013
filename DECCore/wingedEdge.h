@@ -113,6 +113,8 @@ public:
 	bool operator == (const wingedEdge & other) const;
 	bool operator != (const wingedEdge & other) const;
 	int commonFace( wingedEdge & other );
+	bool hasPrevEdge(int vertex);
+	bool hasNextEdge(int vertex);
 private:
 
 };

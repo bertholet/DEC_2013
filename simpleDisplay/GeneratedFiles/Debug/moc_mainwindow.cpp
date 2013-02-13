@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-** Created: Tue 5. Feb 10:02:58 2013
+** Created: Tue 12. Feb 10:52:36 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -40,7 +40,7 @@ static const uint qt_meta_data_MainWindow[] = {
      112,   11,   11,   11, 0x08,
      131,   11,   11,   11, 0x08,
      152,   11,   11,   11, 0x08,
-     173,  168,   11,   11, 0x08,
+     172,  167,   11,   11, 0x08,
 
        0        // eod
 };
@@ -50,7 +50,7 @@ static const char qt_meta_stringdata_MainWindow[] = {
     "setDisplayMode(int)\0reset()\0state\0"
     "setMouseMode(int)\0setVFieldMode(int)\0"
     "lineWidthChanged()\0fieldLengthChanged()\0"
-    "showArrows(int)\0what\0setSmoothMode(int)\0"
+    "showLines(int)\0what\0setSmoothMode(int)\0"
 };
 
 void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -67,7 +67,7 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 5: _t->setVFieldMode((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 6: _t->lineWidthChanged(); break;
         case 7: _t->fieldLengthChanged(); break;
-        case 8: _t->showArrows((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 8: _t->showLines((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 9: _t->setSmoothMode((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }

@@ -37,7 +37,9 @@ public:
 	void setMouseMode(MouseInputMode aMode);
 	void setColormap(colorMap & map);
 	void setSmooth( bool smooth );
+	void showLines();
 	void setVFLength( float length);
+	void setLineWidth( float wdth );
 
 	markupMap & getMarkupMap();
 	//void setNormedFieldDisplay(bool);
@@ -76,6 +78,7 @@ protected:
 	//void deleteAllDisplayables();
 	void sendOtherDisplayablesToGPU();
 	void drawOtherDisplayables();
+
 
 
 

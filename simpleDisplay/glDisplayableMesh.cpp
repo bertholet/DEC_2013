@@ -93,7 +93,7 @@ void glDisplayableMesh::draw( QMatrix4x4 & world2view, QVector3D & eye)
 	}
 
 	glDrawElements(GL_TRIANGLES, 3*myMesh->getFaces().size(),GL_UNSIGNED_INT,0);
-
+	
 	m_shader.disableAttributeArray("vertex");
 	m_shader.disableAttributeArray("normal");
 	m_shader.disableAttributeArray("color");
@@ -134,4 +134,17 @@ wfMesh * glDisplayableMesh::getWfMesh()
 std::string glDisplayableMesh::colorBufferName()
 {
 	return "color";
+}
+
+void glDisplayableMesh::switchStyle( SHADER what )
+{
+	if(what== PHONG){
+		prepareShaderProgram("./phong.vert", "./phong.frag", "./phong.geo");
+	}
+	else if(what == FLAT){
+		prepareShaderProgram("./flat.vert", "./flat.frag", "./flat.geo");
+	}
+	else if(what == LINES){
+		prepareShaderProgram("./lines.vert", "./lines.frag", "./lines.geo");
+	}
 }

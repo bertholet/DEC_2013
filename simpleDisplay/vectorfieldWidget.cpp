@@ -102,6 +102,58 @@ void vectorfieldWidget::solveVField()
 		
 	}
 
+	/*///////////////////*** ID IE IB IU IG IG II IN IG *** /////////////////////
+	
+	for(int i = 0; i < collected_fc.size(); i++){
+		//iterate over the edges around the ith collected face
+		for(int j = 0; j < 3; j++){
+			edg_nr = f2e[collected_fc[i]][j];
+			edg = edgs[edg_nr].getTuple();
+			edges.push_back(edg_nr);
+			edges_constr.push_back((vert[edg.b]-vert[edg.a]).dot(tuple3f(1,0,0)));
+		}
+
+	}
+
+	oneForm aSolution(&mesh);
+	aSolution.resize(mesh.getEdges().size());
+	for(int i = 0; i < aSolution.size(); i++){
+		edg = edgs[i].getTuple();
+		aSolution[i] = (vert[edg.b]-vert[edg.a]).dot(tuple3f(1,0,0));
+	}
+	aSolution.saveVector("sol", "vf_aSolution.m");
+
+	oneForm dualSolution(&mesh);
+	dualSolution.resize(mesh.getEdges().size());
+	for(int i = 0; i < dualSolution.size(); i++){
+		edg = edgs[i].getTuple();
+		dualSolution[i] = (vert[edg.b]-vert[edg.a]).dot(tuple3f(0,1,0));
+	}
+	dualSolution.saveVector("dual_sol", "vf_dualSolution.m");
+
+	oneForm onesOnInner(&mesh);
+	onesOnInner.onesOnInnerEdges();
+	onesOnInner.saveVector("innerEdges", "vf_inneredges.m");
+
+	floatVector onesBoundaryVertices(mesh.getVertices().size());
+	for(int i = 0; i < edgs.size(); i++){
+		if(edgs[i].isOnBorder()){
+			onesBoundaryVertices[edgs[i].start()] = 1;
+			onesBoundaryVertices[edgs[i].end()] = 1;
+		}
+	}
+	onesBoundaryVertices.saveVector("bVerts", "vf_bv.m");
+
+	floatVector cornerVertices(mesh.getVertices().size());
+	for(int i = 0; i < vert.size(); i++){
+		if(mesh.getv2e()[i].size() == 2){
+			cornerVertices[i] = 1;
+		}
+	}
+	cornerVertices.saveVector("cVerts", "vf_cv.m");
+	//////////////////////////////////////////////////////////////////////////*/
+	
+
 	float srcFlow = flowSlider->value();
 	srcFlow /= srcFlowStep;
 	srcFlow = pow(10, srcFlow-1);

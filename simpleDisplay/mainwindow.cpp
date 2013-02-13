@@ -84,8 +84,8 @@ void MainWindow::setupComponents(QGLFormat & format)
 	cbox2 = new QCheckBox("Normed Field",this);
 	cbox3 = new QCheckBox("Smooth",this);
 	butt_reset = new QPushButton("Reset", this);
-	cBoxArrow = new QCheckBox("Arrows", this);
-	cBoxArrow->setChecked(false);
+	cBoxLines = new QCheckBox("Lines", this);
+	cBoxLines->setChecked(false);
 
 	fieldSlider = new QSlider(Qt::Horizontal, this);
 	fieldSlider->setMinimum(0);
@@ -145,7 +145,7 @@ void MainWindow::addAction()
 
 	connect(linewidthSlider, SIGNAL(sliderReleased()), this, SLOT(lineWidthChanged()));
 	connect(fieldSlider, SIGNAL(sliderReleased()), this, SLOT(fieldLengthChanged()));
-	connect(cBoxArrow, SIGNAL(stateChanged(int)), this, SLOT(showArrows(int)));
+	connect(cBoxLines, SIGNAL(stateChanged(int)), this, SLOT(showLines(int)));
 
 
 	this->subscribeResetable( myGLDisp);
@@ -166,7 +166,7 @@ void MainWindow::layoutGui()
 	rightLayout->addLayout(sublayout);
 	sublayout = new QHBoxLayout();
 	sublayout->addWidget(cbox2);
-	sublayout->addWidget(cBoxArrow);
+	sublayout->addWidget(cBoxLines);
 	sublayout->addWidget(cbox3);
 	rightLayout->addLayout(sublayout);
 	rightLayout->addWidget(fieldSlider);
@@ -322,8 +322,8 @@ void MainWindow::reset()
 
 void MainWindow::lineWidthChanged()
 {
-	/*this->myGLDisp->setLineWidth((0.f + this->linewidthSlider->value())/SLIDER_STEPSPERUNIT);
-	this->update();*/
+	this->myGLDisp->setLineWidth((0.f + this->linewidthSlider->value())/SLIDER_STEPSPERUNIT);
+	this->update();
 }
 
 void MainWindow::fieldLengthChanged()
@@ -337,8 +337,15 @@ void MainWindow::fieldLengthChanged()
 	this->update();
 }
 
-void MainWindow::showArrows( int val)
+void MainWindow::showLines( int val)
 {
+	if(val == 2){
+		myGLDisp->showLines();
+	}
+	else{
+		myGLDisp->setSmooth(cbox3->isChecked());
+	}
+	this->update();
 	//Model::getModel()->setShowArrows(val==2);
 	/*if(Model::getModel()->getVField() != NULL){
 		Model::getModel()->getVField()->setShowArrows(val==2);

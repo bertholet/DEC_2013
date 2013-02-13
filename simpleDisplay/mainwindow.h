@@ -42,7 +42,7 @@ private:
 	QPushButton * butt_reset;
 	QCheckBox * cbox2;
 	QCheckBox * cbox3;
-	QCheckBox * cBoxArrow;
+	QCheckBox * cBoxLines;
 	QSlider * fieldSlider;
 	QSlider * linewidthSlider;
 
@@ -66,7 +66,7 @@ private slots:
 	void setVFieldMode( int );
 	void lineWidthChanged();
 	void fieldLengthChanged();
-	void showArrows( int );
+	void showLines( int );
 	void setSmoothMode( int what );
 };
 

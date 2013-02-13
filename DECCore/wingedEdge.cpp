@@ -306,6 +306,16 @@ int wingedEdge::commonFace( wingedEdge & other )
 	return -1;
 }
 
+bool wingedEdge::hasPrevEdge(int vertex)
+{
+	return getPrev(vertex)!= NULL;
+}
+
+bool wingedEdge::hasNextEdge(int vertex)
+{
+	return getNext(vertex) != NULL;
+}
+
 
 
 

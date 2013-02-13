@@ -7,6 +7,8 @@
 class glDisplayableMesh:public glDisplayableIntersectable
 {
 public:
+	enum SHADER {PHONG, FLAT, LINES};
+
 	glDisplayableMesh(wfMesh *);
 	virtual ~glDisplayableMesh(void);
 
@@ -19,14 +21,7 @@ public:
 
 	virtual wfMesh * getWfMesh();
 
-	void switchStyle(bool what){
-		if(what){
-			prepareShaderProgram("./phong.vert", "./phong.frag", "./phong.geo");
-		}
-		else{
-			prepareShaderProgram("./flat.vert", "./flat.frag", "./flat.geo");
-		}
-	}
+	void switchStyle(SHADER what);
 
 	virtual std::string colorBufferName();
 

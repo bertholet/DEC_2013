@@ -22,7 +22,7 @@ void application_vfDesign::computeField( MODEL & model,
 	std::vector<float> & edgeConstraints, 
 	oneForm & target )
 {
-	cpuCSRMatrix & st1 = model.getStar1_mixed();
+	cpuCSRMatrix & st1 = DDGMatrices::star1(*model.getMesh());//model.getStar1_mixed();
 
 	cpuCSRMatrix duald1_st1 =  model.getBorder1() *st1* -1;
 	cpuCSRMatrix duald1_st1_transp = st1 * model.getD0() * -1;
@@ -30,14 +30,19 @@ void application_vfDesign::computeField( MODEL & model,
 	cout << "\n computing VF....\n";
 	if(adaptToBorder){
 		cout << "*using border adaptation \n";
-		duald1_st1 = duald1_st1 - DDGMatrices::d1dual_star1_borderDiff(*model.getMesh());
-		duald1_st1_transp = duald1_st1_transp - DDGMatrices::d1dual_star1_borderDiff_transp(*model.getMesh());
+		duald1_st1 = duald1_st1 +DDGMatrices::d1dual_star1_borderDiff(*model.getMesh());
+		duald1_st1_transp = duald1_st1_transp + DDGMatrices::d1dual_star1_borderDiff_transp(*model.getMesh());
 	}
+
+	//duald1_st1.saveMatrix("vf_duald1st1.m");
+
 	cpuCSRMatrix star0_inv = model.getStar0_mixed();
 	star0_inv.elementWiseInv();
 
 	//computation of the matrix
 	cpuCSRMatrix mat = model.getBorder2()* model.getStar2() * model.getD1();
+	//mat.saveMatrix("vf_curl.m");
+	//(duald1_st1_transp * star0_inv* duald1_st1).saveMatrix("vf_div.m");
 	mat = mat +(duald1_st1_transp * star0_inv* duald1_st1);
 
 	

@@ -26,10 +26,10 @@ tests::~tests(void)
 void tests::testAndSaveDECMatrices()
 {
 
-	wfMesh * myMesh = new wfMesh("../objfiles/borderTiny.obj");
+	wfMesh * myMesh = new wfMesh("../objfiles/plane_32.obj");
 
 
-	*myMesh = ball(1,3,2);
+//	*myMesh = ball(1,3,2);
 
 	wingedMesh wingedM(myMesh);
 
