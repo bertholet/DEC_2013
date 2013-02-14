@@ -1,4 +1,4 @@
-#include "meshParamWidget.h"
+#include "widget_meshParam.h"
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QComboBox>

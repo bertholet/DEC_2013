@@ -1,4 +1,4 @@
-#include "vectorfieldWidget.h"
+#include "widget_vfDesign.h"
 
 #include <QRadioButton>
 #include <QPushButton>

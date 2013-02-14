@@ -1,4 +1,4 @@
-#include "smoothingWidget.h"
+#include "widget_smoothing.h"
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QLabel>

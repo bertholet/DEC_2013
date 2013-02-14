@@ -6,10 +6,10 @@
 //#include "curvVisualizingMesh.h"
 //#include "generatemeshgui.h"
 
-#include "vectorfieldWidget.h"
-#include "smoothingWidget.h"
+#include "widget_vfDesign.h"
+#include "widget_smoothing.h"
 #include "glDisplayable.h"
-#include "meshParamWidget.h"
+#include "widget_meshParam.h"
 #include "colorMap.h"
 
 #include "MODEL.h"
