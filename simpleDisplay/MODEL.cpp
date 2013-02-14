@@ -11,6 +11,7 @@ MODEL::MODEL(void)
 	myMesh->getWfMesh()->attach(this);
 
 	d0 = d1 = border1 =border2
+		=duald1 = duald1_t
 		=id0 
 		=star0 = star1 = star2 =
 		star0_mixed = star1_mixed = 
@@ -90,6 +91,9 @@ void MODEL::freeAll()
 	if(d0_valid!= INVALID){
 		delete d0;
 	}
+	if(d1_valid!= INVALID){
+		delete d1;
+	}
 	if(id0_valid!= INVALID){
 		delete id0;
 	}
@@ -99,8 +103,11 @@ void MODEL::freeAll()
 	if(border2_valid!= INVALID){
 		delete border2;
 	}
-	if(d1_valid!= INVALID){
-		delete d1;
+	if(duald1_valid != INVALID){
+		delete duald1;
+	}
+	if(duald1_t_valid != INVALID){
+		delete duald1_t;
 	}
 	if(star0_valid!= INVALID){
 		delete star0;
@@ -138,6 +145,8 @@ void MODEL::invalidateAll()
 		d1_valid = 
 		border1_valid=
 		border2_valid =
+		duald1_valid =
+		duald1_t_valid =
 		id0_valid =
 		star0_valid = 
 		star1_valid = 
@@ -261,6 +270,49 @@ cpuCSRMatrix & MODEL::getBorder2()
 		return *border2;
 	}
 }
+
+
+cpuCSRMatrix & MODEL::getDualD1()
+{
+	//the dual derivative D1 is minus the border1 matrix.
+	if(duald1_valid == VALID){
+		return *duald1;
+	}
+	else{
+		if(duald1_valid == INVALID){
+			duald1 = new cpuCSRMatrix();
+		}
+
+		*duald1 = getBorder1();
+		*duald1 *=-1;
+
+		cout << "*Duald1 created from border1 "<<"\n";
+		duald1_valid = VALID;
+		return *duald1;
+	}
+}
+
+
+cpuCSRMatrix & MODEL::getDualD1_T()
+{
+	//the dual derivative D1 transposed is minus the d0 matrix.
+	if(duald1_t_valid == VALID){
+		return *duald1_t;
+	}
+	else{
+		if(duald1_t_valid == INVALID){
+			duald1_t = new cpuCSRMatrix();
+		}
+
+		*duald1_t = getD0();
+		*duald1_t *=-1;
+
+		cout << "*Duald1_t created from d0 "<<"\n";
+		duald1_t_valid = VALID;
+		return *duald1_t;
+	}
+}
+
 
 cpuCSRMatrix & MODEL::getStar2()
 {

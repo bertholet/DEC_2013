@@ -30,13 +30,9 @@ MainWindow::MainWindow(QGLFormat & format): QMainWindow()
 
 	addAction();
 
-
 	layoutGui();
 
-
 	this->show();
-
-
 }
 
 
@@ -80,7 +76,7 @@ void MainWindow::setupComponents(QGLFormat & format)
 	comboBox->addItem("TextureMap");
 	comboBox->addItem("Embedding");
 
-	cbox = new QCheckBox("Draw strokes",this);
+	//cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Normed Field",this);
 	cbox3 = new QCheckBox("Smooth",this);
 	butt_reset = new QPushButton("Reset", this);
@@ -138,7 +134,7 @@ void MainWindow::addAction()
 	connect(openObjFileAct, SIGNAL(triggered()), this, SLOT(openObjFile()));
 	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
 	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
-	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
+//	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
 	connect(cbox2, SIGNAL(stateChanged(int)), this, SLOT(setVFieldMode(int)));
 	connect(cbox3, SIGNAL(stateChanged(int)), this, SLOT(setSmoothMode(int)));
 	connect(butt_reset, SIGNAL(released()), this, SLOT(reset()));
@@ -161,7 +157,7 @@ void MainWindow::layoutGui()
 	rightLayout->addWidget(comboBox);
 	rightLayout->addWidget(tabs);
 	QHBoxLayout * sublayout = new QHBoxLayout();
-	sublayout->addWidget(cbox);
+	//sublayout->addWidget(cbox);
 	sublayout->addWidget(butt_reset);
 	rightLayout->addLayout(sublayout);
 	sublayout = new QHBoxLayout();
@@ -290,7 +286,7 @@ void MainWindow::setDisplayMode( int mode )
 	}
 }
 
-void MainWindow::setMouseMode( int state )
+/*void MainWindow::setMouseMode( int state )
 {
 	if(state == 0){//unchecked
 		this->myGLDisp->setMouseMode(TRACKBALLMODE);
@@ -299,7 +295,7 @@ void MainWindow::setMouseMode( int state )
 		this->myGLDisp->setMouseMode(INPUTMODE);
 		//this->myGLDisp->setMode(MOUSEINPUTMODE);
 	}
-}
+}*/
 
 void MainWindow::setVFieldMode( int state)
 {

@@ -38,7 +38,7 @@ private:
 
 //	fluidControlWidget * fluidcontWidget;
 
-	QCheckBox * cbox;
+	//QCheckBox * cbox;
 	QPushButton * butt_reset;
 	QCheckBox * cbox2;
 	QCheckBox * cbox3;
@@ -62,7 +62,7 @@ private slots:
 	void setDisplayMode(int);
 	void reset();
 
-	void setMouseMode(int state);
+	//void setMouseMode(int state);
 	void setVFieldMode( int );
 	void lineWidthChanged();
 	void fieldLengthChanged();

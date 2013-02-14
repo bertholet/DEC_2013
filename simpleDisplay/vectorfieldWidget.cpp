@@ -25,50 +25,42 @@ vectorfieldWidget::vectorfieldWidget(MainWindow *parent)
 	useBorderMat = true;
 	this->mainWindow = parent;
 
+	//setup display components for vectorfield display
+	vfSelectionDisplay = new glVectorfield();
+	vfSelectionDisplay->setColor(QVector3D(0,0,1));
+	vfSelectionDisplay->display(dirs.getPositions(), dirs.getDirections());
+	computedVFDisplay = new glVectorfield();
+	computedVFDisplay->setColor(QVector3D(1,0,0));
+
+	//subscribe to mousestroke events
 	mainWindow->getDisplayer()->subscribeToMousestrokes(& sources);
 	mainWindow->getDisplayer()->subscribeToMousestrokes(& sinks);
 	mainWindow->getDisplayer()->subscribeToMousestrokes(&dirs);
 
-	vfSelectionDisplay = new glVectorfield();
-	vfSelectionDisplay->setColor(QVector3D(0,0,1));
-	vfSelectionDisplay->display(dirs.getPositions(), dirs.getDirections());
-
-	computedVFDisplay = new glVectorfield();
-	computedVFDisplay->setColor(QVector3D(1,0,0));
-	//vfSelectionDisplay->display(dirs.getPositions(), dirs.getDirections());
-
-
+	//subscribe to events
 	mainWindow->getDisplayer()->subscribeDisplayable(vfSelectionDisplay);
 	mainWindow->getDisplayer()->subscribeToMousestrokes(vfSelectionDisplay);
-
 	mainWindow->getDisplayer()->subscribeDisplayable(computedVFDisplay);
-
+	
 	mainWindow->subscribeResetable(&dirs);
 	mainWindow->subscribeResetable(&sources);
 	mainWindow->subscribeResetable(&sinks);
-	
+	mainWindow->subscribeResetable(this);
+	mainWindow->subscribeResetable(computedVFDisplay);
+
 	mainWindow->subscribeResizables(vfSelectionDisplay);
 	mainWindow->subscribeResizables(computedVFDisplay);
 	
+	//direct source sink input to the display
 	sources.mapTo( &mainWindow->getDisplayer()->getMarkupMap(), tuple3f(1,0.1,0.1));
 	sinks.mapTo( &mainWindow->getDisplayer()->getMarkupMap(), tuple3f(0.1,1,0.1));
 
 	setupSliders();
 	layoutGui();
-
-
-
-//	this->solver = new VectorFieldSolver(Model::getModel()->getMesh(), 
-//		*Model::getModel()->getMeshInfo()->getHalfedges(), //
-//		*Model::getModel()->getMeshInfo()->getFace2Halfedges());
-	//this->solver = NULL;
-	//Model::getModel()->attach(this);
-
 }
 
 vectorfieldWidget::~vectorfieldWidget()
 {
-	//mainWindow->getDisplayer()->unsubscribeDisplayable(myField);
 	delete vfSelectionDisplay;
 	delete computedVFDisplay;
 }
@@ -77,32 +69,22 @@ vectorfieldWidget::~vectorfieldWidget()
 void vectorfieldWidget::solveVField()
 {
 
-	// aliases
+	// alias current mesh
 	wingedMesh & mesh = * MODEL::getModel()->getMesh();
-	std::vector<wingedEdge> & edgs = mesh.getEdges();
-	std::vector<tuple3i> & f2e = mesh.getf2e();
-	std::vector<tuple3f> & vert = mesh.getVertices();
-	std::vector<int> & collected_fc = dirs.getFaces();
-	std::vector<tuple3f> & collected_dir = * dirs.getDirections();
 
 	//collect all the data needed
+
 	std::vector<int> edges;
 	std::vector<float> edges_constr;
-	int edg_nr;
-	tuple2i edg;
+	//the constraints get stored in edges, edge_constr
+	getCollectedEdgeConstraints(mesh, edges, edges_constr);
 
-	for(int i = 0; i < collected_fc.size(); i++){
-		//iterate over the edges around the ith collected face
-		for(int j = 0; j < 3; j++){
-			edg_nr = f2e[collected_fc[i]][j];
-			edg = edgs[edg_nr].getTuple();
-			edges.push_back(edg_nr);
-			edges_constr.push_back((vert[edg.b]-vert[edg.a]).dot(collected_dir[i]));
-		}
-		
-	}
+	float srcFlow = getSourceFlow();
+	float weight = getGuideFieldWeight();
+	float constraintLength = getGuideFieldLength();
 
-	/*///////////////////*** ID IE IB IU IG IG II IN IG *** /////////////////////
+
+	/*/////////////////// *** ID IE IB IU IG IG II IN IG *** /////////////////////
 	
 	for(int i = 0; i < collected_fc.size(); i++){
 		//iterate over the edges around the ith collected face
@@ -154,50 +136,32 @@ void vectorfieldWidget::solveVField()
 	//////////////////////////////////////////////////////////////////////////*/
 	
 
-	float srcFlow = flowSlider->value();
-	srcFlow /= srcFlowStep;
-	srcFlow = pow(10, srcFlow-1);
-
-	float weight = gfWeihgtSlider->value();
-	weight = 8*weight/weightStep;
-	weight = pow(10, weight-8) - pow(10,-8.f);
-	weight = (weight > 0 ? weight: 0.f);
-	float constraintLength = pow(10, -1 + (0.f + gfLengthSlider->value())/lengthStep);
-
-
-	//set up local vars
+	//set up application
 	application_vfDesign vf_design;
 	vf_design.setAdaptToBorder(useBorderMat);
-	oneForm field(MODEL::getModel()->getMesh());
+	vf_design.setGuideFieldWeight(weight);
+	vf_design.setSourceSinkFlow(srcFlow);
+	vf_design.setGuideFieldScale(constraintLength);
+
 
 	// do the vector field computation
+	oneForm field(MODEL::getModel()->getMesh());
+
 	vf_design.computeField(*MODEL::getModel(),
 		sources.getVertices(), 
 		sinks.getVertices(),
 		edges, 
 		edges_constr,
-		field);
+		field,
+		cBoxDirectional->isChecked());
 
 
 	//postprocessing: convert 1-form to vector field
 	field.toVField(vf_dirs);
-	//meshMath::circumcenters(mesh,vf_pos);
 	meshMath::centroids(mesh,vf_pos);
 
-
-	//display
+	//display the field
 	computedVFDisplay->display(&vf_pos, & vf_dirs);
-
-	/*for(int i = 0; i < collector.sinkVert.size(); i++){
-		verts.push_back(collector.sinkVert[i]);
-		constr.push_back(srcFlow);
-	}
-	for(int i = 0; i < collector.sourceVert.size(); i++){
-		verts.push_back(collector.sourceVert[i]);
-		constr.push_back(-srcFlow);
-	}
-
-	solver->perturb(verts, constr);*/
 
 
 
@@ -250,6 +214,58 @@ void vectorfieldWidget::fieldSelection( bool active )
 		dirs.setActive(true);
 	}
 }
+
+
+void vectorfieldWidget::getCollectedEdgeConstraints( wingedMesh &mesh, std::vector<int> &edges, std::vector<float> &edges_constr )
+{
+	tuple2i edg;
+	int edg_nr;
+
+	std::vector<tuple3f> & vert = mesh.getVertices();
+	std::vector<tuple3f> & collected_dir = * dirs.getDirections();
+	std::vector<wingedEdge> & edgs = mesh.getEdges();
+	std::vector<int> & collected_fc = dirs.getFaces();
+	std::vector<tuple3i> & f2e = mesh.getf2e();
+	for(int i = 0; i < collected_fc.size(); i++){
+		//iterate over the edges around the ith collected face
+		for(int j = 0; j < 3; j++){
+			edg_nr = f2e[collected_fc[i]][j];
+			edg = edgs[edg_nr].getTuple();
+			edges.push_back(edg_nr);
+			edges_constr.push_back((vert[edg.b]-vert[edg.a]).dot(collected_dir[i]));
+		}
+
+	}
+}
+
+
+float vectorfieldWidget::getSourceFlow()
+{
+	float srcFlow = flowSlider->value();
+	srcFlow /= srcFlowStep;
+	srcFlow = pow(10, srcFlow-1);
+	return srcFlow;
+}
+
+
+
+float vectorfieldWidget::getGuideFieldWeight()
+{
+	float weight;
+	weight = gfWeihgtSlider->value();
+	weight = 8*weight/weightStep;
+	weight = pow(10, weight-8) - pow(10,-8.f);
+	weight = (weight > 0 ? weight: 0.f);	
+	return weight;
+}
+
+
+float vectorfieldWidget::getGuideFieldLength()
+{
+	return pow(10, -1 + (0.f + gfLengthSlider->value())/lengthStep);
+}
+
+
 
 /*void vectorFieldControlWidget::update( void * src, Model::modelMsg msg )
 {
@@ -326,11 +342,6 @@ void vectorfieldWidget::layoutGui()
 {
 	QPushButton *butt_solve = new QPushButton("Solve VField!");
 	connect(butt_solve, SIGNAL(released()), this, SLOT(solveVField()));
-
-	/*	QPushButton *butt3 =new QPushButton("Store VField!");
-	connect(butt3, SIGNAL(released()), this, SLOT(storeField()));*/
-
-
 	QRadioButton * rbutt = new QRadioButton("Select Sources", this);
 	connect(rbutt, SIGNAL(toggled(bool)), this, SLOT(sourceSelection(bool)));
 	QRadioButton * rbutt2 = new QRadioButton("Select Sinks", this);
@@ -349,12 +360,7 @@ void vectorfieldWidget::layoutGui()
 	cBoxBorderMatrix->setChecked(useBorderMat);
 	connect(cBoxBorderMatrix, SIGNAL(stateChanged(int)), this, SLOT(useBorderMatrix(int)));
 
-	//	QCheckBox * cBoxArrow = new QCheckBox("Show Arrows", this);
-	//	cBoxArrow->setChecked(false);
-	//	connect(cBoxArrow, SIGNAL(stateChanged(int)), this, SLOT(showArrows(int)));
-
 	QVBoxLayout * layout = new QVBoxLayout();
-	//	layout->addWidget(cbox);
 	layout->addWidget(rbutt);
 	layout->addWidget(rbutt2);
 	layout->addWidget(rbutt3);
@@ -365,12 +371,17 @@ void vectorfieldWidget::layoutGui()
 	layout->addWidget(sliderLabel3);
 	layout->addWidget(gfLengthSlider);
 	layout->addWidget(butt_solve);
-
 	layout->addWidget(cBoxDirectional);
 	layout->addWidget(cBoxBorderMatrix);
-	//layout->addWidget(cBoxArrow);
 	this->setLayout(layout);
 }
+
+void vectorfieldWidget::reset()
+{
+	vf_dirs.clear();
+	vf_pos.clear();
+}
+
 
 
 
