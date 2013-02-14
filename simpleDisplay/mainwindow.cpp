@@ -8,13 +8,15 @@
 
 #include "widget_vfDesign.h"
 #include "widget_smoothing.h"
-#include "glDisplayable.h"
+#include "widget_fluidSimulation.h"
 #include "widget_meshParam.h"
+
+#include "glDisplayable.h"
+#include "glDebuggingStuff.h"
 #include "colorMap.h"
 
 #include "MODEL.h"
 #include "mySolver.h"
-#include "glDebuggingStuff.h"
 
 #define SLIDER_STEPSPERUNIT 20
 
@@ -29,7 +31,6 @@ MainWindow::MainWindow(QGLFormat & format): QMainWindow()
 	setupQTabs();
 
 	addAction();
-
 	layoutGui();
 
 	this->show();
@@ -103,6 +104,8 @@ void MainWindow::setupQTabs()
 {
 	this->tabs = new QTabWidget(this);
 
+	QWidget * fluidSimWidget = new widget_fluidSimulation(this);
+	tabs->addTab(fluidSimWidget, "Fluid Simulation");
 
 	vectorfieldWidget * vfWidget = new vectorfieldWidget(this);
 	//vfWidget->setMainWindow(this);
@@ -114,15 +117,6 @@ void MainWindow::setupQTabs()
 
 	QWidget * tab1Widget = new smoothingWidget();
 	tabs->addTab(tab1Widget, "Smoothing");
-
-
-
-
-
-	/*fluidcontWidget = new fluidControlWidget();
-	tabs->addTab(fluidcontWidget, "Fluid Simulation");*/
-
-
 }
 
 /************************************************************************/
