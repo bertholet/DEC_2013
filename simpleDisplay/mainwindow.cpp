@@ -2,8 +2,7 @@
 #include <iostream>
 #include <QCheckBox>
 #include <QPushButton>
-//#include "mesh.h"
-//#include "curvVisualizingMesh.h"
+
 //#include "generatemeshgui.h"
 
 #include "widget_vfDesign.h"
@@ -280,17 +279,6 @@ void MainWindow::setDisplayMode( int mode )
 	}
 }
 
-/*void MainWindow::setMouseMode( int state )
-{
-	if(state == 0){//unchecked
-		this->myGLDisp->setMouseMode(TRACKBALLMODE);
-	}
-	if(state == 2){//checked
-		this->myGLDisp->setMouseMode(INPUTMODE);
-		//this->myGLDisp->setMode(MOUSEINPUTMODE);
-	}
-}*/
-
 void MainWindow::setVFieldMode( int state)
 {
 	/*if(state == 0){//unchecked
@@ -336,10 +324,6 @@ void MainWindow::showLines( int val)
 		myGLDisp->setSmooth(cbox3->isChecked());
 	}
 	this->update();
-	//Model::getModel()->setShowArrows(val==2);
-	/*if(Model::getModel()->getVField() != NULL){
-		Model::getModel()->getVField()->setShowArrows(val==2);
-	}*/
 }
 
 void MainWindow::setSmoothMode( int what )
@@ -368,7 +352,10 @@ void MainWindow::unSubscribeResetable( Resetable * r )
 
 void MainWindow::subscribeResizables( Resizable * r )
 {
-	resizables.push_back(r);
+	std::vector<Resizable*>::iterator it = std::find(resizables.begin(), resizables.end(), r);
+	if(it== resizables.end()){
+		resizables.push_back(r);
+	}
 }
 
 void MainWindow::unSubscribeResizable( Resizable * r )

@@ -6,6 +6,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <qspinbox.h>
+#include <QTimer>
+#include "mainwindow.h"
+#include "glVectorfield.h"
 
 #include "application_fluidSimulation.h"
 
@@ -13,12 +16,19 @@ class widget_fluidSimulation: public QWidget
 {
 	Q_OBJECT
 public:
-	widget_fluidSimulation(QWidget *parent = NULL);
+	widget_fluidSimulation(MainWindow *parent);
 	~widget_fluidSimulation(void);
 
-private:
-	float stepSize;
 
+	float getViscosity();
+	float getForceStrength();
+	float getTimestep();
+	int getForceAge();
+
+private:
+	//float stepSize;
+
+	//input gui elements
 	QSlider * stepSlider;
 	QSlider * viscositySlider;
 	QSlider * forceAgeSlider;
@@ -42,21 +52,28 @@ private:
 
 	QSpinBox * lineLength, * colorScale ;
 
-
+	//display stuff
+	MainWindow * mainwindow;
+	//harmonic component display
+	std::vector<tuple3f> harm_vField,harm_circumcenters;
+	glVectorfield * harm_component;
+	
 	void setUpComponents();
 	void addAction();
 	void doLayout();
 
 protected slots:
+	void doSimulation();
+
 	void resetFlux();
 	void singleSimulationStep();
 	void startSim();
 	void defineBorderConstraints();
-	void debugSome();
+	void harmonicComponent();
 	void pathtrace();
 	void showVorticityPart();
-	void updateTimeStep();
-	void updateViscosity();
+	void timeStepChanged();
+	void viscosityChanged();
 	void forceAgeChanged();
 	void forceStrengthChanged();
 	void borderDirInput(const QString & str);

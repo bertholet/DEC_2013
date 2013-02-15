@@ -434,6 +434,16 @@ cpuCSRMatrix & MODEL::getLaplace0_ignoreBoundary()
 	}
 }
 
+cpuCSRMatrix & MODEL::getD0_T()
+{
+	return getBorder1();
+}
+
+cpuCSRMatrix & MODEL::getD1_T()
+{
+	return getBorder2();
+}
+
 
 
 

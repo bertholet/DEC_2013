@@ -314,6 +314,10 @@ void Displayer::setVFLength( float param1 )
 
 void Displayer::subscribeDisplayable( glDisplayable * disp )
 {
+	std::vector<glDisplayable*>::iterator it = std::find(subscr_displayables.begin(), subscr_displayables.end(), disp);
+	if(it!= subscr_displayables.end()){
+		return;
+	}
 	subscr_displayables.push_back(disp);
 	if(!disp->linkedAndReady()&& QGLContext::currentContext()!= NULL && QGLContext::currentContext()->isValid()){
 		disp->sendToGPU();

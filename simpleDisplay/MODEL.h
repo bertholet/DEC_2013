@@ -40,7 +40,11 @@ public:
 	cpuCSRMatrix & getD1();
 	cpuCSRMatrix & getBorder1();
 	cpuCSRMatrix & getBorder2();
-
+	//same as border1 and border2
+	cpuCSRMatrix & getD0_T();
+	cpuCSRMatrix & getD1_T();
+	
+	//minus the border1 matrix
 	cpuCSRMatrix & getDualD1();
 	//transposed of DualD1
 	cpuCSRMatrix & getDualD1_T();

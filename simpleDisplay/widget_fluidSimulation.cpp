@@ -1,23 +1,35 @@
 #include "widget_fluidSimulation.h"
 #include <QVBoxLayout>
+#include <sstream>
+#include <stdlib.h>
 
-widget_fluidSimulation::widget_fluidSimulation(QWidget *parent)
+#include "meshMath.h"
+
+widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 	:QWidget(parent)
 {
 	setUpComponents();
-
-
-
 	addAction();
-
-
 	doLayout();
 
+	animationTimer = new QTimer(this);
+	connect( animationTimer, SIGNAL(timeout()), this, SLOT(doSimulation())); 
+
+	harm_component = new glVectorfield();
+	mainwindow = parent;
+
+	forceAgeChanged();
+	forceStrengthChanged();
+	viscosityChanged();
+	timeStepChanged();
+
+	
 }
 
 
 widget_fluidSimulation::~widget_fluidSimulation(void)
 {
+	delete harm_component;
 }
 
 void widget_fluidSimulation::setUpComponents()
@@ -26,7 +38,7 @@ void widget_fluidSimulation::setUpComponents()
 	but_simStep = new QPushButton("Do 1 Timestep");
 	but_startSim = new QPushButton("Start/Stop Simulation");
 	but_borderconstr = new QPushButton("Define Border Constraints");
-	but_debug = new QPushButton("Debug (pathtracing/vorts)!");
+	but_debug = new QPushButton("Harmonic");
 
 	but_dbg1 = new QPushButton("PathTr");
 	but_dbg2= new QPushButton("VortPart");
@@ -96,14 +108,14 @@ void widget_fluidSimulation::addAction()
 	connect(but_simStep, SIGNAL(released()), this, SLOT(singleSimulationStep()));
 	connect(but_startSim , SIGNAL(released()), this, SLOT(startSim()));
 	connect(but_borderconstr , SIGNAL(released()), this, SLOT(defineBorderConstraints()));
-	connect(but_debug , SIGNAL(released()), this, SLOT(debugSome()));
+	connect(but_debug , SIGNAL(released()), this, SLOT(harmonicComponent()));
 
 	connect(but_dbg1 , SIGNAL(released()), this, SLOT(pathtrace()));
 	connect(but_dbg2 , SIGNAL(released()), this, SLOT(showVorticityPart()));
 
 
-	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(updateTimeStep()));
-	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(updateViscosity()));
+	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(timeStepChanged()));
+	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
 	connect(forceAgeSlider,SIGNAL(sliderReleased()), this, SLOT(forceAgeChanged()));
 	connect(forceStrengthSlider,SIGNAL(sliderReleased()), this, SLOT(forceStrengthChanged()));
 
@@ -172,10 +184,50 @@ void widget_fluidSimulation::doLayout()
 	this->setLayout(layout);
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Getters
+//////////////////////////////////////////////////////////////////////////
+float widget_fluidSimulation::getViscosity()
+{
+	float temp = this->viscositySlider->value()*6 - 3*this->viscositySlider->maximum();
+	temp/= this->viscositySlider->maximum();
+	temp = pow(10,temp)- 0.001;
+	temp = temp < 0.000001?
+		0:
+		temp;
+	return temp;
+}
+
+float widget_fluidSimulation::getForceStrength()
+{
+	float temp = this->forceStrengthSlider->value()*6 - this->forceStrengthSlider->maximum();
+	temp/= this->forceStrengthSlider->maximum();
+	temp = pow(10,temp)- 0.1;
+	temp = temp < 0.00001?
+		0:
+		temp;
+	return temp;
+}
+
+float widget_fluidSimulation::getTimestep()
+{
+	return pow(10.f,-4 + 4*(0.f +this->stepSlider->value())/this->stepSlider->maximum())-pow(10.f,-4);
+}
+
+int widget_fluidSimulation::getForceAge()
+{
+	return forceAgeSlider->value();
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //The Slots
 //////////////////////////////////////////////////////////////////////////
+void widget_fluidSimulation::doSimulation()
+{
+
+}
+
 
 void widget_fluidSimulation::resetFlux()
 {
@@ -197,9 +249,25 @@ void widget_fluidSimulation::defineBorderConstraints()
 	throw std::exception("The method or operation is not implemented.");
 }
 
-void widget_fluidSimulation::debugSome()
+void widget_fluidSimulation::harmonicComponent()
 {
-	throw std::exception("The method or operation is not implemented.");
+	MODEL & model = *MODEL::getModel();
+	if(model.getMesh()->getBoundaryEdges().size()==0){
+		return;
+	}
+	std::vector<tuple3f> constr;
+	constr.assign(model.getMesh()->getBoundaryEdges().size(), tuple3f());
+	constr[0].set(tuple3f(0,1,0));
+
+	application_fluidSimulation sim;
+	oneForm harmonic = sim.setHarmonicFlow(constr,model);
+	harmonic.dualToVField(harm_vField);
+	meshMath::circumcenters(*model.getMesh(), harm_circumcenters);
+
+	harm_component->display(&harm_circumcenters,&harm_vField);
+	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
+	mainwindow->subscribeResizables(harm_component);
+
 }
 
 void widget_fluidSimulation::pathtrace()
@@ -212,24 +280,39 @@ void widget_fluidSimulation::showVorticityPart()
 	throw std::exception("The method or operation is not implemented.");
 }
 
-void widget_fluidSimulation::updateTimeStep()
+void widget_fluidSimulation::timeStepChanged()
 {
-	throw std::exception("The method or operation is not implemented.");
+	float stepSize = getTimestep();
+
+	std::stringstream ss;
+	ss << "Timestep Size (" << stepSize << ")";
+	this->label_stepSlider->setText(ss.str().c_str());
+
 }
 
-void widget_fluidSimulation::updateViscosity()
+void widget_fluidSimulation::viscosityChanged()
 {
-	throw std::exception("The method or operation is not implemented.");
+	float viscy = getViscosity();
+
+	std::stringstream ss;
+	ss << "Viscosity (" << viscy<< ")";
+	this->label_viscosity->setText(ss.str().c_str());
 }
 
 void widget_fluidSimulation::forceAgeChanged()
 {
-	throw std::exception("The method or operation is not implemented.");
+	int maxForceAge = getForceAge();
+
+	std::stringstream ss;
+	ss << "ForceAge (nr Iteratons): " << maxForceAge;
+	this->label_forceAge->setText(ss.str().c_str());
 }
 
 void widget_fluidSimulation::forceStrengthChanged()
 {
-	throw std::exception("The method or operation is not implemented.");
+	std::stringstream ss;
+	ss << "Force Strength (" << getForceStrength() << "):";
+	this->label_forceStrength->setText(ss.str().c_str());
 }
 
 void widget_fluidSimulation::borderDirInput( const QString & str)
@@ -266,3 +349,7 @@ void widget_fluidSimulation::colorScaleChanged( int what )
 {
 	throw std::exception("The method or operation is not implemented.");
 }
+
+
+
+

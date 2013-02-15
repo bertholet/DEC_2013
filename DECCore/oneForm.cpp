@@ -1,10 +1,11 @@
 #include "StdAfx.h"
 #include "oneForm.h"
-
+#include "matrixf.h"
 
 oneForm::oneForm(wingedMesh * msh)
 {
 	myMesh = msh;
+	assign(msh->getEdges().size(),0);
 }
 
 
@@ -86,12 +87,55 @@ void oneForm::toVField( std::vector<tuple3f> & target )
 	}
 }
 
+void oneForm::dualToVField( std::vector<tuple3f> & target )
+{
+	std::vector<tuple3i> & fcs = myMesh->getFaces();
+	std::vector<tuple3f> & verts = myMesh->getVertices();
+	std::vector<tuple3i> & f2e = myMesh->getf2e();
+	std::vector<wingedEdge> & edgs = myMesh->getEdges();
+	
+	target.resize(fcs.size(), tuple3f());
+
+	matrix3f flux2vel;
+
+	//triangle normal
+	tuple3f n;
+	//flux of actual face
+	tuple3f flx;
+
+	for(unsigned int i = 0; i < fcs.size(); i++){
+		tuple3f & a = verts[fcs[i].a];
+		tuple3f & b = verts[fcs[i].b];
+		tuple3f & c = verts[fcs[i].c];
+
+		n = (b-a).cross(c-a);
+		n.normalize();
+
+
+
+		flux2vel.setRow(0, (b-a).cross(n));
+		flux2vel.setRow(1, (c-b).cross(n));
+		flux2vel.setRow(2,n);
+
+		flux2vel = flux2vel.inv();
+
+		//flux should sum to 0. 
+		flx.x = (*this)[f2e[i].a]* fcs[i].orientation(edgs[f2e[i].a]);
+		flx.y = (*this)[f2e[i].b]* fcs[i].orientation(edgs[f2e[i].b]);
+		flx.z = 0;
+
+
+		target[i].set(flux2vel * flx);
+	}
+}
+
+
 void oneForm::onesOnBoundary()
 {
 	int sz = myMesh->getEdges().size();
 	resize(sz);
 	for(int i = 0; i < sz; i++){
-		(*this)[i] = (myMesh->getEdges()[i].isOnBorder()? 1:0);
+		(*this)[i] = (myMesh->getEdges()[i].isOnBorder()? 1.f:0.f);
 	}
 }
 
@@ -100,6 +144,6 @@ void oneForm::onesOnInnerEdges()
 	int sz = myMesh->getEdges().size();
 	resize(sz);
 	for(int i = 0; i < sz; i++){
-		(*this)[i] = (myMesh->getEdges()[i].isOnBorder()? 0:1);
+		(*this)[i] = (myMesh->getEdges()[i].isOnBorder()? 0.f:1.f);
 	}
 }
