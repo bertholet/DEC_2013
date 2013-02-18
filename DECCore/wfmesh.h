@@ -78,7 +78,7 @@ public:
 	vector<tuple3f>& getVertices(void);
 	vector<tuple3i>& getFaces();
 //	vector<tuple3i>& getFaces2Normals();
-	vector<tuple3f> & getFaceNormals();
+	//vector<tuple3f> & getFaceNormals();
 	vector<tuple3f> & getNormals();
 	vector<tuple3f> & getTexCoords();
 	

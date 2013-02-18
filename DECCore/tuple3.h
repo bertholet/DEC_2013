@@ -85,6 +85,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	int orientation(int vertex);
 
+	bool contains(int vert1, int vert2);
+
 	bool operator < (const tuple2i & other) const;
 	bool operator == (const tuple2i & other) const;
 };
@@ -101,7 +103,6 @@ public:
 	void set(int x_, int y_, int z_);
 
 	bool contains(tuple2i & tuple);
-
 	bool contains(int what);
 
 	int orientation(tuple2i & edge);

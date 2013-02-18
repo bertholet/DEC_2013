@@ -344,6 +344,12 @@ int tuple2i::orientation( int vertex )
 	return 0;
 }
 
+bool tuple2i::contains( int vert1, int vert2 )
+{
+	return (vert1 == a || vert1 == b)&&
+		(vert2 == a || vert2 == b );
+}
+
 bool tuple2i::operator<( const tuple2i & other ) const
 {
 	return this->a <other.a || (this->a == other.a && this->b < other.b);

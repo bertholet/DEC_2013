@@ -50,7 +50,7 @@ void application_vfDesign::computeField( MODEL & model,
 
 	wingedMesh & mesh = *model.getMesh();
 	
-	//////////////////////////////////////////////////////////////////////////
+	
 	//if specified compute the approximate local field lengths in a first pass
 	std::vector<tuple3f> firstPassField;
 	if(directional){
@@ -61,7 +61,7 @@ void application_vfDesign::computeField( MODEL & model,
 		firstPass.toVField(firstPassField);
 	}
 
-	//////////////////////////////////////////////////////////////////////////
+	
 	//Matrix set up
 	cpuCSRMatrix st1 = DDGMatrices::star1(mesh);//model.getStar1_mixed();
 	cpuCSRMatrix duald1_st1 =  model.getDualD1() * st1;//model.getBorder1() *st1* -1;
@@ -82,7 +82,7 @@ void application_vfDesign::computeField( MODEL & model,
 		mat.add(constrainedEdges[i], constrainedEdges[i],weight);
 	}
 
-	//////////////////////////////////////////////////////////////////////////
+	
 	//setup b
 	floatVector b(mesh.getEdges().size());
 

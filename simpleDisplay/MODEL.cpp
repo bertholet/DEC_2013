@@ -6,10 +6,13 @@
 MODEL * MODEL::instance = 0;
 MODEL::MODEL(void)
 {
-
-	myMesh = new wingedMesh(new ball(1, 10,5));
+	wfMesh * amesh = new wfMesh("../Objfiles/obstacleTiny.obj");
+	amesh->normalize();
+	myMesh = new wingedMesh(amesh);
+	
+	//myMesh = new wingedMesh(new ball(1, 10,5));
 	myMesh->getWfMesh()->attach(this);
-
+	
 	d0 = d1 = border1 =border2
 		=duald1 = duald1_t
 		=id0 

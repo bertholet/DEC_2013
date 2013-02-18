@@ -107,14 +107,17 @@ public:
 	//1-neighborhood of vertex
 	bool isLastEdge(int vertex);
 
-
+	int commonFace( wingedEdge & other );
+	int otherFace( int face );
 
 	bool operator < (const wingedEdge & other) const;
 	bool operator == (const wingedEdge & other) const;
 	bool operator != (const wingedEdge & other) const;
-	int commonFace( wingedEdge & other );
+
 	bool hasPrevEdge(int vertex);
 	bool hasNextEdge(int vertex);
+	bool contains( int start, int end );
+
 private:
 
 };

@@ -12,7 +12,7 @@
 
 #include "application_fluidSimulation.h"
 
-class widget_fluidSimulation: public QWidget
+class widget_fluidSimulation: public QWidget, public meshObserver
 {
 	Q_OBJECT
 public:
@@ -26,7 +26,7 @@ public:
 	int getForceAge();
 
 private:
-	//float stepSize;
+	application_fluidSimulation * sim;
 
 	//input gui elements
 	QSlider * stepSlider;
@@ -62,6 +62,9 @@ private:
 	void addAction();
 	void doLayout();
 
+	virtual void update( void * src, meshMsg msg );
+	void ensureSimulationInitialized();
+
 protected slots:
 	void doSimulation();
 
@@ -73,6 +76,9 @@ protected slots:
 	void pathtrace();
 	void showVorticityPart();
 	void timeStepChanged();
+
+	void updateTimestepLabel();
+
 	void viscosityChanged();
 	void forceAgeChanged();
 	void forceStrengthChanged();
@@ -83,5 +89,7 @@ protected slots:
 	void showTexLines( int what );
 	void streamLineLengthChanged( int what );
 	void colorScaleChanged( int what );
+
+
 };
 

@@ -21,8 +21,10 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 	forceAgeChanged();
 	forceStrengthChanged();
 	viscosityChanged();
-	timeStepChanged();
+	//timeStepChanged();
+	updateTimestepLabel();
 
+	sim = NULL;
 	
 }
 
@@ -30,6 +32,10 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 widget_fluidSimulation::~widget_fluidSimulation(void)
 {
 	delete harm_component;
+	if(sim != NULL){
+		delete sim;
+		sim = NULL;
+	}
 }
 
 void widget_fluidSimulation::setUpComponents()
@@ -259,10 +265,15 @@ void widget_fluidSimulation::harmonicComponent()
 	constr.assign(model.getMesh()->getBoundaryEdges().size(), tuple3f());
 	constr[0].set(tuple3f(0,1,0));
 
-	application_fluidSimulation sim;
-	oneForm harmonic = sim.setHarmonicFlow(constr,model);
-	harmonic.dualToVField(harm_vField);
-	meshMath::circumcenters(*model.getMesh(), harm_circumcenters);
+	//application_fluidSimulation sim(model);
+//	sim.setUpSimulation(model);
+
+	ensureSimulationInitialized();
+	sim->computeHarmonicFlow(constr,model);
+	//harmonic.dualToVField(harm_vField);
+	harm_vField = sim->getHarmonicVel();
+	harm_circumcenters = sim->getDualVertices();
+//	meshMath::circumcenters(*model.getMesh(), harm_circumcenters);
 
 	harm_component->display(&harm_circumcenters,&harm_vField);
 	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
@@ -272,7 +283,13 @@ void widget_fluidSimulation::harmonicComponent()
 
 void widget_fluidSimulation::pathtrace()
 {
-	throw std::exception("The method or operation is not implemented.");
+	ensureSimulationInitialized();
+	sim->pathTraceDualVertices(getTimestep());
+	harm_circumcenters = sim->getTracedDualVertices();
+
+	harm_component->display(&harm_circumcenters,&harm_vField);
+	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
+	mainwindow->subscribeResizables(harm_component);
 }
 
 void widget_fluidSimulation::showVorticityPart()
@@ -282,12 +299,9 @@ void widget_fluidSimulation::showVorticityPart()
 
 void widget_fluidSimulation::timeStepChanged()
 {
-	float stepSize = getTimestep();
-
-	std::stringstream ss;
-	ss << "Timestep Size (" << stepSize << ")";
-	this->label_stepSlider->setText(ss.str().c_str());
-
+	updateTimestepLabel();
+	pathtrace();
+	mainwindow->update();
 }
 
 void widget_fluidSimulation::viscosityChanged()
@@ -348,6 +362,32 @@ void widget_fluidSimulation::streamLineLengthChanged( int what )
 void widget_fluidSimulation::colorScaleChanged( int what )
 {
 	throw std::exception("The method or operation is not implemented.");
+}
+
+void widget_fluidSimulation::ensureSimulationInitialized()
+{
+	if(sim == NULL){
+		sim = new application_fluidSimulation(*MODEL::getModel());
+		//sim->setUpSimulation(*MODEL::getModel());
+	}
+}
+
+void widget_fluidSimulation::update( void * src, meshMsg msg )
+{
+	//any tampering with the mesh invalidates the simulation
+	if(sim != NULL){
+		delete sim;
+	}
+	sim = NULL;
+}
+
+void widget_fluidSimulation::updateTimestepLabel()
+{
+	float stepSize = getTimestep();
+
+	std::stringstream ss;
+	ss << "Timestep Size (" << stepSize << ")";
+	this->label_stepSlider->setText(ss.str().c_str());
 }
 
 

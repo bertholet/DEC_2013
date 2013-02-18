@@ -316,6 +316,24 @@ bool wingedEdge::hasNextEdge(int vertex)
 	return getNext(vertex) != NULL;
 }
 
+int wingedEdge::otherFace( int face )
+{
+	if(fc_p_n.a == face){
+		return fc_p_n.b;
+	}
+	else if(fc_p_n.b == face){
+		return fc_p_n.a;
+	}
+
+	assert(false);
+	return -1;
+}
+
+bool wingedEdge::contains( int start, int end )
+{
+	return v_a_b.contains(start,end);
+}
+
 
 
 
