@@ -46,7 +46,7 @@ private:
 	QPushButton * but_simStep;
 	QPushButton * but_startSim;
 	QPushButton * but_borderconstr;
-	QPushButton * but_debug, *but_dbg1, *but_dbg2;
+	QPushButton * but_dbg_harmonic, *but_dbg_pathtrace, *but_dbg_vort, *but_dbg_diffusion;
 	QCheckBox *cbox_streamLines, *cbox_interpolation;
 	QCheckBox *cbox_vortNotSpeed, *cbox_texturedLine;
 
@@ -73,12 +73,18 @@ protected slots:
 	void resetFlux();
 	void singleSimulationStep();
 	void startSim();
-	void defineBorderConstraints();
+
+	
+
 	void harmonicComponent();
 	void pathtrace();
 	void showVorticityPart();
-	void timeStepChanged();
+	void diffuse();
+	
+	//input stuff
+	void defineBorderConstraints();
 
+	void timeStepChanged();
 	void updateTimestepLabel();
 
 	void viscosityChanged();

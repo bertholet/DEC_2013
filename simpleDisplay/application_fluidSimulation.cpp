@@ -19,6 +19,7 @@ application_fluidSimulation::~application_fluidSimulation(void)
 void application_fluidSimulation::setUpSimulation( MODEL &model )
 {
 	myMesh = model.getMesh();
+	myModel = & model;
 	//the algorithm as it is implemented here only works if the dual
 	//vertices lie inside their corresponding triangles
 	//therefore they are reprojected
@@ -44,9 +45,27 @@ void application_fluidSimulation::setUpSimulation( MODEL &model )
 	
 	
 	viscosity = 0.001f;
+	timestep = 0.01f;
 	vorticity.assign(myMesh->getVertices().size(), 0);
 
+
+	//////////////////////////////////////////////////////////////////////////
+	//set up matrix for diffusion addition
+	setViscosity(viscosity, model);									
+
 }
+
+
+
+void application_fluidSimulation::setViscosity( float visc , MODEL & model)
+{
+	viscosity = visc;									
+	//d0_t or dualD1?
+	star0_min_vhl = model.getDualD1()*model.getStar1() *model.getD0();
+	star0_min_vhl *= viscosity * timestep;
+	star0_min_vhl = model.getStar0_mixed() -star0_min_vhl;
+}
+
 
 
 oneForm application_fluidSimulation::computeHarmonicFlow( std::vector<tuple3f> & borderConstraints, MODEL & model )
@@ -393,6 +412,11 @@ std::vector<tuple3f> & application_fluidSimulation::getTracedVelocities()
 	return backtracedVelocity;
 }
 
+floatVector & application_fluidSimulation::getVorticities()
+{
+	return vorticity;
+}
+
 void application_fluidSimulation::reprojectDualVerticesIntoTriangles()
 {
 	tuple3f a,b,c,n;
@@ -500,59 +524,19 @@ void application_fluidSimulation::computeBacktracedVorticities()
 			}while(edge!= start);
 		}
 	}
-
-
-/*	std::vector<std::vector<int>> & dualf2v = myMesh->getBasicMesh().getNeighborFaces();
-	std::vector<float> & vort = vorticity.getVals();
-	bool anyVertexOutside, useHarmonicField;
-
-	double temp;
-	int start,sz, stop;
-//#pragma omp parallel for private(temp,sz,start,stop,anyVertexOutside,useHarmonicField) num_threads(8)
-	for(int i = 0; i < vorticity.size();i++){ // < nrVerts.size
-		temp = 0;
-		anyVertexOutside= false;
-		useHarmonicField = false;
-
-		//the dual vertices surrounding the face. //implement using the winged mesh
-		std::vector<int> & dualV = dualf2v[i];
-		sz = dualV.size();
-		start = 0;
-		stop = sz;
-		if(viscosity != 0 && vertexOnBorder[i]){
-			//do not take the flow along border edge into account.
-			stop = sz-1;
-			useHarmonicField = true;
-		}
-		for(int j = start; j < stop; j++){
-
-			if(triangle_btVel[dualV[j]] == -1){
-				anyVertexOutside = true;
-//				continue; // velocity is assumed to be zero on this edge
-			}
-			// was += now -= because the dual edges are oriented in the oposite way of following the border of the
-			// one ring of vertex.!!!
-			if(useHarmonicField){
-				temp -= 0.5* ((backtracedVelocity[dualV[j]] + backtracedVelocity[dualV[(j+1)%sz]]).dot(
-					backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); 
-			}
-			else{
-				temp -= 0.5* ((backtracedVelocity_noHarmonic[dualV[j]] + backtracedVelocity_noHarmonic[dualV[(j+1)%sz]]).dot(
-					backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); 
-			}
-		}
-		vort[i] =temp;
-
-
-// 		if(!anyVertexOutside){
-// 			vort[i] = 0;
-// 		}
-	}*/
 }
 
-floatVector & application_fluidSimulation::getVorticities()
+
+
+
+
+void application_fluidSimulation::addDiffusion2Vorticity()
 {
-	return vorticity;
+	//////////////////////////////////////////////////////////////////////////
+	star0_min_vhl.saveMatrix("fs_diffusion_mat.m");
+	vorticity.saveVector("fs_diffusion_b","fs_diff_b.m");
+
+	buffer.loadVector("fs_diffusion_x");
+
+	myModel->getStar0_mixed().mult(buffer,vorticity);
 }
-
-

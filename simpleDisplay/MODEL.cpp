@@ -316,6 +316,25 @@ cpuCSRMatrix & MODEL::getDualD1_T()
 	}
 }
 
+cpuCSRMatrix & MODEL::getStar1()
+{
+	
+	if(star1_valid == VALID){
+		return *star1;
+	}
+	else{
+		QTime timer;
+		timer.start();
+
+		if(star1_valid == INVALID){
+			star1 = new cpuCSRMatrix();
+		}
+		*star1 = DDGMatrices::star1(*myMesh);
+		cout << "*star1 created: " << timer.restart() <<"\n";
+		star1_valid = VALID;
+		return *star1;
+	}
+}
 
 cpuCSRMatrix & MODEL::getStar2()
 {
@@ -446,6 +465,8 @@ cpuCSRMatrix & MODEL::getD1_T()
 {
 	return getBorder2();
 }
+
+
 
 
 

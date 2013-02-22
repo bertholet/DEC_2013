@@ -16,12 +16,15 @@ private:
 	//triangles the backtraced vertices lie in
 	std::vector<int> triangle_btVel;
 	// the vorticity 0form
-	floatVector vorticity;
+	floatVector vorticity, buffer;
 	//the viscosity
-	float viscosity;
+	float viscosity, timestep;
 	//speed up:
 	std::vector<bool> isOnBorder;
 
+	//matrix for diffusion computation
+	cpuCSRMatrix star0_min_vhl;
+	MODEL * myModel;
 public:
 	application_fluidSimulation(MODEL &model);
 	~application_fluidSimulation(void);
@@ -61,11 +64,25 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void computeBacktracedVorticities();
 
+	//////////////////////////////////////////////////////////////////////////
+	// step 4 add Forces
+	//
+	//////////////////////////////////////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////////////////////
+	// step 5
+	//
+	// diffuse vorticity
+	//////////////////////////////////////////////////////////////////////////
+	void addDiffusion2Vorticity();
+
 	std::vector<tuple3f> & getHarmonicVel();
 	std::vector<tuple3f>& getDualVertices();
 	std::vector<tuple3f> & getTracedDualVertices();
 	std::vector<tuple3f> & getTracedVelocities();
 	floatVector & getVorticities();
+
+	void setViscosity(float visc, MODEL & model);
 
 private:
 	//////////////////////////////////////////////////////////////////////////

@@ -49,6 +49,7 @@ public:
 	//transposed of DualD1
 	cpuCSRMatrix & getDualD1_T();
 
+	cpuCSRMatrix & getStar1();
 	cpuCSRMatrix & getStar1_mixed();
 	cpuCSRMatrix & getStar0_mixed();
 	cpuCSRMatrix & getStar2();

@@ -89,7 +89,8 @@ void floatVector::loadVector( std::string file )
 
 	while(myStream.good()){
 		getline(myStream, buff);
-		sscanf_s(buff.c_str(), "%f", &val1);
-		push_back(val1);
+		if(sscanf_s(buff.c_str(), "%f", &val1) ==1 ){
+			push_back(val1);
+		}
 	}
 }

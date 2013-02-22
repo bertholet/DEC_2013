@@ -590,7 +590,7 @@ void cpuCSRMatrix::clear()
 	m= 0;
 }
 
-void cpuCSRMatrix::mult( std::vector<double> & x, std::vector<double> & target, bool adaptTarget )
+void cpuCSRMatrix::mult( std::vector<float> & x, std::vector<float> & target, bool adaptTarget )
 {
 	assert(x.size() == getm() && (adaptTarget|| target.size() == getn()));
 	assert(&target != &x);

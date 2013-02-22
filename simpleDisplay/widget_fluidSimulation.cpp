@@ -44,10 +44,11 @@ void widget_fluidSimulation::setUpComponents()
 	but_simStep = new QPushButton("Do 1 Timestep");
 	but_startSim = new QPushButton("Start/Stop Simulation");
 	but_borderconstr = new QPushButton("Define Border Constraints");
-	but_debug = new QPushButton("Harmonic");
+	but_dbg_harmonic = new QPushButton("Harmonic");
 
-	but_dbg1 = new QPushButton("PathTr");
-	but_dbg2= new QPushButton("VortPart");
+	but_dbg_pathtrace = new QPushButton("PathTr");
+	but_dbg_vort= new QPushButton("VortPart");
+	but_dbg_diffusion =  new QPushButton("Diffuse");
 
 
 	label_stepSlider = new QLabel("Timestep Size ()");
@@ -114,11 +115,11 @@ void widget_fluidSimulation::addAction()
 	connect(but_simStep, SIGNAL(released()), this, SLOT(singleSimulationStep()));
 	connect(but_startSim , SIGNAL(released()), this, SLOT(startSim()));
 	connect(but_borderconstr , SIGNAL(released()), this, SLOT(defineBorderConstraints()));
-	connect(but_debug , SIGNAL(released()), this, SLOT(harmonicComponent()));
+	connect(but_dbg_harmonic , SIGNAL(released()), this, SLOT(harmonicComponent()));
 
-	connect(but_dbg1 , SIGNAL(released()), this, SLOT(pathtrace()));
-	connect(but_dbg2 , SIGNAL(released()), this, SLOT(showVorticityPart()));
-
+	connect(but_dbg_pathtrace , SIGNAL(released()), this, SLOT(pathtrace()));
+	connect(but_dbg_vort , SIGNAL(released()), this, SLOT(showVorticityPart()));
+	connect(but_dbg_diffusion , SIGNAL(released()), this, SLOT(diffuse()));
 
 	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(timeStepChanged()));
 	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
@@ -179,12 +180,14 @@ void widget_fluidSimulation::doLayout()
 	hlayout->addWidget(colorScale);
 	layout->addLayout(hlayout);
 
-	layout->addWidget(but_debug);
-
+	QHBoxLayout *hlayout1 = new QHBoxLayout();
+	hlayout1->addWidget(but_dbg_harmonic);
+	hlayout1->addWidget(but_dbg_pathtrace);
+	layout->addLayout(hlayout1);
 
 	QHBoxLayout * hlayout2 = new QHBoxLayout();
-	hlayout2->addWidget(but_dbg1);
-	hlayout2->addWidget(but_dbg2);
+	hlayout2->addWidget(but_dbg_vort);
+	hlayout2->addWidget(but_dbg_diffusion);
 	layout->addLayout(hlayout2);
 
 	this->setLayout(layout);
@@ -303,6 +306,19 @@ void widget_fluidSimulation::showVorticityPart()
 	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
 	mainwindow->getDisplayer()->setColormap(colormap_vorts);
 }
+
+
+
+void widget_fluidSimulation::diffuse()
+{
+	ensureSimulationInitialized();
+	sim->setViscosity(getViscosity(), * MODEL::getModel());
+	sim->addDiffusion2Vorticity();
+
+	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
+	mainwindow->getDisplayer()->setColormap(colormap_vorts);
+}
+
 
 void widget_fluidSimulation::timeStepChanged()
 {
