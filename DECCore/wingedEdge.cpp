@@ -53,6 +53,20 @@ void wingedEdge::setRightFace( int fc )
 	fc_p_n.a = fc;
 }
 
+tuple2i & wingedEdge::getAdjFaces()
+{
+	return fc_p_n;
+}
+
+int wingedEdge::getLeftFace()
+{
+	return fc_p_n.b;
+}
+
+int wingedEdge::getRightFace()
+{
+	return fc_p_n.a;
+}
 
 void wingedEdge::setNext( wingedEdge * e )
 {
@@ -290,10 +304,8 @@ int wingedEdge::and( wingedEdge & other )
 	return -1;
 }
 
-tuple2i & wingedEdge::getAdjFaces()
-{
-	return fc_p_n;
-}
+
+
 
 int wingedEdge::commonFace( wingedEdge & other )
 {
@@ -333,6 +345,20 @@ bool wingedEdge::contains( int start, int end )
 {
 	return v_a_b.contains(start,end);
 }
+
+int wingedEdge::getBoundaryFace()
+{
+	if(fc_p_n.a == -1){
+		return fc_p_n.b;
+	}
+	else if(fc_p_n.b == -1){
+		return fc_p_n.a;
+	}
+	else{
+		return -1;
+	}
+}
+
 
 
 

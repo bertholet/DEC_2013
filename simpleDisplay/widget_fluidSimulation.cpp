@@ -285,7 +285,10 @@ void widget_fluidSimulation::pathtrace()
 {
 	ensureSimulationInitialized();
 	sim->pathTraceDualVertices(getTimestep());
+	sim->updateBacktracedVelocities();
+
 	harm_circumcenters = sim->getTracedDualVertices();
+	harm_vField =sim->getTracedVelocities();
 
 	harm_component->display(&harm_circumcenters,&harm_vField);
 	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
@@ -294,7 +297,11 @@ void widget_fluidSimulation::pathtrace()
 
 void widget_fluidSimulation::showVorticityPart()
 {
-	throw std::exception("The method or operation is not implemented.");
+	ensureSimulationInitialized();
+	sim->computeBacktracedVorticities();
+
+	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
+	mainwindow->getDisplayer()->setColormap(colormap_vorts);
 }
 
 void widget_fluidSimulation::timeStepChanged()
@@ -346,7 +353,11 @@ void widget_fluidSimulation::doInterpl( int what )
 
 void widget_fluidSimulation::showVorticity( int what )
 {
-	throw std::exception("The method or operation is not implemented.");
+	if(what == 2){
+		ensureSimulationInitialized();
+		sim->getVorticities();
+//		mainwindow->getDisplayer()->setColormap(vortMap);
+	}
 }
 
 void widget_fluidSimulation::showTexLines( int what )
@@ -359,9 +370,11 @@ void widget_fluidSimulation::streamLineLengthChanged( int what )
 	throw std::exception("The method or operation is not implemented.");
 }
 
-void widget_fluidSimulation::colorScaleChanged( int what )
+void widget_fluidSimulation::colorScaleChanged( int scale )
 {
-	throw std::exception("The method or operation is not implemented.");
+	colormap_vorts.set(pow(10.f,(1.f*scale-50)/10));
+	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
+	mainwindow->getDisplayer()->setColormap(colormap_vorts);
 }
 
 void widget_fluidSimulation::ensureSimulationInitialized()

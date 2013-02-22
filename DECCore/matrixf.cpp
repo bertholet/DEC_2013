@@ -172,7 +172,6 @@ float matrixf::det()
 float matrixf::inv_helper( int i, int j )
 {
 	float res=0;
-	float res_factor;
 	int ind_i[3];
 	int ind_j[3];
 

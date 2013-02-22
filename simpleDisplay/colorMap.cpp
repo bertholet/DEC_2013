@@ -144,3 +144,49 @@ void markupMap::mark( int vertex, tuple3f &col )
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+void vorticityMap::update( std::vector<float> & values, MODEL & model )
+{
+	cols.resize(values.size());
+	float sth = (values[0]), sth2, sth3;
+	cpuCSRMatrix & st0 = model.getStar0_mixed();
+	float scl = scale * st0.geta()[0];
+
+	for(int i = 0; i < cols.size(); i++){
+		sth = abs(values[i]*scale/st0.geta()[i]);
+		sth = log(100*sth + 1) /(0.7*log(11.0)); // sth = 0 for sth = 0 else > 0, >0.7 for sth > 0.1
+		sth2 = (sth > 0.7? sth-0.7:0);
+		sth2 = log(10*sth2 + 1)/2; //>1 if sth2 >=1 i.e. sth>1.7 i.e sth > 1
+		sth3 = (sth2>0.7?sth2-0.7:0);
+		sth3 = log(sth3+1)/3;
+		if(values[i] < 0){
+			sth = 0.3 + sth;
+			cols[i].set(0.3,0.3 + sth2,sth-sth3);
+		}
+		else{
+			sth = 0.3+ sth;
+			cols[i].set(sth-sth3,0.3+sth2,0.3);
+		}
+	}
+}
+
+std::vector<tuple3f> & vorticityMap::getColors()
+{
+	return cols;
+}
+
+void vorticityMap::set( float scl )
+{
+	scale = scl;
+}
+
+vorticityMap::vorticityMap()
+{
+	scale = 1;	
+}
+
+vorticityMap::~vorticityMap()
+{
+
+}

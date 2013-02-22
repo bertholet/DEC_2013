@@ -8,8 +8,19 @@ class application_fluidSimulation
 {
 private:
 	wingedMesh * myMesh;
+	//dual vertices
 	std::vector<tuple3f> backtracedDualVertices, dualVertices,
-		velocities, harmonic_velocities;
+		//velocities
+		velocities, harmonic_velocities, 
+		backtracedVelocity, backtracedVelocity_noHarmonic;
+	//triangles the backtraced vertices lie in
+	std::vector<int> triangle_btVel;
+	// the vorticity 0form
+	floatVector vorticity;
+	//the viscosity
+	float viscosity;
+	//speed up:
+	std::vector<bool> isOnBorder;
 
 public:
 	application_fluidSimulation(MODEL &model);
@@ -19,7 +30,9 @@ public:
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// calculate the harmonic flow for a bordered mesh, where
+	// step 0 
+	//
+	//calculate the harmonic flow for a bordered mesh, where
 	// the constraints on the border are given by borderconstraints.
 	// The constraints have to be understood as that the flow on the border
 	// component i is constrained to be borderConstraints[i].
@@ -28,15 +41,31 @@ public:
 	oneForm computeHarmonicFlow(std::vector<tuple3f> & borderConstraints, MODEL & model);
 
 	//////////////////////////////////////////////////////////////////////////
-	// Pathtrace all dualvertices
+	// step 1 
 	//
+	//Pathtrace all dualvertices
 	//////////////////////////////////////////////////////////////////////////
 	void pathTraceDualVertices(float t);
+
+	//////////////////////////////////////////////////////////////////////////
+	// step 2
+	//
+	// to calculate backtraced velocities at the traced dual positions
+	//////////////////////////////////////////////////////////////////////////
+	void updateBacktracedVelocities();
+
+	//////////////////////////////////////////////////////////////////////////
+	// step 3
+	//
+	// compute the vorticities using the backtraced velocities
+	//////////////////////////////////////////////////////////////////////////
+	void computeBacktracedVorticities();
 
 	std::vector<tuple3f> & getHarmonicVel();
 	std::vector<tuple3f>& getDualVertices();
 	std::vector<tuple3f> & getTracedDualVertices();
-
+	std::vector<tuple3f> & getTracedVelocities();
+	floatVector & getVorticities();
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -81,5 +110,6 @@ private:
 	//Makes sure that all dual vertices lie inside the corresponding triangles
 	// This fascilitates the backtracing step
 	void reprojectDualVerticesIntoTriangles();
+	
 };
 

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "DDGMatrices.h"
 #include "meshMath.h"
+#include <omp.h>
 
 application_fluidSimulation::application_fluidSimulation(MODEL &model)
 {
@@ -18,12 +19,33 @@ application_fluidSimulation::~application_fluidSimulation(void)
 void application_fluidSimulation::setUpSimulation( MODEL &model )
 {
 	myMesh = model.getMesh();
-	meshMath::circumcenters(*myMesh, dualVertices);
-
 	//the algorithm as it is implemented here only works if the dual
 	//vertices lie inside their corresponding triangles
 	//therefore they are reprojected
+	meshMath::circumcenters(*myMesh, dualVertices);
 	reprojectDualVerticesIntoTriangles();
+
+	//setup backtraced dual vertices (timestep 0)
+	backtracedDualVertices = dualVertices;
+	triangle_btVel.assign(myMesh->getFaces().size(), -1);
+	for(int i = 0; i < triangle_btVel.size(); i++){
+		triangle_btVel[i] = i;
+	}
+
+	//set velocities all to zero
+	backtracedVelocity.assign(myMesh->getFaces().size(), tuple3f()); 
+	backtracedVelocity_noHarmonic.assign(myMesh->getFaces().size(), tuple3f());
+	velocities = backtracedVelocity;
+
+	isOnBorder.assign(myMesh->getVertices().size(), false);
+	for(int i = 0; i < isOnBorder.size();i ++){
+		isOnBorder[i] = myMesh->isOnBorder(i);
+	}
+	
+	
+	viscosity = 0.001f;
+	vorticity.assign(myMesh->getVertices().size(), 0);
+
 }
 
 
@@ -157,9 +179,9 @@ void application_fluidSimulation::pathTraceDualVertices( float t )
 	bool hitBorder;
 	std::vector<float> intern_memory; //intern memory
 
-//#pragma omp parallel for private(triangle, changed_t, intern_memory, hitBorder) num_threads(8)
+#pragma omp parallel for private(triangle, changed_t, intern_memory, hitBorder) num_threads(20)
 	for(int i = 0; i < end; i++){
-		
+//		cout <<"bazinga! thread " << omp_get_thread_num();
 		triangle = i;
 		hitBorder = false;
 		for(int j = 0; j < nrIterations;j++){
@@ -169,7 +191,7 @@ void application_fluidSimulation::pathTraceDualVertices( float t )
 				walkPath(&(backtracedDualVertices[i]), &triangle,&changed_t, &hitBorder,intern_memory);
 			}
 		}
-//		triangle_btVel[i]=triangle; //what was this one good for?
+		triangle_btVel[i]=triangle; //for the interpolation of velocities need to keep track of triangle
 	}
 
 }
@@ -245,6 +267,9 @@ void application_fluidSimulation::getVelocityFlattened( tuple3f & pos, int actua
 	}
 
 	result.set(velocities[actualTriangle]);
+	if(!useHarmonicField){
+		result-=harmonic_velocities[actualTriangle];
+	}
 	return;
 
 /*	if(!doInterpolation){
@@ -363,6 +388,11 @@ std::vector<tuple3f> & application_fluidSimulation::getTracedDualVertices()
 	return backtracedDualVertices;
 }
 
+std::vector<tuple3f> & application_fluidSimulation::getTracedVelocities()
+{
+	return backtracedVelocity;
+}
+
 void application_fluidSimulation::reprojectDualVerticesIntoTriangles()
 {
 	tuple3f a,b,c,n;
@@ -406,3 +436,123 @@ void application_fluidSimulation::reprojectDualVerticesIntoTriangles()
 
 	}
 }
+
+void application_fluidSimulation::updateBacktracedVelocities()
+{
+	std::vector<float> intern_mem;
+	intern_mem.reserve(20);
+
+//#pragma omp parallel for private(intern_mem) num_threads(8)
+	for(int i = 0; i < backtracedVelocity.size(); i++){
+		//store velocity in backTracedVelocity[i] =...
+		getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i],backtracedVelocity[i], intern_mem, true); 
+		getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i],backtracedVelocity_noHarmonic[i], intern_mem, false); 
+	}
+}
+
+void application_fluidSimulation::computeBacktracedVorticities()
+{
+	
+	vorticity.assign(myMesh->getVertices().size(),0);
+	std::vector<wingedEdge> &edgs = myMesh->getEdges();
+	for(int i = 0; i < edgs.size(); i++){
+		//contribution of flow on dual edges to the  vorticities on vertices
+		//if a vertex is on a border, the harmonic component of the flow is
+		// considered. In theory it is correct to always consider the harmonic
+		// part too, but as the harmonic component has no vorticity it should not
+		// contribute to the vorticity- but due to numerical errors it does, and the
+		// error can accumulate over time
+		wingedEdge & edg = edgs[i];
+		if(!edg.isOnBorder()){
+			if(!isOnBorder[edg.start()]){
+				vorticity[edg.start()] += 0.5* ((backtracedVelocity_noHarmonic[edg.getRightFace()] + backtracedVelocity_noHarmonic[edg.getLeftFace()]).dot(
+					backtracedDualVertices[edg.getLeftFace()] - backtracedDualVertices[edg.getRightFace()])); 
+			}else{
+				vorticity[edg.start()] += 0.5* ((backtracedVelocity[edg.getRightFace()] + backtracedVelocity[edg.getLeftFace()]).dot(
+					backtracedDualVertices[edg.getLeftFace()] - backtracedDualVertices[edg.getRightFace()])); 
+			}
+			if(!isOnBorder[edg.end()]){
+				vorticity[edg.end()] -= 0.5* ((backtracedVelocity_noHarmonic[edg.getRightFace()] + backtracedVelocity_noHarmonic[edg.getLeftFace()]).dot(
+					backtracedDualVertices[edg.getLeftFace()] - backtracedDualVertices[edg.getRightFace()])); 
+			}else{
+				vorticity[edg.end()] -= 0.5* ((backtracedVelocity[edg.getRightFace()] + backtracedVelocity[edg.getLeftFace()]).dot(
+					backtracedDualVertices[edg.getLeftFace()] - backtracedDualVertices[edg.getRightFace()])); 
+			}
+		}
+	}
+
+	//in the harmonic case: take flow on the boundary into account.
+	if(viscosity == 0){
+		wingedEdge *start, *edge, *next;
+		std::vector<wingedEdge*> boundary = myMesh->getBoundaryEdges();
+		int common_vertex;
+
+		for(int i = 0; i < boundary.size(); i++){
+			//iterate over the boundaries
+			start= edge = boundary[i];
+			next = edge->nextBorderEdge();
+			do{
+				common_vertex = edge->and(*next);
+				vorticity[common_vertex] += (backtracedVelocity[edge->getBoundaryFace()] + backtracedVelocity[next->getBoundaryFace()]).dot(
+					backtracedDualVertices[edge->getBoundaryFace()] - backtracedDualVertices[next->getBoundaryFace()]); 
+				edge = next;
+				next = next->nextBorderEdge();
+			}while(edge!= start);
+		}
+	}
+
+
+/*	std::vector<std::vector<int>> & dualf2v = myMesh->getBasicMesh().getNeighborFaces();
+	std::vector<float> & vort = vorticity.getVals();
+	bool anyVertexOutside, useHarmonicField;
+
+	double temp;
+	int start,sz, stop;
+//#pragma omp parallel for private(temp,sz,start,stop,anyVertexOutside,useHarmonicField) num_threads(8)
+	for(int i = 0; i < vorticity.size();i++){ // < nrVerts.size
+		temp = 0;
+		anyVertexOutside= false;
+		useHarmonicField = false;
+
+		//the dual vertices surrounding the face. //implement using the winged mesh
+		std::vector<int> & dualV = dualf2v[i];
+		sz = dualV.size();
+		start = 0;
+		stop = sz;
+		if(viscosity != 0 && vertexOnBorder[i]){
+			//do not take the flow along border edge into account.
+			stop = sz-1;
+			useHarmonicField = true;
+		}
+		for(int j = start; j < stop; j++){
+
+			if(triangle_btVel[dualV[j]] == -1){
+				anyVertexOutside = true;
+//				continue; // velocity is assumed to be zero on this edge
+			}
+			// was += now -= because the dual edges are oriented in the oposite way of following the border of the
+			// one ring of vertex.!!!
+			if(useHarmonicField){
+				temp -= 0.5* ((backtracedVelocity[dualV[j]] + backtracedVelocity[dualV[(j+1)%sz]]).dot(
+					backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); 
+			}
+			else{
+				temp -= 0.5* ((backtracedVelocity_noHarmonic[dualV[j]] + backtracedVelocity_noHarmonic[dualV[(j+1)%sz]]).dot(
+					backtracedDualVertices[dualV[(j+1)%sz]] - backtracedDualVertices[dualV[j]])); 
+			}
+		}
+		vort[i] =temp;
+
+
+// 		if(!anyVertexOutside){
+// 			vort[i] = 0;
+// 		}
+	}*/
+}
+
+floatVector & application_fluidSimulation::getVorticities()
+{
+	return vorticity;
+}
+
+

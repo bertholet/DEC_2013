@@ -65,6 +65,8 @@ public:
 	// get the adjacent faces
 	//////////////////////////////////////////////////////////////////////////
 	tuple2i & getAdjFaces();
+	int getLeftFace();
+	int getRightFace();
 
 	//////////////////////////////////////////////////////////////////////////
 	//returns the incident vertex that is not 'vertex'
@@ -117,7 +119,7 @@ public:
 	bool hasPrevEdge(int vertex);
 	bool hasNextEdge(int vertex);
 	bool contains( int start, int end );
-
+	int getBoundaryFace();
 private:
 
 };

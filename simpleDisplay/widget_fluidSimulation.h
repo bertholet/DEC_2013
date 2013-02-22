@@ -57,6 +57,8 @@ private:
 	//harmonic component display
 	std::vector<tuple3f> harm_vField,harm_circumcenters;
 	glVectorfield * harm_component;
+	//vorticity display
+	vorticityMap colormap_vorts;
 	
 	void setUpComponents();
 	void addAction();

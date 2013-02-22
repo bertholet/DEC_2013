@@ -3,6 +3,7 @@
 #include "wingedMesh.h"
 //#include "mouseStrokeListener.h"
 #include "Resetable.h"
+#include "MODEL.h"
 
 class colorMap
 {
@@ -60,6 +61,25 @@ public:
 	//virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
 
 };
+
+class vorticityMap:public colorMap
+{
+private:
+	std::vector<tuple3f> cols;
+	float scale;
+public:
+	vorticityMap();
+	~vorticityMap();
+
+	void set(float scl);
+	void update(std::vector<float> & values, MODEL & model);
+	virtual std::vector<tuple3f> & getColors();
+	//virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
+	//virtual void processOnPress( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );
+
+};
+
 /*class curvatureMap:public colorMap{
 private:
 	std::vector<tuple3f> cols;
