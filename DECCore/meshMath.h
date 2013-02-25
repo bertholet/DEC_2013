@@ -31,5 +31,21 @@ public:
 	static void circumcenters(wingedMesh & mesh, std::vector<tuple3f> & target );
 	static void centroids( wingedMesh & mesh, std::vector<tuple3f> & target );
 	static void centroid( wingedMesh & mesh, int faceNr, tuple3f & target );
+
+	//compute the baicentric coordinates in a dual face spanned by dual vertices.
+	//the baicentric coordinates are stored in target.
+	static void inline bariCoords( tuple3f & pos, int dualFace, 
+		std::vector<tuple3f> & dualVertices, 
+		std::vector<float> & target, 
+		std::vector<int> & target_contributers,
+		wingedMesh & myMesh );
+
+	static float nonzeroDot(tuple3f & a, tuple3f & b);
+	/*static float bariWeight( tuple3f & point ,
+		int nr, 
+		int dualFace_id, 
+		std::vector<int> & dualVert_ids, 
+		std::vector<tuple3f> & dualVert_pos, 
+		wingedMesh & m)*/
 };
 

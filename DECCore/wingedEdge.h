@@ -67,6 +67,9 @@ public:
 	tuple2i & getAdjFaces();
 	int getLeftFace();
 	int getRightFace();
+	//returns what would be the left face if vertex was the start vertex of
+	// the edge
+	int getLeftFace( int vertex );
 
 	//////////////////////////////////////////////////////////////////////////
 	//returns the incident vertex that is not 'vertex'
@@ -120,6 +123,7 @@ public:
 	bool hasNextEdge(int vertex);
 	bool contains( int start, int end );
 	int getBoundaryFace();
+	
 private:
 
 };

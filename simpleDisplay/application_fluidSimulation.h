@@ -10,6 +10,8 @@ private:
 	wingedMesh * myMesh;
 	//dual vertices
 	std::vector<tuple3f> backtracedDualVertices, dualVertices,
+		//normals
+		curvatureNormals,
 		//velocities
 		velocities, velocities_harm, velocities_vort,
 		backtracedVelocity, backtracedVelocity_noHarmonic;
@@ -140,7 +142,10 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	void getVelocityFlattened(tuple3f & pos, int triangleIndex, tuple3f & result, 
 		std::vector<float> & weight_buffer,bool useHarmonicField = true);
-	
+
+	int closestVertex(tuple3i &tr, tuple3f & pos );
+
+
 	//////////////////////////////////////////////////////////////////////////
 	//Makes sure that all dual vertices lie inside the corresponding triangles
 	// This fascilitates the backtracing step

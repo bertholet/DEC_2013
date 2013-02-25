@@ -359,6 +359,17 @@ int wingedEdge::getBoundaryFace()
 	}
 }
 
+int wingedEdge::getLeftFace( int vertex )
+{
+	if(vertex == start()){
+		return fc_p_n.a;
+	}
+	else if(vertex == end()){
+		return fc_p_n.b;
+	}
+	return -1;
+}
+
 
 
 

@@ -21,6 +21,11 @@ void application_fluidSimulation::setUpSimulation( MODEL &model )
 {
 	myMesh = model.getMesh();
 	myModel = & model;
+	curvatureNormals = myMesh->getWfMesh()->getNormals();
+	for(int i = 0; i < curvatureNormals.size(); i++){
+		curvatureNormals[i].normalize();
+	}
+
 	//the algorithm as it is implemented here only works if the dual
 	//vertices lie inside their corresponding triangles
 	//therefore they are reprojected
@@ -53,7 +58,9 @@ void application_fluidSimulation::setUpSimulation( MODEL &model )
 	//////////////////////////////////////////////////////////////////////////
 	//set up matrix for diffusion addition
 	setUpMatrixL(model);
-	setViscosity(viscosity);									
+	setViscosity(viscosity);			
+
+	
 
 }
 
@@ -273,55 +280,82 @@ float application_fluidSimulation::maxt( tuple3f & pos, int triangle, tuple3f & 
 	return max_t;
 }
 
-void application_fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, tuple3f & result, 
-	std::vector<float> & weights,bool useHarmonicField)
+
+int application_fluidSimulation::closestVertex( tuple3i &tr, tuple3f & pos )
 {
-	result.set(0,0,0);
-	if(actualTriangle <0){
-		return;
-		//return tuple3f();
-	}
-
-	result.set(velocities[actualTriangle]);
-	if(!useHarmonicField){
-		result-=velocities_harm[actualTriangle];
-	}
-	return;
-
-/*	if(!doInterpolation){
-		result.set(velocities[actualTriangle]);
-		return;
-	}
-
-	assert(actualTriangle >=0);
 	std::vector<tuple3f> & verts = myMesh->getVertices();
-	tuple3i & tr = myMesh->getFaces()[actualTriangle];
-	//determine actual dual Face 22 ms per go up to here.
-	int dualFace;
+	int closest;
 	float d1 = (verts[tr.a]-pos).norm();
 	float d2 = (verts[tr.b]-pos).norm();
 	float d3 = (verts[tr.c]-pos).norm();
 	float mn = min(min(d1,d2),d3);
+
 	if(mn == d1){
-		dualFace = tr.a;
+		closest = tr.a;
 	}
 	else if(mn == d2){
-		dualFace = tr.b;
+		closest = tr.b;
 	}
 	else if ( mn == d3){
-		dualFace = tr.c;
+		closest = tr.c;
 	}
 	else{
 		// NAN....
 		assert(false);
 	}
+	return closest;
+}
+
+
+void application_fluidSimulation::getVelocityFlattened( tuple3f & pos, int actualTriangle, tuple3f & result, 
+	std::vector<float> & weights,bool useHarmonicField)
+{
+	bool doInterpolation = true;
+	result.set(0,0,0);
+
+	if(actualTriangle <0){
+		return;
+	}
+
+	if(! doInterpolation){
+		result.set(velocities[actualTriangle]);
+		if(!useHarmonicField){
+			result-=velocities_harm[actualTriangle];
+		}
+		return;
+	}
+
+
+	std::vector<tuple3f> & verts = myMesh->getVertices();
+	tuple3i & tr = myMesh->getFaces()[actualTriangle];
+
+	//determine actual dual Face 
+	int dualFace = closestVertex(tr, pos);
+
+	//determine weights;
+	std::vector<int> wighted_element;
+	meshMath::bariCoords(pos, dualFace, dualVertices, weights, wighted_element, *myMesh);
+
+	tuple3f & normal = curvatureNormals[dualFace];
+	tuple3f triangleNormal = (verts[tr.b]-verts[tr.a]).cross(verts[tr.c]-verts[tr.a]);
+	tuple3f vel;
+
+	for(int i = 0; i < weights.size(); i++){
+		assert(weights[i]== weights[i]);
+		vel.set(velocities[wighted_element[i]]);
+		result += (vel - normal * (normal.dot(vel) ))*weights[i];
+	}
+
+	result = result - normal * (result.dot(triangleNormal) / normal.dot(triangleNormal));
+	assert(result.x == result.x && result.y == result.y && result.z == result.z);
+
 
 
 	//determine weights;
-	fluidTools::bariCoords(pos,dualFace,dualVertices, weights, *myMesh);
+	//fluidTools::bariCoords(pos,dualFace,dualVertices, weights, *myMesh);
 
 	// dualVertices of dualFace;
-	std::vector<int> & dualVertIDs = myMesh->getBasicMesh().getNeighborFaces()[dualFace];
+/*	std::vector<int> & dualVertIDs = myMesh->getBasicMesh().getNeighborFaces()[dualFace];
 
 	if(myMesh->getBorder().size() != 0){
 		//on bordered meshs the stuff with the curv normal does not work.
@@ -335,8 +369,8 @@ void application_fluidSimulation::getVelocityFlattened( tuple3f & pos, int actua
 			}
 		}
 	}
-	else{
-		tuple3f curvNormal = (*myMesh->getCurvNormals())[dualFace];
+	else{*/
+/*		tuple3f curvNormal = (*myMesh->getCurvNormals())[dualFace];
 		curvNormal.normalize();
 		tuple3f triangleNormal = (verts[tr.b]-verts[tr.a]).cross(verts[tr.c]-verts[tr.a]);
 		tuple3f vel;
@@ -349,7 +383,7 @@ void application_fluidSimulation::getVelocityFlattened( tuple3f & pos, int actua
 
 		result = result - curvNormal * (result.dot(triangleNormal) / curvNormal.dot(triangleNormal));
 		assert(result.x == result.x && result.y == result.y && result.z == result.z);
-	}
+/*	}
 	assert(result.x *0 == 0 && result.y*0 ==0 && result.z*0 == 0);
 	//return result;*/
 }

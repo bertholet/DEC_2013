@@ -354,9 +354,9 @@ void meshMath::centroids( wingedMesh & mesh, std::vector<tuple3f> & target )
 	
 	std::vector<tuple3i>::iterator fc;
 	for(fc = fcs.begin(); fc != fcs.end(); fc++){
-		target.push_back(verts[fc->a]*0.333333333 
-			+verts[fc->b]*0.333333333
-			+verts[fc->c]*0.333333333);
+		target.push_back(verts[fc->a]*0.333333333f
+			+verts[fc->b]*0.333333333f
+			+verts[fc->c]*0.333333333f);
 	}
 }
 
@@ -364,7 +364,72 @@ void meshMath::centroid( wingedMesh & mesh, int faceNr, tuple3f & target )
 {
 	std::vector<tuple3f> & verts =mesh.getVertices();
 	tuple3i * fc = & mesh.getFaces()[faceNr];
-	target.set(verts[fc->a]*0.333333333 
-		+verts[fc->b]*0.333333333
-		+verts[fc->c]*0.333333333);
+	target.set(verts[fc->a]*0.333333333f 
+		+verts[fc->b]*0.333333333f
+		+verts[fc->c]*0.333333333f);
+}
+
+void meshMath::bariCoords( tuple3f & pos, 
+	int dualFace, 
+	std::vector<tuple3f> & dualVertices, 
+	std::vector<float> & target, 
+	std::vector<int> & target_contributers,
+	wingedMesh & myMesh )
+{
+	std::vector<tuple3i> & faces = myMesh.getFaces();
+	std::vector<tuple3f> & verts = myMesh.getVertices();
+	tuple3f n1, n2, vert;
+	wingedEdge * edge, *first, *next;
+	int fc; 
+	float sum=0;
+
+
+	target.clear();
+	target_contributers.clear();
+
+	//iterate over the faces adjacent to the vertex 'dualFace'
+	first = edge = & myMesh.getAnEdge(dualFace);
+	next = & edge->getNext_bc(dualFace);
+	do 
+	{
+		fc = edge->commonFace(*next);//edge->getLeftFace(dualFace);
+		if(fc >=0){
+			target_contributers.push_back(fc);
+			
+			//the vectors normal to the dual edges are
+			vert = verts[dualFace];
+			n1 = verts[edge->otherVertex(dualFace)] - vert;
+			n1.normalize();
+			n2 = verts[next->otherVertex(dualFace)] - vert;
+			n2.normalize();
+
+			target.push_back(abs(
+				tuple3f::crossNorm(n1, n2) / 
+					(nonzeroDot(n1, pos - dualVertices[fc])* 
+					nonzeroDot(n2, pos -dualVertices[fc]))
+			));
+			sum += target.back();
+			
+			//target.push_back(abs(bariWeight(pos, i,dualFace_id,v2f,dualVert_pos,mesh)));
+		}
+		edge = next;
+		next = & next->getNext_bc(dualFace);
+	} while (first!= edge);
+
+	for(unsigned int i = 0; i < target.size(); i++){
+		target[i]/=sum;
+	}
+
+}
+
+float meshMath::nonzeroDot( tuple3f & a, tuple3f & b )
+{
+	float dot = a.dot(b);
+	if(dot>=0 ){
+		dot+= 10E-10f;
+	}
+	else{
+		dot-= 10E-10f;
+	}
+	return dot;
 }
