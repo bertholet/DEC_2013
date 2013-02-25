@@ -4,7 +4,8 @@
 #include "meshMath.h"
 #include <omp.h>
 
-application_fluidSimulation::application_fluidSimulation(MODEL &model)
+application_fluidSimulation::application_fluidSimulation(MODEL &model):
+	flux(model.getMesh()), harmonicFlux(model.getMesh())
 {
 	setUpSimulation(model);
 }
@@ -36,7 +37,7 @@ void application_fluidSimulation::setUpSimulation( MODEL &model )
 	//set velocities all to zero
 	backtracedVelocity.assign(myMesh->getFaces().size(), tuple3f()); 
 	backtracedVelocity_noHarmonic.assign(myMesh->getFaces().size(), tuple3f());
-	velocities = backtracedVelocity;
+	velocities = velocities_harm = velocities_vort =  backtracedVelocity;
 
 	isOnBorder.assign(myMesh->getVertices().size(), false);
 	for(int i = 0; i < isOnBorder.size();i ++){
@@ -51,26 +52,27 @@ void application_fluidSimulation::setUpSimulation( MODEL &model )
 
 	//////////////////////////////////////////////////////////////////////////
 	//set up matrix for diffusion addition
-	setViscosity(viscosity, model);									
+	setUpMatrixL(model);
+	setViscosity(viscosity);									
 
 }
 
 
 
-void application_fluidSimulation::setViscosity( float visc , MODEL & model)
+void application_fluidSimulation::setViscosity( float visc)
 {
 	viscosity = visc;									
 	//d0_t or dualD1?
-	star0_min_vhl = model.getDualD1()*model.getStar1() *model.getD0();
+	star0_min_vhl = myModel->getDualD1()*myModel->getStar1() *myModel->getD0();
 	star0_min_vhl *= viscosity * timestep;
-	star0_min_vhl = model.getStar0_mixed() -star0_min_vhl;
+	star0_min_vhl = myModel->getStar0_mixed() -star0_min_vhl;
 }
 
 
 
 oneForm application_fluidSimulation::computeHarmonicFlow( std::vector<tuple3f> & borderConstraints, MODEL & model )
 {
-	oneForm harmonicFlux(myMesh);
+	//oneForm harmonicFlux(myMesh);
 	if(myMesh->getBoundaryEdges().size() == 0){
 		//only for bordered meshs.
 		return harmonicFlux;
@@ -100,13 +102,8 @@ oneForm application_fluidSimulation::computeHarmonicFlow( std::vector<tuple3f> &
 	fluxConstr.saveVector("fs_b_harm", "fs_bHarmonic.m");
 	harmonicFlux.loadVector("fs_x_harm");
 
-	/*//UPDATE STUFF
-	fluidTools::flux2Vorticity(harmonicFlux,vorticity,*myMesh,dt_star1);
-	fluidTools::flux2Velocity(harmonicFlux,harmonicVelocities, *myMesh);
-	updateVelocities();*/
-
-	harmonicFlux.dualToVField(harmonic_velocities);
-	velocities = harmonic_velocities;
+	harmonicFlux.dualToVField(velocities_harm);
+	velocities = velocities_harm;
 
 	return harmonicFlux;
 
@@ -287,7 +284,7 @@ void application_fluidSimulation::getVelocityFlattened( tuple3f & pos, int actua
 
 	result.set(velocities[actualTriangle]);
 	if(!useHarmonicField){
-		result-=harmonic_velocities[actualTriangle];
+		result-=velocities_harm[actualTriangle];
 	}
 	return;
 
@@ -394,8 +391,15 @@ void application_fluidSimulation::walkPath( tuple3f * pos, int * triangle, float
 
 std::vector<tuple3f> & application_fluidSimulation::getHarmonicVel()
 {
-	return harmonic_velocities;
+	return velocities_harm;
 }
+
+
+std::vector<tuple3f> & application_fluidSimulation::getVortVel()
+{
+	return velocities_vort;
+}
+
 
 std::vector<tuple3f>& application_fluidSimulation::getDualVertices()
 {
@@ -489,17 +493,17 @@ void application_fluidSimulation::computeBacktracedVorticities()
 		wingedEdge & edg = edgs[i];
 		if(!edg.isOnBorder()){
 			if(!isOnBorder[edg.start()]){
-				vorticity[edg.start()] += 0.5* ((backtracedVelocity_noHarmonic[edg.getRightFace()] + backtracedVelocity_noHarmonic[edg.getLeftFace()]).dot(
+				vorticity[edg.start()] -= 0.5* ((backtracedVelocity_noHarmonic[edg.getRightFace()] + backtracedVelocity_noHarmonic[edg.getLeftFace()]).dot(
 					backtracedDualVertices[edg.getLeftFace()] - backtracedDualVertices[edg.getRightFace()])); 
 			}else{
-				vorticity[edg.start()] += 0.5* ((backtracedVelocity[edg.getRightFace()] + backtracedVelocity[edg.getLeftFace()]).dot(
+				vorticity[edg.start()] -= 0.5* ((backtracedVelocity[edg.getRightFace()] + backtracedVelocity[edg.getLeftFace()]).dot(
 					backtracedDualVertices[edg.getLeftFace()] - backtracedDualVertices[edg.getRightFace()])); 
 			}
 			if(!isOnBorder[edg.end()]){
-				vorticity[edg.end()] -= 0.5* ((backtracedVelocity_noHarmonic[edg.getRightFace()] + backtracedVelocity_noHarmonic[edg.getLeftFace()]).dot(
+				vorticity[edg.end()] += 0.5* ((backtracedVelocity_noHarmonic[edg.getRightFace()] + backtracedVelocity_noHarmonic[edg.getLeftFace()]).dot(
 					backtracedDualVertices[edg.getLeftFace()] - backtracedDualVertices[edg.getRightFace()])); 
 			}else{
-				vorticity[edg.end()] -= 0.5* ((backtracedVelocity[edg.getRightFace()] + backtracedVelocity[edg.getLeftFace()]).dot(
+				vorticity[edg.end()] += 0.5* ((backtracedVelocity[edg.getRightFace()] + backtracedVelocity[edg.getLeftFace()]).dot(
 					backtracedDualVertices[edg.getLeftFace()] - backtracedDualVertices[edg.getRightFace()])); 
 			}
 		}
@@ -517,7 +521,8 @@ void application_fluidSimulation::computeBacktracedVorticities()
 			next = edge->nextBorderEdge();
 			do{
 				common_vertex = edge->and(*next);
-				vorticity[common_vertex] += (backtracedVelocity[edge->getBoundaryFace()] + backtracedVelocity[next->getBoundaryFace()]).dot(
+				//factor 0.5 to average the velocities
+				vorticity[common_vertex] += 0.5* (backtracedVelocity[edge->getBoundaryFace()] + backtracedVelocity[next->getBoundaryFace()]).dot(
 					backtracedDualVertices[edge->getBoundaryFace()] - backtracedDualVertices[next->getBoundaryFace()]); 
 				edge = next;
 				next = next->nextBorderEdge();
@@ -540,3 +545,41 @@ void application_fluidSimulation::addDiffusion2Vorticity()
 
 	myModel->getStar0_mixed().mult(buffer,vorticity);
 }
+
+
+void application_fluidSimulation::setUpMatrixL( MODEL & model )
+{
+	L = (model.getDualD1() * model.getStar1()  * model.getD0())
+		+ (model.getDualD1() * (DDGMatrices::onesBorderEdges(*model.getMesh()) *10000)* model.getD0());
+}
+
+
+void application_fluidSimulation::vorticity2Flux()
+{
+	//////////////////////////////////////////////////////////////////////////
+	L.saveMatrix("fs_Lf2v.m");
+	vorticity.saveVector("vort", "fs_vort.m");
+	buffer.loadVector("fs_flux");
+
+
+	//////////////////////////////////////////////////////////////////////////
+	myModel->getD0().mult(buffer, flux);
+
+	flux.dualToVField(velocities_vort);
+
+}
+
+void application_fluidSimulation::flux2Vorticity()
+{
+	//myModel->getCoderiv1_mixed().mult(flux, vorticity);
+	myModel->getStar1().mult(flux, buffer, true);
+	myModel->getDualD1().mult(buffer, vorticity);
+	
+}
+
+void application_fluidSimulation::vel2Vorticity()
+{
+	myModel->getStar1().mult(harmonicFlux, buffer, true);
+	myModel->getDualD1().mult(buffer, vorticity);
+}
+

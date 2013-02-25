@@ -46,7 +46,8 @@ private:
 	QPushButton * but_simStep;
 	QPushButton * but_startSim;
 	QPushButton * but_borderconstr;
-	QPushButton * but_dbg_harmonic, *but_dbg_pathtrace, *but_dbg_vort, *but_dbg_diffusion;
+	QPushButton * but_dbg_harmonic, *but_dbg_pathtrace, *but_dbg_vort, *but_dbg_diffusion,
+		*but_dbg_vort2flux, *but_dbg_general;
 	QCheckBox *cbox_streamLines, *cbox_interpolation;
 	QCheckBox *cbox_vortNotSpeed, *cbox_texturedLine;
 
@@ -55,7 +56,7 @@ private:
 	//display stuff
 	MainWindow * mainwindow;
 	//harmonic component display
-	std::vector<tuple3f> harm_vField,harm_circumcenters;
+	std::vector<tuple3f> vfield_vectors,vfield_pos;
 	glVectorfield * harm_component;
 	//vorticity display
 	vorticityMap colormap_vorts;
@@ -97,7 +98,7 @@ protected slots:
 	void showTexLines( int what );
 	void streamLineLengthChanged( int what );
 	void colorScaleChanged( int what );
-
-
+	void vort2flux();
+	void v2f2v();
 };
 

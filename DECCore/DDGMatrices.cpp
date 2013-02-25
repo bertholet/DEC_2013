@@ -8,6 +8,7 @@
 #include <limits>
 #include "idCreator.h"
 //#include "meshOperation.h"
+#include "oneForm.h"
 
 
 class d_0Creator: public matrixCreator
@@ -1034,6 +1035,19 @@ cpuCSRMatrix DDGMatrices::d1dual_star1_borderDiff_transp( wingedMesh & aMEsh )
 	mat_0p5sgn = cpuCSRMatrix::transpose(mat_0p5sgn);
 	return mat_0p5sgn;
 }
+
+cpuCSRMatrix DDGMatrices::onesBorderEdges( wingedMesh & aMesh )
+{
+	oneForm f(&aMesh);
+	f.onesOnBoundary();
+
+	diagCreator c(f);
+	cpuCSRMatrix mat;
+	mat.initMatrix(c,f.size());
+
+	return mat;
+}
+
 
 
 

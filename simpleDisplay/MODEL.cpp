@@ -118,14 +118,14 @@ void MODEL::freeAll()
 	if(star1_valid!= INVALID){
 		delete star1;
 	}
+	if(star2_valid!= INVALID){
+		delete star2;
+	}
 	if(star0_mixed_valid!= INVALID){
 		delete star0_mixed;
 	}
 	if(star1_mixed_valid!= INVALID){
 		delete star1_mixed;
-	}
-	if(star2_valid!= INVALID){
-		delete star2;
 	}
 	if(laplace0_mixed_valid!= INVALID){
 		delete laplace0_mixed;
@@ -315,6 +315,27 @@ cpuCSRMatrix & MODEL::getDualD1_T()
 		return *duald1_t;
 	}
 }
+
+
+cpuCSRMatrix & MODEL::getStar0()
+{
+	if(star0_valid == VALID){
+		return *star0;
+	}
+	else{
+		QTime timer;
+		timer.start();
+
+		if(star0_valid == INVALID){
+			star0 = new cpuCSRMatrix();
+		}
+		*star0 = DDGMatrices::star0(*myMesh);
+		cout << "*star0 created: " << timer.restart() <<"\n";
+		star0_valid = VALID;
+		return *star0;
+	}
+}
+
 
 cpuCSRMatrix & MODEL::getStar1()
 {

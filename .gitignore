@@ -14,5 +14,5 @@ Release/*
 */Release/*
 simpleDisplay/GeneratedFiles/*
 *vf_x*
-*fs_x*
-*fs_diffusion_*
+*fs_*
+".exe"

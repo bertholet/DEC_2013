@@ -11,12 +11,14 @@ private:
 	//dual vertices
 	std::vector<tuple3f> backtracedDualVertices, dualVertices,
 		//velocities
-		velocities, harmonic_velocities, 
+		velocities, velocities_harm, velocities_vort,
 		backtracedVelocity, backtracedVelocity_noHarmonic;
 	//triangles the backtraced vertices lie in
 	std::vector<int> triangle_btVel;
 	// the vorticity 0form
 	floatVector vorticity, buffer;
+	//the flux generated from the backtraced vorticities.
+	oneForm flux, harmonicFlux;
 	//the viscosity
 	float viscosity, timestep;
 	//speed up:
@@ -24,6 +26,10 @@ private:
 
 	//matrix for diffusion computation
 	cpuCSRMatrix star0_min_vhl;
+	//Laplacian matrix for vorticity to flux conversion 
+	cpuCSRMatrix L;
+
+	//current model
 	MODEL * myModel;
 public:
 	application_fluidSimulation(MODEL &model);
@@ -76,13 +82,25 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void addDiffusion2Vorticity();
 
+	//////////////////////////////////////////////////////////////////////////
+	// step 6
+	//
+	// convert the computed vorticities to flux
+	//////////////////////////////////////////////////////////////////////////
+	void vorticity2Flux();
+
+	void flux2Vorticity();
+
+	void vel2Vorticity();
+
 	std::vector<tuple3f> & getHarmonicVel();
+	std::vector<tuple3f> & getVortVel();
 	std::vector<tuple3f>& getDualVertices();
 	std::vector<tuple3f> & getTracedDualVertices();
 	std::vector<tuple3f> & getTracedVelocities();
 	floatVector & getVorticities();
 
-	void setViscosity(float visc, MODEL & model);
+	void setViscosity(float visc);
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -127,6 +145,7 @@ private:
 	//Makes sure that all dual vertices lie inside the corresponding triangles
 	// This fascilitates the backtracing step
 	void reprojectDualVerticesIntoTriangles();
-	
+	void setUpMatrixL( MODEL & model );
+
 };
 

@@ -101,6 +101,9 @@ public:
 	static cpuCSRMatrix d1dual_star1_borderDiff(wingedMesh & aMEsh);
 	static cpuCSRMatrix d1dual_star1_borderDiff_transp( wingedMesh & aMEsh) ;
 
+	//identity on boundary edges, zero else.
+	static cpuCSRMatrix onesBorderEdges( wingedMesh & aMesh );
+
 /*	static cpuCSRMatrix onesBorder(std::vector<std::vector<int>> & border, int n, int m);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -125,8 +128,7 @@ public:
 	// to the vertex. i.e it is the part of the dual values on primal
 	// edges for rot calculation.
 	//////////////////////////////////////////////////////////////////////////
-	static cpuCSRMatrix dual_d1_dualprimal( meshMetaInfo & aMesh );
+	static cpuCSRMatrix dual_d1_dualprimal( meshMetaInfo & aMesh );*/
 
 
-	static cpuCSRMatrix onesBorderEdges( meshMetaInfo & aMesh );*/
 };

@@ -8,6 +8,8 @@
 widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 	:QWidget(parent)
 {
+	sim = NULL;
+
 	setUpComponents();
 	addAction();
 	doLayout();
@@ -24,7 +26,7 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 	//timeStepChanged();
 	updateTimestepLabel();
 
-	sim = NULL;
+
 	
 }
 
@@ -44,12 +46,13 @@ void widget_fluidSimulation::setUpComponents()
 	but_simStep = new QPushButton("Do 1 Timestep");
 	but_startSim = new QPushButton("Start/Stop Simulation");
 	but_borderconstr = new QPushButton("Define Border Constraints");
-	but_dbg_harmonic = new QPushButton("Harmonic");
 
+	but_dbg_harmonic = new QPushButton("Harmonic");
 	but_dbg_pathtrace = new QPushButton("PathTr");
 	but_dbg_vort= new QPushButton("VortPart");
 	but_dbg_diffusion =  new QPushButton("Diffuse");
-
+	but_dbg_vort2flux = new QPushButton("vort2flux");
+	but_dbg_general =  new QPushButton("v2f2v");
 
 	label_stepSlider = new QLabel("Timestep Size ()");
 	label_viscosity = new QLabel("Viscosity [0,10]");
@@ -120,7 +123,9 @@ void widget_fluidSimulation::addAction()
 	connect(but_dbg_pathtrace , SIGNAL(released()), this, SLOT(pathtrace()));
 	connect(but_dbg_vort , SIGNAL(released()), this, SLOT(showVorticityPart()));
 	connect(but_dbg_diffusion , SIGNAL(released()), this, SLOT(diffuse()));
-
+	connect(but_dbg_vort2flux, SIGNAL(released()), this, SLOT(vort2flux()));
+	connect(but_dbg_general , SIGNAL(released()), this, SLOT(v2f2v()));
+	
 	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(timeStepChanged()));
 	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
 	connect(forceAgeSlider,SIGNAL(sliderReleased()), this, SLOT(forceAgeChanged()));
@@ -189,6 +194,11 @@ void widget_fluidSimulation::doLayout()
 	hlayout2->addWidget(but_dbg_vort);
 	hlayout2->addWidget(but_dbg_diffusion);
 	layout->addLayout(hlayout2);
+
+	QHBoxLayout * hlayout3 = new QHBoxLayout();
+	hlayout3->addWidget(but_dbg_vort2flux);
+	hlayout3->addWidget(but_dbg_general);
+	layout->addLayout(hlayout3);
 
 	this->setLayout(layout);
 }
@@ -274,11 +284,11 @@ void widget_fluidSimulation::harmonicComponent()
 	ensureSimulationInitialized();
 	sim->computeHarmonicFlow(constr,model);
 	//harmonic.dualToVField(harm_vField);
-	harm_vField = sim->getHarmonicVel();
-	harm_circumcenters = sim->getDualVertices();
+	vfield_vectors = sim->getHarmonicVel();
+	vfield_pos = sim->getDualVertices();
 //	meshMath::circumcenters(*model.getMesh(), harm_circumcenters);
 
-	harm_component->display(&harm_circumcenters,&harm_vField);
+	harm_component->display(&vfield_pos,&vfield_vectors);
 	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
 	mainwindow->subscribeResizables(harm_component);
 
@@ -290,10 +300,10 @@ void widget_fluidSimulation::pathtrace()
 	sim->pathTraceDualVertices(getTimestep());
 	sim->updateBacktracedVelocities();
 
-	harm_circumcenters = sim->getTracedDualVertices();
-	harm_vField =sim->getTracedVelocities();
+	vfield_pos = sim->getTracedDualVertices();
+	vfield_vectors =sim->getTracedVelocities();
 
-	harm_component->display(&harm_circumcenters,&harm_vField);
+	harm_component->display(&vfield_pos,&vfield_vectors);
 	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
 	mainwindow->subscribeResizables(harm_component);
 }
@@ -312,11 +322,24 @@ void widget_fluidSimulation::showVorticityPart()
 void widget_fluidSimulation::diffuse()
 {
 	ensureSimulationInitialized();
-	sim->setViscosity(getViscosity(), * MODEL::getModel());
+	sim->setViscosity(getViscosity());
 	sim->addDiffusion2Vorticity();
 
 	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
 	mainwindow->getDisplayer()->setColormap(colormap_vorts);
+}
+
+void widget_fluidSimulation::vort2flux()
+{
+	ensureSimulationInitialized();
+	sim->vorticity2Flux();
+
+	vfield_pos = sim->getDualVertices();
+	vfield_vectors =sim->getVortVel();
+
+	harm_component->display(&vfield_pos,&vfield_vectors);
+	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
+	mainwindow->subscribeResizables(harm_component);
 }
 
 
@@ -334,6 +357,9 @@ void widget_fluidSimulation::viscosityChanged()
 	std::stringstream ss;
 	ss << "Viscosity (" << viscy<< ")";
 	this->label_viscosity->setText(ss.str().c_str());
+
+	ensureSimulationInitialized();
+	sim->setViscosity(viscy);
 }
 
 void widget_fluidSimulation::forceAgeChanged()
@@ -388,7 +414,7 @@ void widget_fluidSimulation::streamLineLengthChanged( int what )
 
 void widget_fluidSimulation::colorScaleChanged( int scale )
 {
-	colormap_vorts.set(pow(10.f,(1.f*scale-50)/10));
+	colormap_vorts.setScale(0.005*pow(10.f,(1.f*scale-50)/10));
 	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
 	mainwindow->getDisplayer()->setColormap(colormap_vorts);
 }
@@ -398,6 +424,7 @@ void widget_fluidSimulation::ensureSimulationInitialized()
 	if(sim == NULL){
 		sim = new application_fluidSimulation(*MODEL::getModel());
 		//sim->setUpSimulation(*MODEL::getModel());
+		MODEL::getModel()->getMesh()->getWfMesh()->attach(this);
 	}
 }
 
@@ -406,6 +433,9 @@ void widget_fluidSimulation::update( void * src, meshMsg msg )
 	//any tampering with the mesh invalidates the simulation
 	if(sim != NULL){
 		delete sim;
+		vfield_pos.clear();
+		vfield_vectors.clear();
+		harm_component->reset();
 	}
 	sim = NULL;
 }
@@ -418,6 +448,20 @@ void widget_fluidSimulation::updateTimestepLabel()
 	ss << "Timestep Size (" << stepSize << ")";
 	this->label_stepSlider->setText(ss.str().c_str());
 }
+
+void widget_fluidSimulation::v2f2v()
+{
+	ensureSimulationInitialized();
+	//sim->vorticity2Flux();
+	//sim->flux2Vorticity();
+	sim->vel2Vorticity();
+
+	//colormap_vorts.setScale(pow(10.f,(1.f*scale-50)/10));
+	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
+	mainwindow->getDisplayer()->setColormap(colormap_vorts);
+}
+
+
 
 
 

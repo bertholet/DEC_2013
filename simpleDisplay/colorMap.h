@@ -71,7 +71,7 @@ public:
 	vorticityMap();
 	~vorticityMap();
 
-	void set(float scl);
+	void setScale(float scl);
 	void update(std::vector<float> & values, MODEL & model);
 	virtual std::vector<tuple3f> & getColors();
 	//virtual void process( int intersec_vertex, int intersec_face, tuple3f & intersec_pos );

@@ -46,14 +46,14 @@ public:
 	
 	//minus the border1 matrix
 	cpuCSRMatrix & getDualD1();
-	//transposed of DualD1
+	//transposed of DualD1, which is minus D0
 	cpuCSRMatrix & getDualD1_T();
 
+	cpuCSRMatrix & getStar0();
 	cpuCSRMatrix & getStar1();
-	cpuCSRMatrix & getStar1_mixed();
-	cpuCSRMatrix & getStar0_mixed();
 	cpuCSRMatrix & getStar2();
-
+	cpuCSRMatrix & getStar0_mixed();
+	cpuCSRMatrix & getStar1_mixed();
 
 	cpuCSRMatrix & getCoderiv1_mixed();
 	cpuCSRMatrix & getCoderiv1_ignoreBoundary();

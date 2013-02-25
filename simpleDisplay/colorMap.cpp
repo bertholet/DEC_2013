@@ -176,7 +176,7 @@ std::vector<tuple3f> & vorticityMap::getColors()
 	return cols;
 }
 
-void vorticityMap::set( float scl )
+void vorticityMap::setScale( float scl )
 {
 	scale = scl;
 }
