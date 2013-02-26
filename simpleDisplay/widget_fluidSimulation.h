@@ -49,7 +49,7 @@ private:
 	QPushButton * but_startSim;
 	QPushButton * but_borderconstr;
 	QPushButton * but_dbg_harmonic, *but_dbg_pathtrace, *but_dbg_vort, *but_dbg_diffusion,
-		*but_dbg_vort2flux, *but_dbg_general;
+		*but_dbg_vort2flux, *but_dbg_resetForces, * but_dbg_addForces;
 	QCheckBox *cbox_streamLines, *cbox_interpolation;
 	QCheckBox *cbox_vortNotSpeed, *cbox_texturedLine;
 
@@ -73,6 +73,7 @@ private:
 	void setUpComponents();
 	void addAction();
 	void doLayout();
+	void setUpForceCollection();
 	virtual void activateInput();
 	virtual void desactivateInput();
 
@@ -83,6 +84,7 @@ protected slots:
 	void doSimulation();
 
 	void resetFlux();
+	void resetForces();
 	void singleSimulationStep();
 	void startSim();
 
@@ -91,7 +93,9 @@ protected slots:
 	void harmonicComponent();
 	void pathtrace();
 	void showVorticityPart();
+	void addForces( void );
 	void diffuse();
+	void vort2flux();
 	
 	//input stuff
 
@@ -108,8 +112,7 @@ protected slots:
 	void showTexLines( int what );
 	void streamLineLengthChanged( int what );
 	void colorScaleChanged( int what );
-	void vort2flux();
-	void v2f2v();
+
 
 };
 

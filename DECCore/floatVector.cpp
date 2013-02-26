@@ -94,3 +94,11 @@ void floatVector::loadVector( std::string file )
 		}
 	}
 }
+
+void floatVector::add( floatVector & other, float scale )
+{
+	assert(other.size() == this->size());
+	for(int i = 0; i < size(); i++){
+		(*this)[i] += other[i] * scale;
+	}
+}

@@ -5,7 +5,7 @@
 #include <omp.h>
 
 application_fluidSimulation::application_fluidSimulation(MODEL &model):
-	flux(model.getMesh()), harmonicFlux(model.getMesh())
+	flux(model.getMesh()), harmonicFlux(model.getMesh()), forceFlux(model.getMesh())
 {
 	setUpSimulation(model);
 }
@@ -73,6 +73,37 @@ void application_fluidSimulation::setViscosity( float visc)
 	star0_min_vhl = myModel->getDualD1()*myModel->getStar1() *myModel->getD0();
 	star0_min_vhl *= viscosity * timestep;
 	star0_min_vhl = myModel->getStar0_mixed() -star0_min_vhl;
+}
+
+
+void application_fluidSimulation::setForces( std::vector<int> &faces, std::vector<tuple3f> & dirs , float scale)
+{
+	assert(faces.size() == dirs.size());
+	resetForces();
+
+	wingedEdge * edge;
+	std::vector<tuple3f> & verts = myMesh->getVertices();
+	tuple3i f2e, fc;
+	tuple3f n;
+	int j;
+	for(int i =0; i < faces.size(); i++){
+		fc = myMesh->getFaces()[faces[i]];
+		f2e = myMesh->getf2e()[faces[i]];
+		n= (verts[fc.b]-verts[fc.a]).cross(verts[fc.c]-verts[fc.a]);
+		n.normalize();
+
+		//rotation by 90 degrees (dual val)
+		for(j = 0; j < 3; j++){
+			edge = & myMesh->getEdges()[f2e[j]];
+			forceFlux[edge->getIndex()] = (verts[edge->end()] - verts[edge->start()]).dot(n.cross(dirs[i]))*scale;
+		}
+	}
+}
+
+void application_fluidSimulation::resetForces()
+{
+	forceFlux.setZero();
+
 }
 
 
@@ -568,6 +599,12 @@ void application_fluidSimulation::computeBacktracedVorticities()
 
 
 
+void application_fluidSimulation::addForces2Vorticity( float timestep )
+{
+	duald1_star1.mult(forceFlux, buffer, true);
+	vorticity.add(buffer, timestep);
+}
+
 
 
 void application_fluidSimulation::addDiffusion2Vorticity()
@@ -584,7 +621,8 @@ void application_fluidSimulation::addDiffusion2Vorticity()
 
 void application_fluidSimulation::setUpMatrixL( MODEL & model )
 {
-	L = (model.getDualD1() * model.getStar1()  * model.getD0())
+	duald1_star1 = model.getDualD1() * model.getStar1();
+	L = (duald1_star1  * model.getD0())
 		+ (model.getDualD1() * (DDGMatrices::onesBorderEdges(*model.getMesh()) *10000)* model.getD0());
 }
 
@@ -617,4 +655,6 @@ void application_fluidSimulation::vel2Vorticity()
 	myModel->getStar1().mult(harmonicFlux, buffer, true);
 	myModel->getDualD1().mult(buffer, vorticity);
 }
+
+
 

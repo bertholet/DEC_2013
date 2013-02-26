@@ -20,7 +20,7 @@ private:
 	// the vorticity 0form
 	floatVector vorticity, buffer;
 	//the flux generated from the backtraced vorticities.
-	oneForm flux, harmonicFlux;
+	oneForm flux, harmonicFlux, forceFlux;
 	//the viscosity
 	float viscosity, timestep;
 	//speed up:
@@ -30,6 +30,8 @@ private:
 	cpuCSRMatrix star0_min_vhl;
 	//Laplacian matrix for vorticity to flux conversion 
 	cpuCSRMatrix L;
+	//Matrix for force addition
+	cpuCSRMatrix duald1_star1;
 
 	//current model
 	MODEL * myModel;
@@ -76,6 +78,7 @@ public:
 	// step 4 add Forces
 	//
 	//////////////////////////////////////////////////////////////////////////
+	void addForces2Vorticity(float timestep);
 
 	//////////////////////////////////////////////////////////////////////////
 	// step 5
@@ -103,6 +106,8 @@ public:
 	floatVector & getVorticities();
 
 	void setViscosity(float visc);
+	void setForces(std::vector<int> &faces, std::vector<tuple3f> & dirs, float scale);
+	void resetForces();
 
 private:
 	//////////////////////////////////////////////////////////////////////////

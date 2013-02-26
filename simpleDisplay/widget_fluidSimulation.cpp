@@ -9,6 +9,7 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 	:QWidget(parent)
 {
 	sim = NULL;
+	mainwindow = parent;
 
 	setUpComponents();
 	addAction();
@@ -16,24 +17,11 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 
 	animationTimer = new QTimer(this);
 	connect( animationTimer, SIGNAL(timeout()), this, SLOT(doSimulation())); 
+	
 
-	mainwindow = parent;
+	setUpForceCollection();
 
-
-
-	mainwindow->getDisplayer()->subscribeToMousestrokes(&forceCollector);
-	mainwindow->subscribeResetable(&forceCollector);
-
-	gl_vfiled = new glVectorfield();
-	gl_vfield_forces = new glVectorfield();
-	gl_vfield_forces->setColor(QVector3D(1,1,0));
-	gl_vfield_forces->display(forceCollector.getPositions(), forceCollector.getDirections());
-
-	mainwindow->getDisplayer()->subscribeDisplayable(gl_vfield_forces);
-	mainwindow->getDisplayer()->subscribeToMousestrokes(gl_vfield_forces);
-	mainwindow->subscribeResetable(gl_vfield_forces);
-	mainwindow->subscribeResizables(gl_vfield_forces);
-
+	//update labels and stuff.
 	forceAgeChanged();
 	forceStrengthChanged();
 	viscosityChanged();
@@ -67,7 +55,8 @@ void widget_fluidSimulation::setUpComponents()
 	but_dbg_vort= new QPushButton("VortPart");
 	but_dbg_diffusion =  new QPushButton("Diffuse");
 	but_dbg_vort2flux = new QPushButton("vort2flux");
-	but_dbg_general =  new QPushButton("v2f2v");
+	but_dbg_resetForces =  new QPushButton("resetForce");
+	but_dbg_addForces = new QPushButton("addForces");
 
 	label_stepSlider = new QLabel("Timestep Size ()");
 	label_viscosity = new QLabel("Viscosity [0,10]");
@@ -144,8 +133,9 @@ void widget_fluidSimulation::addAction()
 	connect(but_dbg_vort , SIGNAL(released()), this, SLOT(showVorticityPart()));
 	connect(but_dbg_diffusion , SIGNAL(released()), this, SLOT(diffuse()));
 	connect(but_dbg_vort2flux, SIGNAL(released()), this, SLOT(vort2flux()));
-	connect(but_dbg_general , SIGNAL(released()), this, SLOT(v2f2v()));
-	
+	connect(but_dbg_resetForces , SIGNAL(released()), this, SLOT(resetForces()));
+	connect(but_dbg_addForces, SIGNAL(released()), this, SLOT(addForces()));
+
 	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(timeStepChanged()));
 	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
 	connect(forceAgeSlider,SIGNAL(sliderReleased()), this, SLOT(forceAgeChanged()));
@@ -218,12 +208,14 @@ void widget_fluidSimulation::doLayout()
 
 	QHBoxLayout * hlayout2 = new QHBoxLayout();
 	hlayout2->addWidget(but_dbg_vort);
-	hlayout2->addWidget(but_dbg_diffusion);
+	hlayout2->addWidget(but_dbg_addForces);
 	layout->addLayout(hlayout2);
-
+	QHBoxLayout *hlayout2p5 = new QHBoxLayout();
+	hlayout2p5->addWidget(but_dbg_diffusion);
+	hlayout2p5->addWidget(but_dbg_vort2flux);
+	layout->addLayout(hlayout2p5);
 	QHBoxLayout * hlayout3 = new QHBoxLayout();
-	hlayout3->addWidget(but_dbg_vort2flux);
-	hlayout3->addWidget(but_dbg_general);
+	hlayout3->addWidget(but_dbg_resetForces);
 	layout->addLayout(hlayout3);
 
 	this->setLayout(layout);
@@ -349,6 +341,32 @@ void widget_fluidSimulation::showVorticityPart()
 }
 
 
+void widget_fluidSimulation::addForces( void )
+{
+	ensureSimulationInitialized();
+	sim->setForces(forceCollector.getFaces(), *forceCollector.getDirections(), getForceStrength());
+	sim->addForces2Vorticity(getTimestep());
+
+	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
+	mainwindow->getDisplayer()->setColormap(colormap_vorts);
+}
+
+void widget_fluidSimulation::resetForces()
+{
+	/*ensureSimulationInitialized();
+	//sim->vorticity2Flux();
+	//sim->flux2Vorticity();
+	sim->vel2Vorticity();*/
+
+	forceCollector.reset();
+	gl_vfield_forces->reset();
+
+	ensureSimulationInitialized();
+	sim->resetForces();
+	sim->computeBacktracedVorticities();
+	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
+	mainwindow->getDisplayer()->setColormap(colormap_vorts);
+}
 
 void widget_fluidSimulation::diffuse()
 {
@@ -480,17 +498,26 @@ void widget_fluidSimulation::updateTimestepLabel()
 	this->label_stepSlider->setText(ss.str().c_str());
 }
 
-void widget_fluidSimulation::v2f2v()
-{
-	ensureSimulationInitialized();
-	//sim->vorticity2Flux();
-	//sim->flux2Vorticity();
-	sim->vel2Vorticity();
 
-	//colormap_vorts.setScale(pow(10.f,(1.f*scale-50)/10));
-	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
-	mainwindow->getDisplayer()->setColormap(colormap_vorts);
+
+void widget_fluidSimulation::setUpForceCollection()
+{
+	mainwindow->getDisplayer()->subscribeToMousestrokes(&forceCollector);
+	mainwindow->subscribeResetable(&forceCollector);
+
+	gl_vfiled = new glVectorfield();
+	gl_vfield_forces = new glVectorfield();
+	gl_vfield_forces->setColor(QVector3D(1,1,0));
+	gl_vfield_forces->display(forceCollector.getPositions(), forceCollector.getDirections());
+
+	mainwindow->getDisplayer()->subscribeDisplayable(gl_vfield_forces);
+	mainwindow->getDisplayer()->subscribeToMousestrokes(gl_vfield_forces);
+	mainwindow->subscribeResetable(gl_vfield_forces);
+	mainwindow->subscribeResizables(gl_vfield_forces);
+
 }
+
+
 
 
 

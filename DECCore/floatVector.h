@@ -12,14 +12,17 @@ public:
 	floatVector(std::vector<tuple3f> & vals, int what);
 	~floatVector(void);
 
-	void set(std::vector<tuple3f> & vals, int what);
+	void set(std::vector<tuple3f> & vals, int what);	
+	void add(floatVector & other, float scale );
+
+
 	void saveVector(std::string  name, 
 		std::string  file );
-
 	//not compatible to savevector
 	void loadVector(std::string  file );
 
 	static void saveTuple3iVectorMatlabStyle(std::vector<tuple3i> & vals,std::string  name, 
 		std::string  file );
+
 };
 
