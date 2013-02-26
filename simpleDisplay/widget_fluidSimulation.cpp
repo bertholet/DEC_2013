@@ -17,11 +17,22 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 	animationTimer = new QTimer(this);
 	connect( animationTimer, SIGNAL(timeout()), this, SLOT(doSimulation())); 
 
+	mainwindow = parent;
+
+
+
+	mainwindow->getDisplayer()->subscribeToMousestrokes(&forceCollector);
+	mainwindow->subscribeResetable(&forceCollector);
+
 	gl_vfiled = new glVectorfield();
 	gl_vfield_forces = new glVectorfield();
 	gl_vfield_forces->setColor(QVector3D(1,1,0));
+	gl_vfield_forces->display(forceCollector.getPositions(), forceCollector.getDirections());
 
-	mainwindow = parent;
+	mainwindow->getDisplayer()->subscribeDisplayable(gl_vfield_forces);
+	mainwindow->getDisplayer()->subscribeToMousestrokes(gl_vfield_forces);
+	mainwindow->subscribeResetable(gl_vfield_forces);
+	mainwindow->subscribeResizables(gl_vfield_forces);
 
 	forceAgeChanged();
 	forceStrengthChanged();
