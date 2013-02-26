@@ -45,7 +45,7 @@ void widget_fluidSimulation::setUpComponents()
 	but_resetFlux = new QPushButton("Reset Flux!");
 	but_simStep = new QPushButton("Do 1 Timestep");
 	but_startSim = new QPushButton("Start/Stop Simulation");
-	but_borderconstr = new QPushButton("Define Border Constraints");
+	but_borderconstr = new QPushButton("Harmonic");
 
 	but_dbg_harmonic = new QPushButton("Harmonic");
 	but_dbg_pathtrace = new QPushButton("PathTr");
@@ -60,9 +60,14 @@ void widget_fluidSimulation::setUpComponents()
 	label_forceStrength = new QLabel("Force Strength (): ");
 	label_animation = new QLabel("");
 
-	borderCondInput = new QLineEdit();
-	borderCondInput->setText("");
-
+	/*borderCondInput = new QLineEdit();
+	borderCondInput->setText("");*/
+	spin_x= new QDoubleSpinBox(this);
+	spin_x->setValue(1);
+	spin_y = new QDoubleSpinBox(this);
+	spin_y->setValue(0);
+	spin_z = new QDoubleSpinBox(this);
+	spin_z->setValue(0);
 
 	stepSlider = new QSlider(Qt::Horizontal, this);
 	stepSlider->setMinimum(0);
@@ -117,7 +122,7 @@ void widget_fluidSimulation::addAction()
 	connect(but_resetFlux, SIGNAL(released()), this, SLOT(resetFlux()));
 	connect(but_simStep, SIGNAL(released()), this, SLOT(singleSimulationStep()));
 	connect(but_startSim , SIGNAL(released()), this, SLOT(startSim()));
-	connect(but_borderconstr , SIGNAL(released()), this, SLOT(defineBorderConstraints()));
+	connect(but_borderconstr , SIGNAL(released()), this, SLOT(harmonicComponent()));
 	connect(but_dbg_harmonic , SIGNAL(released()), this, SLOT(harmonicComponent()));
 
 	connect(but_dbg_pathtrace , SIGNAL(released()), this, SLOT(pathtrace()));
@@ -131,7 +136,7 @@ void widget_fluidSimulation::addAction()
 	connect(forceAgeSlider,SIGNAL(sliderReleased()), this, SLOT(forceAgeChanged()));
 	connect(forceStrengthSlider,SIGNAL(sliderReleased()), this, SLOT(forceStrengthChanged()));
 
-	connect(borderCondInput,SIGNAL(textChanged( const QString& )), this, SLOT(borderDirInput(const QString & )));
+	//connect(borderCondInput,SIGNAL(textChanged( const QString& )), this, SLOT(borderDirInput(const QString & )));
 
 	//////////////////////////////////////////////////////////////////////////
 	//display settings
@@ -154,9 +159,15 @@ void widget_fluidSimulation::doLayout()
 	QVBoxLayout * layout = new QVBoxLayout();
 
 	layout->addWidget(label_animation);
-	layout->addWidget(borderCondInput);
+	//layout->addWidget(borderCondInput);
+	QHBoxLayout * hlayout0 = new QHBoxLayout();
+	hlayout0->addWidget(spin_x);
+	hlayout0->addWidget(spin_y);
+	hlayout0->addWidget(spin_z);
+	//hlayout0->addWidget(but_borderconstr);
+	layout->addLayout(hlayout0);
+
 	layout->addWidget(but_borderconstr);
-	//layout->addWidget(butt);
 	//layout->addWidget(butt_defForce);
 	layout->addWidget(but_startSim);
 	layout->addWidget(but_resetFlux);
@@ -263,10 +274,6 @@ void widget_fluidSimulation::startSim()
 	throw std::exception("The method or operation is not implemented.");
 }
 
-void widget_fluidSimulation::defineBorderConstraints()
-{
-	throw std::exception("The method or operation is not implemented.");
-}
 
 void widget_fluidSimulation::harmonicComponent()
 {
@@ -276,17 +283,16 @@ void widget_fluidSimulation::harmonicComponent()
 	}
 	std::vector<tuple3f> constr;
 	constr.assign(model.getMesh()->getBoundaryEdges().size(), tuple3f());
-	constr[0].set(tuple3f(0,1,0));
-
-	//application_fluidSimulation sim(model);
-//	sim.setUpSimulation(model);
-
+	//note: the constraint direction is rotated  by 90° as to get the 'right'
+	//intuitive constraint. This is needed because the constraints are dual
+	constr[0].set(-spin_y->value(),spin_x->value(),spin_z->value());
+	
 	ensureSimulationInitialized();
 	sim->computeHarmonicFlow(constr,model);
 	//harmonic.dualToVField(harm_vField);
 	vfield_vectors = sim->getHarmonicVel();
 	vfield_pos = sim->getDualVertices();
-//	meshMath::circumcenters(*model.getMesh(), harm_circumcenters);
+
 
 	harm_component->display(&vfield_pos,&vfield_vectors);
 	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);

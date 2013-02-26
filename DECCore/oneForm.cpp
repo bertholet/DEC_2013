@@ -147,3 +147,9 @@ void oneForm::onesOnInnerEdges()
 		(*this)[i] = (myMesh->getEdges()[i].isOnBorder()? 0.f:1.f);
 	}
 }
+
+void oneForm::setZero()
+{
+	int sz = myMesh->getEdges().size();
+	assign(sz, 0.f);
+}

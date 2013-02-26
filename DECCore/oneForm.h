@@ -16,7 +16,7 @@ public:
 	void toVField(std::vector<tuple3f> & target);
 	//conversion to vectorfield, interpreting the one form as flux values
 	void dualToVField(std::vector<tuple3f> & target);
-
+	void setZero();
 private:
 	wingedMesh *myMesh;
 

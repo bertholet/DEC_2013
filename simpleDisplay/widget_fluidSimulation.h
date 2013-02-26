@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <qspinbox.h>
+#include <QDoubleSpinBox>
 #include <QTimer>
 #include "mainwindow.h"
 #include "glVectorfield.h"
@@ -40,7 +41,6 @@ private:
 	QLabel * label_animation;
 	QLabel * label_forceAge;
 	QLabel * label_forceStrength;
-	QLineEdit * borderCondInput;
 
 	QPushButton * but_resetFlux;
 	QPushButton * but_simStep;
@@ -52,6 +52,7 @@ private:
 	QCheckBox *cbox_vortNotSpeed, *cbox_texturedLine;
 
 	QSpinBox * lineLength, * colorScale ;
+	QDoubleSpinBox *spin_x, *spin_y, *spin_z;
 
 	//display stuff
 	MainWindow * mainwindow;
@@ -83,7 +84,6 @@ protected slots:
 	void diffuse();
 	
 	//input stuff
-	void defineBorderConstraints();
 
 	void timeStepChanged();
 	void updateTimestepLabel();

@@ -80,6 +80,7 @@ void application_fluidSimulation::setViscosity( float visc)
 oneForm application_fluidSimulation::computeHarmonicFlow( std::vector<tuple3f> & borderConstraints, MODEL & model )
 {
 	//oneForm harmonicFlux(myMesh);
+	harmonicFlux.setZero();
 	if(myMesh->getBoundaryEdges().size() == 0){
 		//only for bordered meshs.
 		return harmonicFlux;

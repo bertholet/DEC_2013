@@ -35,6 +35,8 @@ Displayer::Displayer(QGLFormat & format, QWidget *parent)
 	camMatrix.lookAt(eye, QVector3D(0,0,0), up );
 	projMatrix.perspective(60, this->width()/this->height(),1,500);
 
+	actualMap = NULL;
+
 
 
 }
