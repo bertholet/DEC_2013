@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-** Created: Mon 18. Feb 19:54:33 2013
+** Created: Tue 26. Feb 10:14:01 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_MainWindow[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-       9,   14, // methods
+      10,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -40,6 +40,7 @@ static const uint qt_meta_data_MainWindow[] = {
      107,   11,   11,   11, 0x08,
      128,   11,   11,   11, 0x08,
      148,  143,   11,   11, 0x08,
+     171,  167,   11,   11, 0x08,
 
        0        // eod
 };
@@ -49,7 +50,7 @@ static const char qt_meta_stringdata_MainWindow[] = {
     "setDisplayMode(int)\0reset()\0"
     "setVFieldMode(int)\0lineWidthChanged()\0"
     "fieldLengthChanged()\0showLines(int)\0"
-    "what\0setSmoothMode(int)\0"
+    "what\0setSmoothMode(int)\0tab\0tabChanged(int)\0"
 };
 
 void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -67,6 +68,7 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 6: _t->fieldLengthChanged(); break;
         case 7: _t->showLines((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 8: _t->setSmoothMode((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 9: _t->tabChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -104,9 +106,9 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 9)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 9;
+        _id -= 10;
     }
     return _id;
 }

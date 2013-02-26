@@ -102,12 +102,18 @@ void MainWindow::setupComponents(QGLFormat & format)
 void MainWindow::setupQTabs() 
 {
 	this->tabs = new QTabWidget(this);
+	connect(tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
+	fs_widget = vd_widget = NULL;
 
-	QWidget * fluidSimWidget = new widget_fluidSimulation(this);
+	widget_fluidSimulation * fluidSimWidget = new widget_fluidSimulation(this);
+	fluidSim_tabID = tabs->count();
+	fs_widget = fluidSimWidget;
 	tabs->addTab(fluidSimWidget, "Fluid Simulation");
 
 	vectorfieldWidget * vfWidget = new vectorfieldWidget(this);
 	//vfWidget->setMainWindow(this);
+	vfield_tabID = tabs->count();
+	vd_widget = vfWidget;
 	tabs->addTab(vfWidget, "Vector Fields");
 
 	QWidget * paramWidget = new meshParamWidget();
@@ -364,4 +370,20 @@ void MainWindow::unSubscribeResizable( Resizable * r )
 	if(it!= resizables.end()){
 		resizables.erase(it);
 	}
+}
+
+void MainWindow::tabChanged( int tab )
+{
+	if(tab == vfield_tabID){
+		if(vd_widget!= NULL)
+			vd_widget->activateInput();
+		if(fs_widget!= NULL)
+			fs_widget->desactivateInput();
+	}
+	else if(tab == fluidSim_tabID){
+		if(vd_widget!= NULL)
+			vd_widget->desactivateInput();
+		if(fs_widget!= NULL)
+			fs_widget->activateInput();
+	}	
 }

@@ -35,6 +35,7 @@ private:
 	Displayer * myGLDisp;
 	QComboBox * comboBox;
 	QTabWidget * tabs;
+	Activable * vd_widget, *fs_widget;
 
 //	fluidControlWidget * fluidcontWidget;
 
@@ -48,6 +49,7 @@ private:
 
 	std::vector<Resetable * > resetables;
 	std::vector<Resizable * > resizables;
+	int fluidSim_tabID,vfield_tabID;
 
 	void setupQTabs();
 	void setupMenubar() ;
@@ -68,6 +70,7 @@ private slots:
 	void fieldLengthChanged();
 	void showLines( int );
 	void setSmoothMode( int what );
+	void tabChanged( int tab );
 };
 
 

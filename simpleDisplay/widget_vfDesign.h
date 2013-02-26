@@ -8,7 +8,7 @@
 #include "glVectorfield.h"
 #include "Resetable.h"
 
-class vectorfieldWidget : public QWidget, public Resetable//, public Observer<Model::modelMsg>
+class vectorfieldWidget : public QWidget, public Resetable, public Activable//, public Observer<Model::modelMsg>
 {
 	Q_OBJECT
 
@@ -26,6 +26,8 @@ private:
 	QSlider * flowSlider;
 	QSlider * gfLengthSlider;
 	QCheckBox * cBoxDirectional;
+
+	QRadioButton *rbutt_src, *rbutt_snk,*rbutt_fld;
 	bool useBorderMat;
 
 	//mousestroke collectors for input constraints
@@ -49,6 +51,9 @@ private:
 	float getGuideFieldLength();
 
 	virtual void reset();
+	virtual void activateInput();
+	virtual void desactivateInput();
+
 //	void initSolver();
 private slots:
 	void solveVField();

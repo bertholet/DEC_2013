@@ -215,6 +215,21 @@ void vectorfieldWidget::fieldSelection( bool active )
 	}
 }
 
+void vectorfieldWidget::activateInput()
+{
+	sources.setActive(rbutt_src->isChecked());
+	sinks.setActive(rbutt_snk->isChecked());
+	dirs.setActive(rbutt_fld->isChecked());
+}
+
+void vectorfieldWidget::desactivateInput()
+{
+	sources.setActive(false);
+	sinks.setActive(false);
+	dirs.setActive(false);
+}
+
+
 
 void vectorfieldWidget::getCollectedEdgeConstraints( wingedMesh &mesh, std::vector<int> &edges, std::vector<float> &edges_constr )
 {
@@ -342,12 +357,12 @@ void vectorfieldWidget::layoutGui()
 {
 	QPushButton *butt_solve = new QPushButton("Solve VField!");
 	connect(butt_solve, SIGNAL(released()), this, SLOT(solveVField()));
-	QRadioButton * rbutt = new QRadioButton("Select Sources", this);
-	connect(rbutt, SIGNAL(toggled(bool)), this, SLOT(sourceSelection(bool)));
-	QRadioButton * rbutt2 = new QRadioButton("Select Sinks", this);
-	connect(rbutt2, SIGNAL(toggled(bool)), this, SLOT(sinkSelection(bool)));
-	QRadioButton * rbutt3 = new QRadioButton("Select Guide Field", this);
-	connect(rbutt3, SIGNAL(toggled(bool)), this, SLOT(fieldSelection(bool)));
+	rbutt_src = new QRadioButton("Select Sources", this);
+	connect(rbutt_src, SIGNAL(toggled(bool)), this, SLOT(sourceSelection(bool)));
+	rbutt_snk = new QRadioButton("Select Sinks", this);
+	connect(rbutt_snk, SIGNAL(toggled(bool)), this, SLOT(sinkSelection(bool)));
+	rbutt_fld = new QRadioButton("Select Guide Field", this);
+	connect(rbutt_fld, SIGNAL(toggled(bool)), this, SLOT(fieldSelection(bool)));
 
 
 	QLabel * sliderLabel1 = new QLabel("Guide Field Enforcement:", this);
@@ -361,9 +376,9 @@ void vectorfieldWidget::layoutGui()
 	connect(cBoxBorderMatrix, SIGNAL(stateChanged(int)), this, SLOT(useBorderMatrix(int)));
 
 	QVBoxLayout * layout = new QVBoxLayout();
-	layout->addWidget(rbutt);
-	layout->addWidget(rbutt2);
-	layout->addWidget(rbutt3);
+	layout->addWidget(rbutt_src);
+	layout->addWidget(rbutt_snk);
+	layout->addWidget(rbutt_fld);
 	layout->addWidget(sliderLabel2);
 	layout->addWidget(flowSlider);
 	layout->addWidget(sliderLabel1);
@@ -381,6 +396,7 @@ void vectorfieldWidget::reset()
 	vf_dirs.clear();
 	vf_pos.clear();
 }
+
 
 
 

@@ -17,7 +17,10 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 	animationTimer = new QTimer(this);
 	connect( animationTimer, SIGNAL(timeout()), this, SLOT(doSimulation())); 
 
-	harm_component = new glVectorfield();
+	gl_vfiled = new glVectorfield();
+	gl_vfield_forces = new glVectorfield();
+	gl_vfield_forces->setColor(QVector3D(1,1,0));
+
 	mainwindow = parent;
 
 	forceAgeChanged();
@@ -33,7 +36,8 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 
 widget_fluidSimulation::~widget_fluidSimulation(void)
 {
-	delete harm_component;
+	delete gl_vfiled;
+	delete gl_vfield_forces;
 	if(sim != NULL){
 		delete sim;
 		sim = NULL;
@@ -214,6 +218,16 @@ void widget_fluidSimulation::doLayout()
 	this->setLayout(layout);
 }
 
+void widget_fluidSimulation::activateInput()
+{
+	forceCollector.setActive(true);
+}
+
+void widget_fluidSimulation::desactivateInput()
+{
+	forceCollector.setActive(false);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Getters
 //////////////////////////////////////////////////////////////////////////
@@ -294,9 +308,9 @@ void widget_fluidSimulation::harmonicComponent()
 	vfield_pos = sim->getDualVertices();
 
 
-	harm_component->display(&vfield_pos,&vfield_vectors);
-	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
-	mainwindow->subscribeResizables(harm_component);
+	gl_vfiled->display(&vfield_pos,&vfield_vectors);
+	mainwindow->getDisplayer()->subscribeDisplayable(gl_vfiled);
+	mainwindow->subscribeResizables(gl_vfiled);
 
 }
 
@@ -309,9 +323,9 @@ void widget_fluidSimulation::pathtrace()
 	vfield_pos = sim->getTracedDualVertices();
 	vfield_vectors =sim->getTracedVelocities();
 
-	harm_component->display(&vfield_pos,&vfield_vectors);
-	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
-	mainwindow->subscribeResizables(harm_component);
+	gl_vfiled->display(&vfield_pos,&vfield_vectors);
+	mainwindow->getDisplayer()->subscribeDisplayable(gl_vfiled);
+	mainwindow->subscribeResizables(gl_vfiled);
 }
 
 void widget_fluidSimulation::showVorticityPart()
@@ -343,9 +357,9 @@ void widget_fluidSimulation::vort2flux()
 	vfield_pos = sim->getDualVertices();
 	vfield_vectors =sim->getVortVel();
 
-	harm_component->display(&vfield_pos,&vfield_vectors);
-	mainwindow->getDisplayer()->subscribeDisplayable(harm_component);
-	mainwindow->subscribeResizables(harm_component);
+	gl_vfiled->display(&vfield_pos,&vfield_vectors);
+	mainwindow->getDisplayer()->subscribeDisplayable(gl_vfiled);
+	mainwindow->subscribeResizables(gl_vfiled);
 }
 
 
@@ -441,7 +455,7 @@ void widget_fluidSimulation::update( void * src, meshMsg msg )
 		delete sim;
 		vfield_pos.clear();
 		vfield_vectors.clear();
-		harm_component->reset();
+		gl_vfiled->reset();
 	}
 	sim = NULL;
 }
@@ -466,6 +480,8 @@ void widget_fluidSimulation::v2f2v()
 	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
 	mainwindow->getDisplayer()->setColormap(colormap_vorts);
 }
+
+
 
 
 

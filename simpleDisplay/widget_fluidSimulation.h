@@ -10,10 +10,12 @@
 #include <QTimer>
 #include "mainwindow.h"
 #include "glVectorfield.h"
+#include "mouseStrokeListener.h"
+#include "Resetable.h"
 
 #include "application_fluidSimulation.h"
 
-class widget_fluidSimulation: public QWidget, public meshObserver
+class widget_fluidSimulation: public QWidget, public meshObserver,public Activable
 {
 	Q_OBJECT
 public:
@@ -58,13 +60,21 @@ private:
 	MainWindow * mainwindow;
 	//harmonic component display
 	std::vector<tuple3f> vfield_vectors,vfield_pos;
-	glVectorfield * harm_component;
+	glVectorfield * gl_vfiled;
+
+	//force collection and display
+	directionCollector forceCollector;
+	glVectorfield * gl_vfield_forces;
+
+
 	//vorticity display
 	vorticityMap colormap_vorts;
 	
 	void setUpComponents();
 	void addAction();
 	void doLayout();
+	virtual void activateInput();
+	virtual void desactivateInput();
 
 	virtual void update( void * src, meshMsg msg );
 	void ensureSimulationInitialized();
@@ -100,5 +110,6 @@ protected slots:
 	void colorScaleChanged( int what );
 	void vort2flux();
 	void v2f2v();
+
 };
 
