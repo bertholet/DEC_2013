@@ -20,7 +20,7 @@ public:
 	virtual wfMesh * getWfMesh();
 
 private:
-	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_colorBuffer;
+	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_colorBuffer, m_texBuffer;
 	wfMesh * myMesh;
 	wfMesh dummyMesh;
 };

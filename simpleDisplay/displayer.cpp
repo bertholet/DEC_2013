@@ -4,7 +4,7 @@
 #include <QtGui/QMouseEvent>
 #include "glDebuggingStuff.h"
 #include "MODEL.h"
-#include "glPhongMesh.h"
+//#include "glPhongMesh.h"
 #include "glVectorfield.h"
 #include <algorithm>
 

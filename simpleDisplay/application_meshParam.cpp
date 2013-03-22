@@ -1,9 +1,9 @@
 #include "application_meshParam.h"
-#include "mySolver.h"
 #include "DDGMatrices.h"
 #include "matrixCreator.h"
 #include <math.h>
 #include <algorithm>
+#include "SuiteSparseSolver.h"
 #define PI 3.14159265359f
 
 //////////////////////////////////////////////////////////////////////////
@@ -180,8 +180,8 @@ int application_meshParam::conformalBorder( wingedMesh &m, std::vector<tuple3f> 
 	int boundarySz = m.getBoundarySizes()[0];
 	mat.initMatrix(conformalBorderCreator(m), 2*boundarySz);
 	
-	mySolver solver;
-	solver.setMatrix(mat);
+	/*mySolver solver;
+	solver.setMatrix(mat);*/
 
 	//setup x,b
 	floatVector x,b;
@@ -197,11 +197,15 @@ int application_meshParam::conformalBorder( wingedMesh &m, std::vector<tuple3f> 
 	mat.add(boundarySz+boundarySz/2,boundarySz+boundarySz/2,1);
 
 	//////////////////////////////////////////////////////////////////////////
-	mat.saveMatrix("conformalMat.m");
-	b.saveVector("b", "conformalB.m");
+	//mat.saveMatrix("conformalMat.m");
+	//b.saveVector("b", "conformalB.m");
 	//////////////////////////////////////////////////////////////////////////
-
+	SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
+	solver.setMatrix(mat);
+	solver.preconditionSystem();
 	solver.solve(x,b);
+
+	//solver.solve(x,b);
 		
 	for(int k=0; k < boundarySz; k++){
 		target.push_back(tuple3f(x[k], x[k+boundarySz],0));
@@ -221,21 +225,22 @@ void application_meshParam::calcTexturePos( MODEL & model ,borderStyle borderFun
 
 	cpuCSRMatrix mat;
 	floatVector xy, b;
-	mySolver solver;
+	
 
 	setUp(mat, model);
 	setUpB(b, model, borderFunc);
 
 
 	//////////////////////////////////////////////////////////////////////////
-	mat.saveMatrix("meshParamMatrix.m");
-	b.saveVector("b","meshParamVector.m");
-	floatVector::saveTuple3iVectorMatlabStyle(m.getFaces(),"tri","meshParamFaces.m");
+	//mat.saveMatrix("meshParamMatrix.m");
+	//b.saveVector("b","meshParamVector.m");
+	//floatVector::saveTuple3iVectorMatlabStyle(m.getFaces(),"tri","meshParamFaces.m");
 	//////////////////////////////////////////////////////////////////////////
-
+	SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
 	solver.setMatrix(mat);
+	solver.preconditionSystem();
 	solver.solve(xy,b);
-
+	
 
 }
 
@@ -254,13 +259,14 @@ void application_meshParam::calcTexturePosMultiborder( MODEL & model,borderStyle
 	adaptConstraintsInnerBorder(mat, m);
 
 	//////////////////////////////////////////////////////////////////////////
-	mat.saveMatrix("meshParamMatrix.m");
-	b.saveVector("b","meshParamVector.m");
-	floatVector::saveTuple3iVectorMatlabStyle(m.getFaces(),"tri","meshParamFaces.m");
+	//mat.saveMatrix("meshParamMatrix.m");
+	//b.saveVector("b","meshParamVector.m");
+	//floatVector::saveTuple3iVectorMatlabStyle(m.getFaces(),"tri","meshParamFaces.m");
 	//////////////////////////////////////////////////////////////////////////
 
-	mySolver solver;
+	SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
 	solver.setMatrix(mat);
+	solver.preconditionSystem();
 	solver.solve(xy,b);
 }
 
@@ -332,7 +338,7 @@ void application_meshParam::setUp( cpuCSRMatrix & mat, MODEL & model )
 	mat = model.getLaplace0_ignoreBoundary();
 	mat.normalizeLines();
 	//////////////////////////////////////////////////////////////////////////
-	mat.saveMatrix("meshParamlaplace_new.m");
+	//mat.saveMatrix("meshParamlaplace_new.m");
 	//////////////////////////////////////////////////////////////////////////
 	std::vector<wingedEdge*> & boundaries = model.getMesh()->getBoundaryEdges();
 

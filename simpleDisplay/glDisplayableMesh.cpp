@@ -108,7 +108,11 @@ void glDisplayableMesh::update( void * src, meshMsg msg )
 		if(m_vertexBuffer.usagePattern() != QGLBuffer::DynamicDraw){
 			m_vertexBuffer.setUsagePattern(QGLBuffer::DynamicDraw);
 		}
+
+		m_vertexBuffer.bind();
+		glDebuggingStuff::didIDoWrong();
 		m_vertexBuffer.write(0,& (myMesh->getVertices()[0].x), 3 * myMesh->getVertices().size()* sizeof(float));
+		glDebuggingStuff::didIDoWrong();
 
 		updateObserver(REFRESH_DISPLAY);
 	}

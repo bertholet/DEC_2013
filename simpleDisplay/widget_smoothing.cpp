@@ -125,6 +125,7 @@ void smoothingWidget::doImplicitSmoothing()
 void smoothingWidget::addNoise()
 {
 	MODEL::getModel()->getMesh()->getWfMesh()->addOrthogonalNoise(noiseLevel);
+	//MODEL::getModel()->getMesh()->getWfMesh()->scaleVertices(0);
 	MODEL::getModel()->getMesh()->getWfMesh()->updateObserver(POS_CHANGED);
 }
 

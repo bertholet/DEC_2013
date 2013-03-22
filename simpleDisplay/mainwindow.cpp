@@ -15,7 +15,7 @@
 #include "colorMap.h"
 
 #include "MODEL.h"
-#include "mySolver.h"
+//#include "mySolver.h"
 
 #define SLIDER_STEPSPERUNIT 20
 

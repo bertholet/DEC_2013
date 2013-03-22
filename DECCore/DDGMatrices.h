@@ -104,6 +104,8 @@ public:
 	//identity on boundary edges, zero else.
 	static cpuCSRMatrix onesBorderEdges( wingedMesh & aMesh );
 
+	static cpuCSRMatrix diagMatrix( floatVector & vals );
+
 /*	static cpuCSRMatrix onesBorder(std::vector<std::vector<int>> & border, int n, int m);
 
 	//////////////////////////////////////////////////////////////////////////

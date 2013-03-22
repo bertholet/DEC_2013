@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'simpledisplay.h'
 **
-** Created: Mon 18. Feb 19:54:31 2013
+** Created: Fri 22. Mar 16:40:54 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.4)
 **
 ** WARNING! All changes made in this file will be lost!

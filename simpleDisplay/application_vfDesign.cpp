@@ -1,6 +1,6 @@
 #include "application_vfDesign.h"
 #include "meshMath.h"
-
+#include "SuiteSparseSolver.h"
 
 #include "DDGMatrices.h"
 
@@ -91,8 +91,17 @@ void application_vfDesign::computeField( MODEL & model,
 	for(int i = 0; i < constrainedEdges.size(); i++){
 		if(directional){
 			tuple2i & fcs = mesh.getEdges()[constrainedEdges[i]].getAdjFaces();
-			local_scale = (firstPassField[fcs.a].norm()
-				+ firstPassField[fcs.b].norm())*0.5f;
+			if(fcs.a >= 0 && fcs.b>=0){
+				local_scale = (firstPassField[fcs.a].norm()
+					+ firstPassField[fcs.b].norm())*0.5f;
+			}
+			else if(fcs.a >= 0){
+				local_scale = firstPassField[fcs.a].norm();
+			}
+			else{
+				local_scale = firstPassField[fcs.b].norm();
+			}
+			
 		}
 		b[constrainedEdges[i]]+=weight*edgeConstraints[i] * local_scale;
 	}
@@ -102,12 +111,17 @@ void application_vfDesign::computeField( MODEL & model,
 	//matrices could be used instead.
 	add_star1_d0_srcflow_to_b(b,sink_verts, source_verts, srcsink_flow, model);
 
+
+	SuiteSparseSolver solver(SuiteSparseSolver::MATRIX_SYMMETRIC);
+	solver.setMatrix(mat);
+	solver.preconditionSystem();
+	solver.solve(target,b);
 	//////////////////////////////////////////////////////////////////////////
 	//solving.....
-	mat.saveMatrix("vf_laplace1.m");
-	b.saveVector("b", "vf_b.m");
+//	mat.saveMatrix("vf_laplace1.m");
+//	b.saveVector("b", "vf_b.m");
 
-	target.loadVector("vf_x");
+//	target.loadVector("vf_x");
 
 }
 

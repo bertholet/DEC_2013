@@ -1,7 +1,7 @@
 #include "application_smoothing.h"
 #include <QTime>
 #include "meshMath.h"
-#include "mySolver.h"
+#include "SuiteSparseSolver.h"
 
 application_smoothing::application_smoothing()
 {
@@ -55,9 +55,12 @@ void application_smoothing::implicitEuler( MODEL * model, float timeStep )
 	floatVector b(myMesh->getVertices(), 0);
 	floatVector x = b,y=b,z=b;
 
-	//do the implicit integration step
-	mySolver solver;
+
+	SuiteSparseSolver solver(SolverIF::MATRIX_STRUCTURALLY_SYMMETRIC);
 	solver.setMatrix(Id_min_t_laplace);
+	solver.preconditionSystem();
+
+	//do the implicit integration step
 	solver.solve(x,b);
 
 	b.set(myMesh->getVertices(),1);

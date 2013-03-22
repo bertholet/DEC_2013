@@ -1048,6 +1048,16 @@ cpuCSRMatrix DDGMatrices::onesBorderEdges( wingedMesh & aMesh )
 	return mat;
 }
 
+cpuCSRMatrix DDGMatrices::diagMatrix( floatVector & vals )
+{
+	diagCreator c(vals);
+	cpuCSRMatrix mat;
+	mat.initMatrix(c,vals.size());
+
+	return mat;
+}
+
+
 
 
 

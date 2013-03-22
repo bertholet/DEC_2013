@@ -1,9 +1,10 @@
-#include "glPhongMesh.h"
+#include "glTexturedMesh.h"
 #include "glDebuggingStuff.h"
 
 glPhongMesh::glPhongMesh( wfMesh * aMesh ):glDisplayableIntersectable(aMesh),
 	m_vertexBuffer( QGLBuffer::VertexBuffer ), m_IndexBuffer(QGLBuffer::IndexBuffer), 
-	m_normalBuffer(QGLBuffer::VertexBuffer), m_colorBuffer(QGLBuffer::VertexBuffer)
+	m_normalBuffer(QGLBuffer::VertexBuffer), m_colorBuffer(QGLBuffer::VertexBuffer),
+	m_texBuffer(QGLBuffer::VertexBuffer)
 {
 	myMesh = aMesh;
 	aMesh->attach(this);
