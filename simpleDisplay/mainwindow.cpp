@@ -63,18 +63,19 @@ void MainWindow::setupComponents(QGLFormat & format)
 	myGLDisp = new Displayer(format, this);
 	this->subscribeResetable( & (myGLDisp->getMarkupMap()));
 
-	comboBox = new QComboBox();
-	comboBox->setEditable(false);
-	comboBox->addItem("Lines");
-	comboBox->addItem("Faces");
-	comboBox->addItem("Border");
-	comboBox->addItem("Curvature");
-	comboBox->addItem("Selections");
-	comboBox->addItem("Border Selection");
-	comboBox->addItem("FluidSimulation");
-	comboBox->addItem("Texture");
-	comboBox->addItem("TextureMap");
-	comboBox->addItem("Embedding");
+	cbox_shader = new QComboBox();
+	cbox_shader->setEditable(false);
+	cbox_shader->addItem("Lines");
+	cbox_shader->addItem("Faces");
+	cbox_shader->addItem("Smooth");
+	cbox_shader->addItem("Texture");
+
+	cbox_colormap = new QComboBox();
+	cbox_colormap->addItem("White");
+	cbox_colormap->addItem("Red");
+	cbox_colormap->addItem("Borders");
+	cbox_colormap->addItem("Selection");
+	cbox_colormap->addItem("Angles>pi");
 
 	//cbox = new QCheckBox("Draw strokes",this);
 	cbox2 = new QCheckBox("Normed Field",this);
@@ -132,7 +133,8 @@ void MainWindow::addAction()
 
 	connect(openObjFileAct, SIGNAL(triggered()), this, SLOT(openObjFile()));
 	connect(generateMeshAct,SIGNAL(triggered()), this, SLOT(generateMesh()));
-	connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setDisplayMode(int)));
+	connect(cbox_shader, SIGNAL(currentIndexChanged(int)), this, SLOT(setShader(int)));
+	connect(cbox_colormap, SIGNAL(currentIndexChanged(int)), this, SLOT(setColorMode(int)));
 //	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
 	connect(cbox2, SIGNAL(stateChanged(int)), this, SLOT(setVFieldMode(int)));
 	connect(cbox3, SIGNAL(stateChanged(int)), this, SLOT(setSmoothMode(int)));
@@ -153,7 +155,11 @@ void MainWindow::layoutGui()
 {
 	//layout the gui
 	QVBoxLayout * rightLayout = new QVBoxLayout();
-	rightLayout->addWidget(comboBox);
+	QHBoxLayout * sublayout0 = new QHBoxLayout();
+	sublayout0->addWidget(cbox_shader);
+	sublayout0->addWidget(cbox_colormap);
+
+	rightLayout->addLayout(sublayout0);
 	rightLayout->addWidget(tabs);
 	QHBoxLayout * sublayout = new QHBoxLayout();
 	//sublayout->addWidget(cbox);
@@ -231,10 +237,46 @@ void MainWindow::generateMesh()
 
 
 
-void MainWindow::setDisplayMode( int mode )
+void MainWindow::setShader( int mode )
 {
 	if(mode == 0){
-		//this->myGLDisp->setMode(EDGEMODE);
+		//Lines
+		myGLDisp->setShader(glDisplayableMesh::LINES);
+	}
+	else if(mode == 1){
+		//faces
+		myGLDisp->setShader(glDisplayableMesh::FLAT);
+	}
+	else if(mode == 2){
+		//smooth 
+		myGLDisp->setShader(glDisplayableMesh::PHONG);
+	}
+	else if(mode == 3){
+		//texture
+		myGLDisp->setShader(glDisplayableMesh::TEXTURE);	
+	}
+
+
+
+	this->myGLDisp->setMouseMode(TRACKBALLMODE);
+	this->update();
+	/*if(mode == 5){
+		this->myGLDisp->setMouseMode(COLORMAPSCROLL);
+	}
+	else if (mode == 6){
+		this->myGLDisp->setMouseMode(INPUTMODE);
+	}
+	else{
+		this->myGLDisp->setMouseMode(TRACKBALLMODE);
+	}*/
+}
+
+
+void MainWindow::setColorMode( int mode )
+{
+	if(mode == 0){
+		this->myGLDisp->setColormap(
+			constColor(* MODEL::getModel()->getMesh()->getWfMesh(), tuple3f(0.8,0.8,0.8)));
 	}
 	else if(mode == 1){
 		this->myGLDisp->setColormap(
@@ -245,45 +287,18 @@ void MainWindow::setDisplayMode( int mode )
 			borderMap(* MODEL::getModel()->getMesh()));
 	}
 	else if(mode == 3){
+		
+		this->myGLDisp->setMarkupMap();
+	}
+	else if(mode == 4){
 		this->myGLDisp->setColormap(
 			angleMap(* MODEL::getModel()->getMesh()));
 	}
-/*	else if(mode == 4){
-		Model & model = *Model::getModel();
-		this->myGLDisp->setMode(MOUSEINPUTMODE);
-	}
-	else if(mode == 5){
-		Model & model = *Model::getModel();
-		borderMarkupMap * mp = new borderMarkupMap(Model::getModel()->getMeshInfo()->getBorder());
-		mp->attach(this->fluidcontWidget);
+	//curvature
 
-		this->myGLDisp->setColormap((colorMap *) mp);
-		this->myGLDisp->setMode(COLORMAPMODE);
-
-	}
-	else if(mode == 6){
-		this->myGLDisp->setMode(FLUIDSIMMODE);
-	}
-	else if(mode == 7){
-		this->myGLDisp->setMode(TEXMODE);
-	}
-	else if(mode == 8){
-		this->myGLDisp->setMode(TEXMODE2);
-	}
-	else if(mode == 9){
-		this->myGLDisp->setMode(TEXMODE3);
-	}*/
-
-	if(mode == 5){
-		this->myGLDisp->setMouseMode(COLORMAPSCROLL);
-	}
-	else if (mode == 6){
-		this->myGLDisp->setMouseMode(INPUTMODE);
-	}
-	else{
-		this->myGLDisp->setMouseMode(TRACKBALLMODE);
-	}
+	this->myGLDisp->setMouseMode(TRACKBALLMODE);
 }
+
 
 void MainWindow::setVFieldMode( int state)
 {

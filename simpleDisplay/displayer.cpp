@@ -22,22 +22,16 @@ Displayer::Displayer(QGLFormat & format, QWidget *parent)
 	myDisplayable = /**/new glDisplayableMesh(MODEL::getModel()->getMesh()->getWfMesh());//*/ new glPhongMesh(MODEL::getModel()->getMesh()->getWfMesh());//
 	myDisplayable->attach(this);
 
-	/*glVfield = new glVectorfield(MODEL::getModel()->getMesh()->getWfMesh());
-	otherDisplayables.push_back(glVfield);*/
 
 	mouseMode = TRACKBALLMODE;
 	strokeListener.setStrokedObject(*this);
-//	strokeListener.addStrokeProcessor(mousestrokemap);
 	mousestrokemap.associateTo(* MODEL::getModel()->getMesh()->getWfMesh());
+	markupmap_isShown = false;
 
 	eye = QVector3D(0, 0 ,4);
 	up = QVector3D(0,1,0);
 	camMatrix.lookAt(eye, QVector3D(0,0,0), up );
 	projMatrix.perspective(60, this->width()/this->height(),1,500);
-
-	actualMap = NULL;
-
-
 
 }
 
@@ -129,7 +123,13 @@ void Displayer::resizeGL(int w, int h)
 
 void Displayer::setColormap( colorMap & map )
 {
-	actualMap = &map;
+	//actualMap = &map;
+	if(&map == &mousestrokemap){
+		markupmap_isShown = true;
+	}
+	else{
+		markupmap_isShown = false;
+	}
 	myDisplayable->sendColorMap(map);
 	this->updateGL();
 }
@@ -137,8 +137,8 @@ void Displayer::setColormap( colorMap & map )
 
 void Displayer::reset()
 {
-	if(actualMap != NULL){
-		myDisplayable->sendColorMap(*actualMap);
+	if(markupmap_isShown){
+		myDisplayable->sendColorMap(mousestrokemap);
 		this->updateGL();
 	}
 }
@@ -227,6 +227,11 @@ void Displayer::update( void * src, glDisplayable::glDispMessage msg )
 }
 
 
+void Displayer::setMarkupMap()
+{
+	setColormap(mousestrokemap);
+}
+
 void Displayer::keyPressEvent( QKeyEvent * event )
 {
 	if(event->key()==Qt::Key_Control){
@@ -284,6 +289,13 @@ void Displayer::setSmooth( bool smooth )
 			myDisplayable->attach(this);
 	}*/
 }
+
+
+void Displayer::setShader( glDisplayableMesh::SHADER shader)
+{
+	 myDisplayable->switchStyle(shader);
+}
+
 
 /*void Displayer::deleteAllDisplayables()
 {
@@ -363,6 +375,8 @@ void Displayer::setLineWidth( float wdth )
 {
 	glLineWidth(wdth);
 }
+
+
 
 
 

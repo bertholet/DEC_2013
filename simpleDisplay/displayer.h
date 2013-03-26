@@ -36,7 +36,9 @@ public:
 	//void setMode(DisplayMode aMode);
 	void setMouseMode(MouseInputMode aMode);
 	void setColormap(colorMap & map);
+	void setMarkupMap();
 	void setSmooth( bool smooth );
+	void setShader(glDisplayableMesh::SHADER);
 	void showLines();
 	void setVFLength( float length);
 	void setLineWidth( float wdth );
@@ -97,7 +99,8 @@ private:
 	//DisplayMode mode;
 	MouseInputMode mouseMode;
 	markupMap mousestrokemap;
-	colorMap * actualMap;
+	bool markupmap_isShown;
+	//colorMap * actualMap;
 
 	//colorMap * map;
 	//triangleMarkupMap * tmmap;

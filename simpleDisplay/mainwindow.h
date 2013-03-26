@@ -33,7 +33,7 @@ private:
 	QAction * generateMeshAct;
 
 	Displayer * myGLDisp;
-	QComboBox * comboBox;
+	QComboBox * cbox_shader, *cbox_colormap;
 	QTabWidget * tabs;
 	Activable * vd_widget, *fs_widget;
 
@@ -61,7 +61,8 @@ private:
 private slots:
 	void openObjFile();
 	void generateMesh();
-	void setDisplayMode(int);
+	void setShader(int);
+	void setColorMode(int);
 	void reset();
 
 	//void setMouseMode(int state);

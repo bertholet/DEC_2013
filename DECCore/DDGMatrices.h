@@ -94,6 +94,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	static cpuCSRMatrix laplaceIgnoreBoundary(wingedMesh & aMesh);
 	
+	static cpuCSRMatrix laplaceOld( wingedMesh & m );
+
 	//////////////////////////////////////////////////////////////////////////
 	//The matrix as described in the Section Vector Field Design, which can
 	// be used in an incompressible setting to adapt the no divergence

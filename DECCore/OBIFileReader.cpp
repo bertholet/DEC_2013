@@ -221,6 +221,11 @@ void OBIFileReader::initializeMesh( wfMesh & mesh )
 		mesh.initNormalsFromVertices();
 	}
 
+	if(faces_textures.size() == 0){
+		faces_textures = faces;
+		tex.resize(vertices.size(), tuple3f());
+	}
+
 	mesh.setTexture(faces_textures, tex);
 }
 

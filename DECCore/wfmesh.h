@@ -11,7 +11,7 @@ using namespace std;
 // The messages that can be sent to observers: any vertex position 
 // change or geometry/connectivity changes
 //////////////////////////////////////////////////////////////////////////
-enum DECCORE_EXPORT meshMsg{POS_CHANGED, CONNECTIVITY_CHANGED, MESH_DELETED};
+enum DECCORE_EXPORT meshMsg{POS_CHANGED, CONNECTIVITY_CHANGED, MESH_DELETED, TEX_CHANGED};
 
 class meshObserver{
 public:
@@ -101,6 +101,7 @@ public:
 	//assumes one array of size 2*#vertices, where the first half
 	//is given by x and the second half by y coordinates.
 	void setTextures_perVertex( double * xy);
+	void setTextures_perVertex( float * xy);
 	//textures stored in tuple3f.x, tuple3f.y. The value in tuple3f.z is ignored.
 	void setTextures_perVertex( vector<tuple3f> & textures );
 

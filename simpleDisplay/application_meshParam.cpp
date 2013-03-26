@@ -199,11 +199,14 @@ int application_meshParam::conformalBorder( wingedMesh &m, std::vector<tuple3f> 
 	//////////////////////////////////////////////////////////////////////////
 	//mat.saveMatrix("conformalMat.m");
 	//b.saveVector("b", "conformalB.m");
+	//x.loadVector()
 	//////////////////////////////////////////////////////////////////////////
 	SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
 	solver.setMatrix(mat);
 	solver.preconditionSystem();
 	solver.solve(x,b);
+
+
 
 	//solver.solve(x,b);
 		
@@ -241,6 +244,8 @@ void application_meshParam::calcTexturePos( MODEL & model ,borderStyle borderFun
 	solver.preconditionSystem();
 	solver.solve(xy,b);
 	
+	model.getMesh()->getWfMesh()->setTextures_perVertex(& (xy[0]));
+	model.getMesh()->getWfMesh()->updateObserver(TEX_CHANGED);
 
 }
 
@@ -268,6 +273,9 @@ void application_meshParam::calcTexturePosMultiborder( MODEL & model,borderStyle
 	solver.setMatrix(mat);
 	solver.preconditionSystem();
 	solver.solve(xy,b);
+
+	model.getMesh()->getWfMesh()->setTextures_perVertex(& (xy[0]));
+	model.getMesh()->getWfMesh()->updateObserver(TEX_CHANGED);
 }
 
 void application_meshParam::adaptConstraintsInnerBorder( cpuCSRMatrix & mat, wingedMesh & m )
@@ -339,6 +347,11 @@ void application_meshParam::setUp( cpuCSRMatrix & mat, MODEL & model )
 	mat.normalizeLines();
 	//////////////////////////////////////////////////////////////////////////
 	//mat.saveMatrix("meshParamlaplace_new.m");
+	//mat = model.getLaplace0_mixed();
+	//mat.normalizeLines();
+	//mat.saveMatrix("meshParamlaplace_mix.m");
+	//mat = DDGMatrices::laplaceOld(*model.getMesh());
+	//mat.saveMatrix("meshParamlaplace_old.m");
 	//////////////////////////////////////////////////////////////////////////
 	std::vector<wingedEdge*> & boundaries = model.getMesh()->getBoundaryEdges();
 

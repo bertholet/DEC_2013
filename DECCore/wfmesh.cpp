@@ -245,6 +245,18 @@ void wfMesh::setTextures_perVertex( double * xy )
 	this->face_tex = faces;
 }
 
+void wfMesh::setTextures_perVertex( float * xy )
+{
+	tex.clear();
+	tex.reserve(vertices.size());
+
+	for(unsigned int i = 0; i < vertices.size(); i++){
+		tex.push_back(tuple3f(xy[i], xy[i + vertices.size()],0.f));
+	}
+
+	this->face_tex = faces;
+}
+
 void wfMesh::setTextures_perVertex( vector<tuple3f> & textures )
 {
 	tex.clear();

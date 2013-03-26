@@ -33,7 +33,7 @@ void glPhongMesh::sendToGPU()
 	}
 
 	// Prepare a complete shader program...
-	if ( !prepareShaderProgram( "./phong.vert", "./phong.frag", "./phong.geo") ){
+	if ( !prepareShaderProgram( "./tex.vert", "./tex.frag", "./tex.geo") ){
 	//if ( !prepareShaderProgram( "./flat.vert", "./flat.frag", "./flat.geo" ) ){
 		glDebuggingStuff::didIDoWrong();
 		return;
@@ -42,10 +42,12 @@ void glPhongMesh::sendToGPU()
 	// Set up buffers
 	setUpBuffer("vertex", m_vertexBuffer, myMesh->getVertices(),QGLBuffer::StaticDraw);
 	setUpBuffer("normal", m_normalBuffer, myMesh->getNormals(), QGLBuffer::StaticDraw);
+	setUpBuffer("tex", m_texBuffer, myMesh->getTexCoords(), QGLBuffer::StaticDraw);
 
 	setUpIndexBuffer(m_IndexBuffer,myMesh->getFaces(),QGLBuffer::StaticDraw);
 
 	this->sendColorMap(constColor(*myMesh, tuple3f(0.8,0.3,0.3)));
+
 
 	// Set up additional uniforms
 	setUniformValue("light_pos", QVector3D(0,-4,4));

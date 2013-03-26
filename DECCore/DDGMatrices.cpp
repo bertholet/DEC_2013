@@ -808,7 +808,10 @@ cpuCSRMatrix DDGMatrices::coderiv1_mixed_ignoreBoundary( wingedMesh & aMesh )
 	cpuCSRMatrix star1_he= star1_mixed_halfedges(aMesh);
 	cpuCSRMatrix border1_he = border1_halfedges(aMesh);
 
-	cpuCSRMatrix star_0_inv = star0_mixed(aMesh, std::vector<float>());
+	//star1_he.saveMatrix("meshParam_star1_he.m");
+	//border1_he.saveMatrix("meshParam_border1_he.m");
+
+	cpuCSRMatrix star_0_inv = star0(aMesh);//star0_mixed(aMesh, std::vector<float>());
 	star_0_inv.elementWiseInv();
 	return star_0_inv * border1_he * star1_he;
 }
@@ -852,6 +855,9 @@ void DDGMatrices::coderiv1(
 	
 	target = star_0;
 	target.elementWiseInv();
+
+	//star_1.saveMatrix("meshParam_star1.m");
+	//border_1.saveMatrix("meshParam_border1.m");
 
 	//	cout << "star0_inv: " << GetTickCount() - tm <<"\n";
 	//	tm=GetTickCount();

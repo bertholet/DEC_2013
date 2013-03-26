@@ -120,14 +120,16 @@ float meshMath::dualEdge_edge_ratio_mixed( int edgeNr, wingedMesh & mesh, dualEd
 
 	vector<tuple3f> & verts = mesh.getVertices();
 
-	float cot_alpha1 = (edge.isFirstEdge(vertex1) && ! (what== NO_COMPLETION) ? 
+	float cot_alpha1 = (edge.isFirstEdge(vertex1) && (what== NO_COMPLETION) ? //killed ! (what == NO_COMPLETION) 
 				0:
 				tuple3f::cotPoints(verts[vertex2], verts[prev], verts[vertex1]));
 
-	float cot_alpha2 = (edge.isLastEdge(vertex1) && !(what== NO_COMPLETION)?
+	float cot_alpha2 = (edge.isLastEdge(vertex1) && (what== NO_COMPLETION)?
 				0:
 				tuple3f::cotPoints(verts[vertex1], verts[next], verts[vertex2]));
 
+
+	
 /*	float	cot_alpha1 = tuple3f::cotPoints(verts[vertex2], verts[prev], verts[vertex1]);
 	float	cot_alpha2 = tuple3f::cotPoints(verts[vertex1], verts[next], verts[vertex2]);*/
 				

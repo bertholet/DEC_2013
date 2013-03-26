@@ -7,7 +7,7 @@
 class glDisplayableMesh:public glDisplayableIntersectable
 {
 public:
-	enum SHADER {PHONG, FLAT, LINES};
+	enum SHADER {PHONG, FLAT, LINES, TEXTURE};
 
 	glDisplayableMesh(wfMesh *);
 	virtual ~glDisplayableMesh(void);
@@ -26,7 +26,7 @@ public:
 	virtual std::string colorBufferName();
 
 private:
-	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_colorBuffer;
+	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_colorBuffer, m_texBuffer;
 	wfMesh * myMesh;
 	wfMesh dummyMesh;
 };
