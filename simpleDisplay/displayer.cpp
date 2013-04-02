@@ -272,7 +272,7 @@ tuple3i * Displayer::intersect( tuple3f & start, tuple3f & stop, int * closestVe
 	return myDisplayable->intersect(start,stop,closestVertex, face, position );
 }
 
-void Displayer::setSmooth( bool smooth )
+/*void Displayer::setSmooth( bool smooth )
 {
 	((glDisplayableMesh*) myDisplayable)->switchStyle((smooth==true? glDisplayableMesh::PHONG : glDisplayableMesh::FLAT));
 	
@@ -288,7 +288,7 @@ void Displayer::setSmooth( bool smooth )
 		myDisplayable->sendToGPU();
 			myDisplayable->attach(this);
 	}*/
-}
+//}
 
 
 void Displayer::setShader( glDisplayableMesh::SHADER shader)
@@ -366,10 +366,10 @@ markupMap & Displayer::getMarkupMap()
 	return mousestrokemap;
 }
 
-void Displayer::showLines()
+/*void Displayer::showLines()
 {
 	myDisplayable->switchStyle(glDisplayableMesh::LINES);
-}
+}*/
 
 void Displayer::setLineWidth( float wdth )
 {

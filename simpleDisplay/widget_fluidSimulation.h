@@ -27,6 +27,7 @@ public:
 	float getForceStrength();
 	float getTimestep();
 	int getForceAge();
+	float getColorScale();
 
 private:
 	application_fluidSimulation * sim;
@@ -49,7 +50,7 @@ private:
 	QPushButton * but_startSim;
 	QPushButton * but_borderconstr;
 	QPushButton * but_dbg_harmonic, *but_dbg_pathtrace, *but_dbg_vort, *but_dbg_diffusion,
-		*but_dbg_vort2flux, *but_dbg_resetForces, * but_dbg_addForces;
+		*but_dbg_vort2flux, *but_dbg_resetForces, * but_dbg_addForces, *but_dbg_total;
 	QCheckBox *cbox_streamLines, *cbox_interpolation;
 	QCheckBox *cbox_vortNotSpeed, *cbox_texturedLine;
 
@@ -89,13 +90,14 @@ protected slots:
 	void startSim();
 
 	
-
+	//substeps, accessible through the GUI.
 	void harmonicComponent();
 	void pathtrace();
 	void showVorticityPart();
 	void addForces( void );
 	void diffuse();
 	void vort2flux();
+	void total( void );
 	
 	//input stuff
 

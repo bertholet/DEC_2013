@@ -78,11 +78,11 @@ void MainWindow::setupComponents(QGLFormat & format)
 	cbox_colormap->addItem("Angles>pi");
 
 	//cbox = new QCheckBox("Draw strokes",this);
-	cbox2 = new QCheckBox("Normed Field",this);
-	cbox3 = new QCheckBox("Smooth",this);
+	//cbox2 = new QCheckBox("Normed Field",this);
+	//cbox3 = new QCheckBox("Smooth",this);
 	butt_reset = new QPushButton("Reset", this);
-	cBoxLines = new QCheckBox("Lines", this);
-	cBoxLines->setChecked(false);
+	//cBoxLines = new QCheckBox("Lines", this);
+	//cBoxLines->setChecked(false);
 
 	fieldSlider = new QSlider(Qt::Horizontal, this);
 	fieldSlider->setMinimum(0);
@@ -136,13 +136,13 @@ void MainWindow::addAction()
 	connect(cbox_shader, SIGNAL(currentIndexChanged(int)), this, SLOT(setShader(int)));
 	connect(cbox_colormap, SIGNAL(currentIndexChanged(int)), this, SLOT(setColorMode(int)));
 //	connect(cbox, SIGNAL(stateChanged(int)), this, SLOT(setMouseMode(int)));
-	connect(cbox2, SIGNAL(stateChanged(int)), this, SLOT(setVFieldMode(int)));
-	connect(cbox3, SIGNAL(stateChanged(int)), this, SLOT(setSmoothMode(int)));
+//	connect(cbox2, SIGNAL(stateChanged(int)), this, SLOT(setVFieldMode(int)));
+//	connect(cbox3, SIGNAL(stateChanged(int)), this, SLOT(setSmoothMode(int)));
 	connect(butt_reset, SIGNAL(released()), this, SLOT(reset()));
 
 	connect(linewidthSlider, SIGNAL(sliderReleased()), this, SLOT(lineWidthChanged()));
 	connect(fieldSlider, SIGNAL(sliderReleased()), this, SLOT(fieldLengthChanged()));
-	connect(cBoxLines, SIGNAL(stateChanged(int)), this, SLOT(showLines(int)));
+//	connect(cBoxLines, SIGNAL(stateChanged(int)), this, SLOT(showLines(int)));
 
 
 	this->subscribeResetable( myGLDisp);
@@ -166,9 +166,9 @@ void MainWindow::layoutGui()
 	sublayout->addWidget(butt_reset);
 	rightLayout->addLayout(sublayout);
 	sublayout = new QHBoxLayout();
-	sublayout->addWidget(cbox2);
+	/*sublayout->addWidget(cbox2);
 	sublayout->addWidget(cBoxLines);
-	sublayout->addWidget(cbox3);
+	sublayout->addWidget(cbox3);*/
 	rightLayout->addLayout(sublayout);
 	rightLayout->addWidget(fieldSlider);
 	rightLayout->addWidget(linewidthSlider);	
@@ -300,7 +300,7 @@ void MainWindow::setColorMode( int mode )
 }
 
 
-void MainWindow::setVFieldMode( int state)
+/*void MainWindow::setVFieldMode( int state)
 {
 	/*if(state == 0){//unchecked
 		this->myGLDisp->setNormedFieldDisplay(false);
@@ -309,7 +309,7 @@ void MainWindow::setVFieldMode( int state)
 		this->myGLDisp->setNormedFieldDisplay(true);
 	}
 	this->update();*/
-}
+//}
 
 void MainWindow::reset()
 {
@@ -336,7 +336,7 @@ void MainWindow::fieldLengthChanged()
 	this->update();
 }
 
-void MainWindow::showLines( int val)
+/*void MainWindow::showLines( int val)
 {
 	if(val == 2){
 		myGLDisp->showLines();
@@ -345,13 +345,13 @@ void MainWindow::showLines( int val)
 		myGLDisp->setSmooth(cbox3->isChecked());
 	}
 	this->update();
-}
+}*/
 
-void MainWindow::setSmoothMode( int what )
+/*void MainWindow::setSmoothMode( int what )
 {
 	this->myGLDisp->setSmooth(what==2);
 	this->update();
-}
+}*/
 
 Displayer * MainWindow::getDisplayer()
 {

@@ -3,16 +3,25 @@
 #include "DDGMatrices.h"
 #include "meshMath.h"
 #include <omp.h>
+#include "SuiteSparseSolver.h"
 
 application_fluidSimulation::application_fluidSimulation(MODEL &model):
 	flux(model.getMesh()), harmonicFlux(model.getMesh()), forceFlux(model.getMesh())
 {
+	solver_diffusion = NULL;
+	solver_vort2flux = NULL;
 	setUpSimulation(model);
 }
 
 
 application_fluidSimulation::~application_fluidSimulation(void)
 {
+	if(solver_diffusion != NULL){
+		delete solver_diffusion;
+	}
+	if(solver_vort2flux!= NULL){
+		delete solver_vort2flux;
+	}
 }
 
 
@@ -58,7 +67,7 @@ void application_fluidSimulation::setUpSimulation( MODEL &model )
 	//////////////////////////////////////////////////////////////////////////
 	//set up matrix for diffusion addition
 	setUpMatrixL(model);
-	setViscosity(viscosity);			
+	setViscosityAndTimestep(viscosity, timestep);			
 
 	
 
@@ -66,13 +75,21 @@ void application_fluidSimulation::setUpSimulation( MODEL &model )
 
 
 
-void application_fluidSimulation::setViscosity( float visc)
+void application_fluidSimulation::setViscosityAndTimestep( float visc, float timestp)
 {
 	viscosity = visc;									
+	timestep = timestp;
 	//d0_t or dualD1?
 	star0_min_vhl = myModel->getDualD1()*myModel->getStar1() *myModel->getD0();
 	star0_min_vhl *= viscosity * timestep;
 	star0_min_vhl = myModel->getStar0_mixed() -star0_min_vhl;
+
+	if(solver_diffusion != NULL){
+		delete solver_diffusion;
+	}
+	solver_diffusion = new SuiteSparseSolver(SolverIF::MATRIX_SYMMETRIC);
+	solver_diffusion->setMatrix(star0_min_vhl);
+	solver_diffusion->preconditionSystem();
 }
 
 
@@ -137,9 +154,16 @@ oneForm application_fluidSimulation::computeHarmonicFlow( std::vector<tuple3f> &
 	setUpBorderConstraints_harm(Lflux, fluxConstr, weight, borderConstraints,model);
 
 	//solving
-	Lflux.saveMatrix("fs_LHarmonic.m");
-	fluxConstr.saveVector("fs_b_harm", "fs_bHarmonic.m");
-	harmonicFlux.loadVector("fs_x_harm");
+//#ifdef DEBUG_FS
+//	Lflux.saveMatrix("fs_LHarmonic.m");
+//	fluxConstr.saveVector("fs_b_harm", "fs_bHarmonic.m");
+//	harmonicFlux.loadVector("fs_x_harm");
+//#endif
+	SuiteSparseSolver solver(SolverIF::MATRIX_SYMMETRIC);
+	solver.setMatrix(Lflux);
+	solver.preconditionSystem();
+	solver.solve(harmonicFlux,fluxConstr);
+
 
 	harmonicFlux.dualToVField(velocities_harm);
 	velocities = velocities_harm;
@@ -223,6 +247,26 @@ void application_fluidSimulation::setUpBorderConstraints_harm( cpuCSRMatrix &Lfl
 
 	}
 }
+
+
+void application_fluidSimulation::doOneStep()
+{
+	//step 1
+	pathTraceDualVertices(timestep);
+	//step 2
+	updateBacktracedVelocities();
+	//step 3
+	computeBacktracedVorticities();
+	//step 4
+	addForces2Vorticity(timestep);
+	//step 5
+	addDiffusion2Vorticity();
+	//step 6
+	vorticity2Flux();
+	//and finally update velocity field
+	updateVelocities();
+}
+
 
 void application_fluidSimulation::pathTraceDualVertices( float t )
 {
@@ -467,6 +511,12 @@ std::vector<tuple3f> & application_fluidSimulation::getVortVel()
 }
 
 
+std::vector<tuple3f> & application_fluidSimulation::getVelocities()
+{
+	return velocities;
+}
+
+
 std::vector<tuple3f>& application_fluidSimulation::getDualVertices()
 {
 	return dualVertices;
@@ -536,7 +586,7 @@ void application_fluidSimulation::updateBacktracedVelocities()
 	std::vector<float> intern_mem;
 	intern_mem.reserve(20);
 
-//#pragma omp parallel for private(intern_mem) num_threads(8)
+#pragma omp parallel for private(intern_mem) num_threads(20)
 	for(int i = 0; i < backtracedVelocity.size(); i++){
 		//store velocity in backTracedVelocity[i] =...
 		getVelocityFlattened(backtracedDualVertices[i],triangle_btVel[i],backtracedVelocity[i], intern_mem, true); 
@@ -609,12 +659,14 @@ void application_fluidSimulation::addForces2Vorticity( float timestep )
 
 void application_fluidSimulation::addDiffusion2Vorticity()
 {
+
+//#ifdef DEBUG_FS
 	//////////////////////////////////////////////////////////////////////////
-	star0_min_vhl.saveMatrix("fs_diffusion_mat.m");
-	vorticity.saveVector("fs_diffusion_b","fs_diff_b.m");
-
-	buffer.loadVector("fs_diffusion_x");
-
+//	star0_min_vhl.saveMatrix("fs_diffusion_mat.m");
+//	vorticity.saveVector("fs_diffusion_b","fs_diff_b.m");
+//	buffer.loadVector("fs_diffusion_x");
+//#endif
+	solver_diffusion->solve(buffer, vorticity);
 	myModel->getStar0_mixed().mult(buffer,vorticity);
 }
 
@@ -624,23 +676,45 @@ void application_fluidSimulation::setUpMatrixL( MODEL & model )
 	duald1_star1 = model.getDualD1() * model.getStar1();
 	L = (duald1_star1  * model.getD0())
 		+ (model.getDualD1() * (DDGMatrices::onesBorderEdges(*model.getMesh()) *10000)* model.getD0());
+
+	if(solver_vort2flux != NULL){
+		delete solver_vort2flux;
+	}
+	solver_vort2flux = new SuiteSparseSolver(/**/SolverIF::MATRIX_UNSYMMETRIC);//*/SolverIF::MATRIX_SYMMETRIC);//*/While symmetric is fast it is not stable when the matrix is not pos def.
+	solver_vort2flux->setMatrix(L);
+	solver_vort2flux->preconditionSystem();
 }
 
 
 void application_fluidSimulation::vorticity2Flux()
 {
 	//////////////////////////////////////////////////////////////////////////
-	L.saveMatrix("fs_Lf2v.m");
-	vorticity.saveVector("vort", "fs_vort.m");
-	buffer.loadVector("fs_flux");
-
-
+//#ifdef DEBUG_FS
+	//L.saveMatrix("fs_Lf2v.m");
+	//vorticity.saveVector("vort", "fs_vort.m");
+	//buffer.loadVector("fs_flux");
+//#endif
 	//////////////////////////////////////////////////////////////////////////
+	solver_vort2flux->solve(buffer, vorticity);
+
 	myModel->getD0().mult(buffer, flux);
 
 	flux.dualToVField(velocities_vort);
 
 }
+
+
+void application_fluidSimulation::updateVelocities()
+{
+	if(velocities.size() != velocities_vort.size()){
+		velocities = velocities_vort;
+	}
+	for(int i =  0; i < velocities.size(); i++){
+		velocities[i] = velocities_vort[i] + velocities_harm[i];
+		assert(velocities[i].x *0 == 0);//NANs...
+	}
+}
+
 
 void application_fluidSimulation::flux2Vorticity()
 {
@@ -654,6 +728,13 @@ void application_fluidSimulation::vel2Vorticity()
 {
 	myModel->getStar1().mult(harmonicFlux, buffer, true);
 	myModel->getDualD1().mult(buffer, vorticity);
+}
+
+void application_fluidSimulation::resetFlux()
+{
+	flux.setZero();
+	forceFlux.setZero();
+	vorticity.assign(vorticity.size(), 0);
 }
 
 

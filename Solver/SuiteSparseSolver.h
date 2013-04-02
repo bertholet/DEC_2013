@@ -1,7 +1,7 @@
 #pragma once
 #include "solverif.h"
 #include "DDGMatrices.h"
-
+#include "cholmod.h"
 
 /************************************************************************/
 /* Implements the solver interface, using the opensource
@@ -34,6 +34,7 @@ private:
 	SolverType solver;
 	MatrixType matType;
 
+	//////////////////////////////////////////////////////////////////////////
 	//umfpack stuff
 	void *umf_Symbolic, *umf_Numeric;
 	double *umf_Control, *umf_Info;
@@ -43,6 +44,13 @@ private:
 
 	//system type
 	int umf_systype;
+
+	//////////////////////////////////////////////////////////////////////////
+	//Cholmod stuff
+	cholmod_common c;
+	cholmod_sparse *mat_cholmod;
+	cholmod_factor  *L;
+	cholmod_dense *b;
 };
 
 /*int main(int a, char  ** arg){

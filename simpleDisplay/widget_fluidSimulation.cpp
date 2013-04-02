@@ -28,7 +28,7 @@ widget_fluidSimulation::widget_fluidSimulation(MainWindow *parent)
 	//timeStepChanged();
 	updateTimestepLabel();
 
-
+	colormap_vorts.setScale(getColorScale());
 	
 }
 
@@ -45,6 +45,8 @@ widget_fluidSimulation::~widget_fluidSimulation(void)
 
 void widget_fluidSimulation::setUpComponents()
 {
+	animationTimer = new QTimer(this);
+
 	but_resetFlux = new QPushButton("Reset Flux!");
 	but_simStep = new QPushButton("Do 1 Timestep");
 	but_startSim = new QPushButton("Start/Stop Simulation");
@@ -57,6 +59,7 @@ void widget_fluidSimulation::setUpComponents()
 	but_dbg_vort2flux = new QPushButton("vort2flux");
 	but_dbg_resetForces =  new QPushButton("resetForce");
 	but_dbg_addForces = new QPushButton("addForces");
+	but_dbg_total = new QPushButton("total");
 
 	label_stepSlider = new QLabel("Timestep Size ()");
 	label_viscosity = new QLabel("Viscosity [0,10]");
@@ -123,6 +126,9 @@ void widget_fluidSimulation::setUpComponents()
 
 void widget_fluidSimulation::addAction()
 {
+	connect( animationTimer, SIGNAL(timeout()), this, SLOT(doSimulation()) ); 
+
+
 	connect(but_resetFlux, SIGNAL(released()), this, SLOT(resetFlux()));
 	connect(but_simStep, SIGNAL(released()), this, SLOT(singleSimulationStep()));
 	connect(but_startSim , SIGNAL(released()), this, SLOT(startSim()));
@@ -135,6 +141,7 @@ void widget_fluidSimulation::addAction()
 	connect(but_dbg_vort2flux, SIGNAL(released()), this, SLOT(vort2flux()));
 	connect(but_dbg_resetForces , SIGNAL(released()), this, SLOT(resetForces()));
 	connect(but_dbg_addForces, SIGNAL(released()), this, SLOT(addForces()));
+	connect(but_dbg_total, SIGNAL(released()), this, SLOT(total()));
 
 	connect(stepSlider,SIGNAL(sliderReleased()), this, SLOT(timeStepChanged()));
 	connect(viscositySlider,SIGNAL(sliderReleased()), this, SLOT(viscosityChanged()));
@@ -215,6 +222,7 @@ void widget_fluidSimulation::doLayout()
 	hlayout2p5->addWidget(but_dbg_vort2flux);
 	layout->addLayout(hlayout2p5);
 	QHBoxLayout * hlayout3 = new QHBoxLayout();
+	hlayout3->addWidget(but_dbg_total);
 	hlayout3->addWidget(but_dbg_resetForces);
 	layout->addLayout(hlayout3);
 
@@ -266,29 +274,54 @@ int widget_fluidSimulation::getForceAge()
 	return forceAgeSlider->value();
 }
 
+float widget_fluidSimulation::getColorScale()
+{
+	return 0.005*pow(10.f,(1.f*colorScale->value()-50)/10);
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //The Slots
 //////////////////////////////////////////////////////////////////////////
 void widget_fluidSimulation::doSimulation()
 {
-
+	//sim->doOneStep();
+	singleSimulationStep();
+	
 }
 
 
 void widget_fluidSimulation::resetFlux()
 {
-	throw std::exception("The method or operation is not implemented.");
+	ensureSimulationInitialized();
+	sim->resetFlux();
 }
 
 void widget_fluidSimulation::singleSimulationStep()
 {
-	throw std::exception("The method or operation is not implemented.");
+	ensureSimulationInitialized();
+	sim->setForces(forceCollector.getFaces(), *forceCollector.getDirections(), getForceStrength());
+	sim->doOneStep();
+
+	//display result.
+	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
+	mainwindow->getDisplayer()->setColormap(colormap_vorts);
+	
+	vfield_pos = sim->getDualVertices();
+	vfield_vectors =sim->getVelocities();
+	gl_vfiled->display(&vfield_pos,&vfield_vectors);
+	mainwindow->getDisplayer()->subscribeDisplayable(gl_vfiled);
+	mainwindow->subscribeResizables(gl_vfiled);
 }
 
 void widget_fluidSimulation::startSim()
 {
-	throw std::exception("The method or operation is not implemented.");
+	if(animationTimer->isActive()){
+		animationTimer->stop();
+	}
+	else{
+		animationTimer->start(40);
+	}
 }
 
 
@@ -349,6 +382,7 @@ void widget_fluidSimulation::addForces( void )
 
 	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
 	mainwindow->getDisplayer()->setColormap(colormap_vorts);
+
 }
 
 void widget_fluidSimulation::resetForces()
@@ -371,7 +405,7 @@ void widget_fluidSimulation::resetForces()
 void widget_fluidSimulation::diffuse()
 {
 	ensureSimulationInitialized();
-	sim->setViscosity(getViscosity());
+	sim->setViscosityAndTimestep(getViscosity(), getTimestep());
 	sim->addDiffusion2Vorticity();
 
 	colormap_vorts.update(sim->getVorticities(), *MODEL::getModel());
@@ -391,12 +425,27 @@ void widget_fluidSimulation::vort2flux()
 	mainwindow->subscribeResizables(gl_vfiled);
 }
 
+void widget_fluidSimulation::total( void )
+{
+	ensureSimulationInitialized();
+	sim->updateVelocities();
+
+	vfield_pos = sim->getDualVertices();
+	vfield_vectors =sim->getVelocities();
+
+	gl_vfiled->display(&vfield_pos,&vfield_vectors);
+	mainwindow->getDisplayer()->subscribeDisplayable(gl_vfiled);
+	mainwindow->subscribeResizables(gl_vfiled);
+}
 
 void widget_fluidSimulation::timeStepChanged()
 {
 	updateTimestepLabel();
 	pathtrace();
 	mainwindow->update();
+
+	ensureSimulationInitialized();
+	sim->setViscosityAndTimestep(getViscosity(), getTimestep());
 }
 
 void widget_fluidSimulation::viscosityChanged()
@@ -408,7 +457,7 @@ void widget_fluidSimulation::viscosityChanged()
 	this->label_viscosity->setText(ss.str().c_str());
 
 	ensureSimulationInitialized();
-	sim->setViscosity(viscy);
+	sim->setViscosityAndTimestep(viscy, getTimestep());
 }
 
 void widget_fluidSimulation::forceAgeChanged()
@@ -516,6 +565,9 @@ void widget_fluidSimulation::setUpForceCollection()
 	mainwindow->subscribeResizables(gl_vfield_forces);
 
 }
+
+
+
 
 
 

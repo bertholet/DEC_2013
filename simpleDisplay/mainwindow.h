@@ -41,9 +41,9 @@ private:
 
 	//QCheckBox * cbox;
 	QPushButton * butt_reset;
-	QCheckBox * cbox2;
-	QCheckBox * cbox3;
-	QCheckBox * cBoxLines;
+//	QCheckBox * cbox2;
+//	QCheckBox * cbox3;
+//	QCheckBox * cBoxLines;
 	QSlider * fieldSlider;
 	QSlider * linewidthSlider;
 
@@ -66,11 +66,11 @@ private slots:
 	void reset();
 
 	//void setMouseMode(int state);
-	void setVFieldMode( int );
+	//void setVFieldMode( int );
 	void lineWidthChanged();
 	void fieldLengthChanged();
-	void showLines( int );
-	void setSmoothMode( int what );
+	//void showLines( int );
+	//void setSmoothMode( int what );
 	void tabChanged( int tab );
 };
 

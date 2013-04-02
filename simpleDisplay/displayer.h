@@ -37,9 +37,9 @@ public:
 	void setMouseMode(MouseInputMode aMode);
 	void setColormap(colorMap & map);
 	void setMarkupMap();
-	void setSmooth( bool smooth );
+	//void setSmooth( bool smooth );
 	void setShader(glDisplayableMesh::SHADER);
-	void showLines();
+	//void showLines();
 	void setVFLength( float length);
 	void setLineWidth( float wdth );
 

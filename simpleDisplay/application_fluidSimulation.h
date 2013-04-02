@@ -3,6 +3,12 @@
 #include <vector>
 #include "MODEL.h"
 #include "wingedMesh.h"
+#include "SolverIF.h"
+
+#ifndef DEBUG_FS
+#define DEBUG_FS
+#endif
+
 
 class application_fluidSimulation
 {
@@ -26,10 +32,14 @@ private:
 	//speed up:
 	std::vector<bool> isOnBorder;
 
-	//matrix for diffusion computation
+	//matrix and solver for diffusion computation
 	cpuCSRMatrix star0_min_vhl;
-	//Laplacian matrix for vorticity to flux conversion 
+	SolverIF * solver_diffusion;
+
+	//Laplacian matrix and Solver for vorticity to flux conversion 
 	cpuCSRMatrix L;
+	SolverIF * solver_vort2flux;
+
 	//Matrix for force addition
 	cpuCSRMatrix duald1_star1;
 
@@ -52,6 +62,12 @@ public:
 	// this will be added to the velocity field when pathtracing.
 	//////////////////////////////////////////////////////////////////////////
 	oneForm computeHarmonicFlow(std::vector<tuple3f> & borderConstraints, MODEL & model);
+
+	//////////////////////////////////////////////////////////////////////////
+	//Do one iteration of the simulation:
+	//i.e the steps 1 to 6.5 below.
+	//////////////////////////////////////////////////////////////////////////
+	void doOneStep();
 
 	//////////////////////////////////////////////////////////////////////////
 	// step 1 
@@ -94,20 +110,28 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void vorticity2Flux();
 
+	//////////////////////////////////////////////////////////////////////////
+	// step 6.5
+	// update the velocity field
+	//////////////////////////////////////////////////////////////////////////
+	void updateVelocities();
+
 	void flux2Vorticity();
 
 	void vel2Vorticity();
 
 	std::vector<tuple3f> & getHarmonicVel();
 	std::vector<tuple3f> & getVortVel();
+	std::vector<tuple3f> & getVelocities();
 	std::vector<tuple3f>& getDualVertices();
 	std::vector<tuple3f> & getTracedDualVertices();
 	std::vector<tuple3f> & getTracedVelocities();
 	floatVector & getVorticities();
 
-	void setViscosity(float visc);
+	void setViscosityAndTimestep( float visc, float timestp);
 	void setForces(std::vector<int> &faces, std::vector<tuple3f> & dirs, float scale);
 	void resetForces();
+	void resetFlux();
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -156,6 +180,5 @@ private:
 	// This fascilitates the backtracing step
 	void reprojectDualVerticesIntoTriangles();
 	void setUpMatrixL( MODEL & model );
-
 };
 

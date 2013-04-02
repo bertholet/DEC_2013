@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-** Created: Mon 25. Mar 13:45:44 2013
+** Created: Tue 2. Apr 15:39:19 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_MainWindow[] = {
        6,       // revision
        0,       // classname
        0,    0, // classinfo
-      11,   14, // methods
+       8,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -38,10 +38,7 @@ static const uint qt_meta_data_MainWindow[] = {
       74,   11,   11,   11, 0x08,
       82,   11,   11,   11, 0x08,
      101,   11,   11,   11, 0x08,
-     120,   11,   11,   11, 0x08,
-     141,   11,   11,   11, 0x08,
-     161,  156,   11,   11, 0x08,
-     184,  180,   11,   11, 0x08,
+     126,  122,   11,   11, 0x08,
 
        0        // eod
 };
@@ -49,10 +46,8 @@ static const uint qt_meta_data_MainWindow[] = {
 static const char qt_meta_stringdata_MainWindow[] = {
     "MainWindow\0\0openObjFile()\0generateMesh()\0"
     "setShader(int)\0setColorMode(int)\0"
-    "reset()\0setVFieldMode(int)\0"
-    "lineWidthChanged()\0fieldLengthChanged()\0"
-    "showLines(int)\0what\0setSmoothMode(int)\0"
-    "tab\0tabChanged(int)\0"
+    "reset()\0lineWidthChanged()\0"
+    "fieldLengthChanged()\0tab\0tabChanged(int)\0"
 };
 
 void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -66,12 +61,9 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 2: _t->setShader((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 3: _t->setColorMode((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 4: _t->reset(); break;
-        case 5: _t->setVFieldMode((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 6: _t->lineWidthChanged(); break;
-        case 7: _t->fieldLengthChanged(); break;
-        case 8: _t->showLines((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 9: _t->setSmoothMode((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 10: _t->tabChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 5: _t->lineWidthChanged(); break;
+        case 6: _t->fieldLengthChanged(); break;
+        case 7: _t->tabChanged((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
     }
@@ -109,9 +101,9 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 11)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 11;
+        _id -= 8;
     }
     return _id;
 }
