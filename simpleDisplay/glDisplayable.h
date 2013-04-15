@@ -8,6 +8,7 @@
 #include "Observer.h"
 
 #include "colorMap.h"
+#include "myVAO.h"
 
 
 class glDisplayable: 
@@ -53,7 +54,8 @@ protected:
 	void setUniformValue(const char *name, float val);
 	void enableBuffer(const char *name, QGLBuffer & buffer);
 	void disableBuffer(const char * name);
-	void setUpBuffer(const char *name, QGLBuffer & buffer, std::vector<tuple3f> & values, QGLBuffer::UsagePattern type);
+	//the vao the buffer should be bound with.
+	void setUpBuffer(const char *name, QGLBuffer & buffer, std::vector<tuple3f> & values, QGLBuffer::UsagePattern type, myVAO & vao);
 	void setUpIndexBuffer(QGLBuffer & buffer, std::vector<tuple3i> & values, QGLBuffer::UsagePattern type);
 
 };

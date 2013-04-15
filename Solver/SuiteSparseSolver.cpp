@@ -1,4 +1,6 @@
 #include "SuiteSparseSolver.h"
+
+#ifdef SUITESPARSESOLVER
 #include "cholmod.h"
 #include "umfpack.h"
 #include "assert.h"
@@ -176,3 +178,4 @@ void SuiteSparseSolver::solve( floatVector & target, floatVector & b_ )
 
 	}
 }
+#endif //SUITESPARSESOLVER

@@ -34,11 +34,12 @@ void glVectorfield::sendToGPU()
 	}*/
 	m_bufferSize = max(100, positions->size());
 	std::vector<tuple3f> bla(m_bufferSize);
-	//setUpBuffer("position",m_position,bla,QGLBuffer::DynamicDraw);
 	
-	//setUpBuffer("direction", m_direction, bla/**directions*/,QGLBuffer::DynamicDraw);
-	setUpBuffer("position",m_position,bla,QGLBuffer::DynamicDraw);
-	setUpBuffer("direction", m_direction, bla,QGLBuffer::DynamicDraw);
+	if(!vao.isCreated()){
+		vao.create();
+	}
+	setUpBuffer("position",m_position,bla,QGLBuffer::DynamicDraw, vao);
+	setUpBuffer("direction", m_direction, bla,QGLBuffer::DynamicDraw, vao);
 
 	updateBuffersOnGPU();
 
@@ -58,17 +59,6 @@ void glVectorfield::draw( QMatrix4x4 & cam2View,QVector3D & eye )
 	enableBuffer("position", m_position);
 	//enableBuffer("normal", m_normal);
 	enableBuffer("direction", m_direction);
-	/*m_position.bind();
-	m_shader.setAttributeArray("position", GL_FLOAT,0,3);
-	m_shader.enableAttributeArray("position");
-
-	m_normal.bind();
-	m_shader.setAttributeArray("normal", GL_FLOAT,0,3);
-	m_shader.enableAttributeArray("normal");
-
-	m_direction.bind();
-	m_shader.setAttributeArray("direction", GL_FLOAT,0,3);
-	m_shader.enableAttributeArray("direction");*/
 
 	if(!m_position.bind()){
 		qWarning() << "Could not bind vertex buffer to the context";
@@ -119,8 +109,8 @@ void glVectorfield::updateBuffersOnGPU()
 		m_direction.destroy();
 		std::vector<tuple3f> bla(positions->size() + 100);
 		m_bufferSize = positions->size() + 100;
-		setUpBuffer("position",m_position,bla,QGLBuffer::DynamicDraw);
-		setUpBuffer("direction",m_direction,bla,QGLBuffer::DynamicDraw);
+		setUpBuffer("position",m_position,bla,QGLBuffer::DynamicDraw, vao);
+		setUpBuffer("direction",m_direction,bla,QGLBuffer::DynamicDraw, vao);
 	}
 	if(positions->size()!=0){
 		m_position.bind();

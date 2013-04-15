@@ -3,12 +3,15 @@
 #include "matrixCreator.h"
 #include <math.h>
 #include <algorithm>
-#include "SuiteSparseSolver.h"
+//#include "SuiteSparseSolver.h"
+#include "SolverConfig.h"
+//The exact value of pi.
 #define PI 3.14159265359f
 
 //////////////////////////////////////////////////////////////////////////
 //create a matrix of 2*borderlength x 2*borderlength to solve for x,y
-//positions simultaneously
+//positions simultaneously. This Matrix will be used to solver for a 
+// locally conformal border
 //////////////////////////////////////////////////////////////////////////
 class conformalBorderCreator:public matrixCreator{
 private:
@@ -201,12 +204,13 @@ int application_meshParam::conformalBorder( wingedMesh &m, std::vector<tuple3f> 
 	//b.saveVector("b", "conformalB.m");
 	//x.loadVector()
 	//////////////////////////////////////////////////////////////////////////
-	SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
-	solver.setMatrix(mat);
-	solver.preconditionSystem();
-	solver.solve(x,b);
+	//SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
+	SolverIF * solver = new solverInstance(SolverIF::MATRIX_UNSYMMETRIC);
+	solver->setMatrix(mat);
+	solver->preconditionSystem();
+	solver->solve(x,b);
 
-
+	delete solver;
 
 	//solver.solve(x,b);
 		
@@ -239,10 +243,12 @@ void application_meshParam::calcTexturePos( MODEL & model ,borderStyle borderFun
 	//b.saveVector("b","meshParamVector.m");
 	//floatVector::saveTuple3iVectorMatlabStyle(m.getFaces(),"tri","meshParamFaces.m");
 	//////////////////////////////////////////////////////////////////////////
-	SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
-	solver.setMatrix(mat);
-	solver.preconditionSystem();
-	solver.solve(xy,b);
+	//SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
+	SolverIF *solver = new solverInstance(SolverIF::MATRIX_UNSYMMETRIC);
+	solver->setMatrix(mat);
+	solver->preconditionSystem();
+	solver->solve(xy,b);
+	delete solver;
 	
 	model.getMesh()->getWfMesh()->setTextures_perVertex(& (xy[0]));
 	model.getMesh()->getWfMesh()->updateObserver(TEX_CHANGED);
@@ -269,10 +275,12 @@ void application_meshParam::calcTexturePosMultiborder( MODEL & model,borderStyle
 	//floatVector::saveTuple3iVectorMatlabStyle(m.getFaces(),"tri","meshParamFaces.m");
 	//////////////////////////////////////////////////////////////////////////
 
-	SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
-	solver.setMatrix(mat);
-	solver.preconditionSystem();
-	solver.solve(xy,b);
+	//SuiteSparseSolver solver(SolverIF::MATRIX_UNSYMMETRIC);
+	SolverIF *solver = new solverInstance(SolverIF::MATRIX_UNSYMMETRIC);
+	solver->setMatrix(mat);
+	solver->preconditionSystem();
+	solver->solve(xy,b);
+	delete solver;
 
 	model.getMesh()->getWfMesh()->setTextures_perVertex(& (xy[0]));
 	model.getMesh()->getWfMesh()->updateObserver(TEX_CHANGED);

@@ -2,6 +2,7 @@
 #include "glDisplayable.h"
 #include "mouseStrokeListener.h"
 #include "Resetable.h"
+#include "myVAO.h"
 
 class glVectorfield:public glDisplayable, public mouseStrokeProcessor, public Resizable, public Resetable
 {
@@ -30,6 +31,7 @@ private:
 	vector<tuple3f>*  positions;
 	vector<tuple3f> * directions;
 	vector<tuple3f> dummy;
+	myVAO vao;
 	QGLBuffer m_position, m_direction;//, m_normal;
 	int m_bufferSize;//the buggers have dynamic length
 	float length;

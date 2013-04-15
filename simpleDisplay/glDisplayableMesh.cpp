@@ -15,10 +15,6 @@ m_vertexBuffer( QGLBuffer::VertexBuffer ), m_IndexBuffer(QGLBuffer::IndexBuffer)
 glDisplayableMesh::~glDisplayableMesh(void)
 {
 	myMesh->detatch(this);
-	/*m_vertexBuffer.release();
-	m_colorBuffer.release();
-	m_IndexBuffer.release();
-	m_normalBuffer.release();*/
 }
 
 tuple3i * glDisplayableMesh::intersect( tuple3f & start, tuple3f & stop, int * closestVertex, int * face, tuple3f * position )
@@ -38,11 +34,16 @@ void glDisplayableMesh::sendToGPU()
 		return;
 	}
 
+
+	if(!vao.isCreated()){
+		vao.create();
+	}
+	vao.bind();
+
 	// Set up buffers
-	//setUpBuffer("vertex", m_vertexBuffer, myMesh->getVertices(),QGLBuffer::StaticDraw);
-	setUpBuffer("vertex", m_vertexBuffer, myMesh->getVertices(),QGLBuffer::StaticDraw);
-	setUpBuffer("normal", m_normalBuffer, myMesh->getNormals(), QGLBuffer::StaticDraw);
-	setUpBuffer("tex", m_texBuffer, myMesh->getTexCoords(), QGLBuffer::StaticDraw);
+	setUpBuffer("vertex", m_vertexBuffer, myMesh->getVertices(),QGLBuffer::StaticDraw, vao);
+	setUpBuffer("normal", m_normalBuffer, myMesh->getNormals(), QGLBuffer::StaticDraw, vao);
+	setUpBuffer("tex", m_texBuffer, myMesh->getTexCoords(), QGLBuffer::StaticDraw, vao);
 	glDebuggingStuff::didIDoWrong();
 
 	setUpIndexBuffer(m_IndexBuffer,myMesh->getFaces(),QGLBuffer::StaticDraw);
@@ -51,11 +52,6 @@ void glDisplayableMesh::sendToGPU()
 	this->sendColorMap(constColor(*myMesh, tuple3f(0.8,0.3,0.3)));
 	glDebuggingStuff::didIDoWrong();
 
-	// Prepare a complete shader program...
-	/*if ( !prepareShaderProgram( "./flat.vert", "./flat.frag", "./flat.geo" ) ){
-		glDebuggingStuff::didIDoWrong();
-		return;
-	}*/
 
 	// Set up additional uniforms
 	setUniformValue("light_pos", QVector3D(0,-4,4));
@@ -93,12 +89,10 @@ void glDisplayableMesh::draw( QMatrix4x4 & world2view, QVector3D & eye)
 	m_shader.setAttributeBuffer( "tex", GL_FLOAT, 0, 3 );
 	m_shader.enableAttributeArray("tex");
 
-
 	if(!m_vertexBuffer.bind()){
 		qWarning() << "Could not bind vertex buffer to the context";
 	}
 
-	//m_colorBuffer.bind();
 	if(!m_IndexBuffer.bind()){
 		qWarning() << "Could not bind vertex buffer to the context";
 	}
@@ -149,7 +143,7 @@ void glDisplayableMesh::update( void * src, meshMsg msg )
 
 void glDisplayableMesh::sendColorMap( colorMap &map )
 {
-	setUpBuffer("color", m_colorBuffer,map.getColors(),QGLBuffer::DynamicDraw);
+	setUpBuffer("color", m_colorBuffer,map.getColors(),QGLBuffer::DynamicDraw, vao);
 
 }
 

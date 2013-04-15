@@ -2,14 +2,17 @@
 #include "solverif.h"
 #include "DDGMatrices.h"
 #include "cholmod.h"
+#include "SolverConfig.h"
 
 /************************************************************************/
 /* Implements the solver interface, using the opensource
 /* SuiteSparse libraries, see the corresponding licencing and copyright
 /* terms.
 /* The Cholmod library provided is supposedly good for symmetric positive 
-/" definite problems, while umfpack handles any more general matrices
+/" definite problems, while Umfpack is used to handle any more general matrices
 /************************************************************************/
+
+#ifdef SUITESPARSESOLVER
 class SuiteSparseSolver :
 	public SolverIF
 {
@@ -17,12 +20,9 @@ public:
 	SuiteSparseSolver(MatrixType type);
 	virtual ~SuiteSparseSolver(void);
 
-	// As suite sparse uses a compressed column format
-	//as opposed to the compressed row format used in DECCORE
-	//an internal ('transposed') copy of the matrix is created and kept.
-	//might be too inefficient... Maybe this is not needed.
-	//CHOLMOD is called only for symmetric matrices so it is ok anyway,
-	//UMFPACK on the other hand can directly handle transposed matrices.
+	// As suite sparse uses double precision opposed to the float cpuCSRMatrix,
+	//an internal (double precision) copy of the matrix is created and kept.
+	//rather inefficient... Change CPUCSR implementation if you want.
 	virtual void setMatrix( cpuCSRMatrix & mat);
 
 	virtual void preconditionSystem();
@@ -53,21 +53,5 @@ private:
 	cholmod_dense *b;
 };
 
-/*int main(int a, char  ** arg){
-	
-	floatVector lambdas(50);
-	for(unsigned int i = 0; i < lambdas.size(); i++){
-		lambdas[i] = 1 + (i % 7) *0.05f + (i%13) * 0.05f - (i % 5) * 0.1f;
-	}
-	cpuCSRMatrix testMat = DDGMatrices::diagMatrix(lambdas);
 
-
-	floatVector x(lambdas.size()), b;
-	b= lambdas;
-	
-	SuiteSparseSolver s(SolverIF::MATRIX_UNSYMMETRIC);
-	s.setMatrix(testMat);
-	s.preconditionSystem();
-	s.solve(x,b);
-
-}*/
+#endif //SUITESPARSeSOLVER

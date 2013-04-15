@@ -3,6 +3,7 @@
 #include "wfmesh.h"
 #include <QGLBuffer>
 #include "colorMap.h"
+#include "myVAO.h"
 
 class glDisplayableMesh:public glDisplayableIntersectable
 {
@@ -26,6 +27,7 @@ public:
 	virtual std::string colorBufferName();
 
 private:
+	myVAO vao;
 	QGLBuffer m_vertexBuffer, m_IndexBuffer, m_normalBuffer, m_colorBuffer, m_texBuffer;
 	wfMesh * myMesh;
 	wfMesh dummyMesh;
