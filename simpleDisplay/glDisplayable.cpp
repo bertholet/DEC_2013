@@ -274,11 +274,18 @@ void glDisplayable::setUpBuffer( const char *name, QGLBuffer & buffer, std::vect
 		qWarning() << "Could not bind vertex buffer to the context";
 		return;
 	}
+
+	//buffer.setUsagePattern( type );
 	buffer.allocate( &(values[0].x), 3 * values.size()* sizeof( float ) );
 
 	glDebuggingStuff::didIDoWrong();
 
+	m_shader.bind();
+	buffer.bind();
+	glDebuggingStuff::didIDoWrong();
+
 	m_shader.setAttributeBuffer( name, GL_FLOAT, 0, 3 );
+	glDebuggingStuff::didIDoWrong();
 	m_shader.enableAttributeArray( name);
 	glDebuggingStuff::didIDoWrong();
 	

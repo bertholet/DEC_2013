@@ -75,10 +75,14 @@ void application_smoothing::implicitEuler( MODEL * model, float timeStep )
 	scale= pow(scale/meshMath::volume(*(model->getMesh())),1.f/3);
 	myMesh->scaleVertices(scale);
 
+	myMesh->normalize();
 	//trigger a display and matrix update due to changed mesh positions
 	myMesh->updateObserver(POS_CHANGED);
 
+
 	//additional information which shows the mesh degeneration
 	model->getMesh()->checkAreaRatios();
+
+
 
 }

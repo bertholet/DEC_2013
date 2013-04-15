@@ -39,13 +39,17 @@ void glDisplayableMesh::sendToGPU()
 	}
 
 	// Set up buffers
+	//setUpBuffer("vertex", m_vertexBuffer, myMesh->getVertices(),QGLBuffer::StaticDraw);
 	setUpBuffer("vertex", m_vertexBuffer, myMesh->getVertices(),QGLBuffer::StaticDraw);
 	setUpBuffer("normal", m_normalBuffer, myMesh->getNormals(), QGLBuffer::StaticDraw);
 	setUpBuffer("tex", m_texBuffer, myMesh->getTexCoords(), QGLBuffer::StaticDraw);
+	glDebuggingStuff::didIDoWrong();
 
 	setUpIndexBuffer(m_IndexBuffer,myMesh->getFaces(),QGLBuffer::StaticDraw);
+	glDebuggingStuff::didIDoWrong();
 
 	this->sendColorMap(constColor(*myMesh, tuple3f(0.8,0.3,0.3)));
+	glDebuggingStuff::didIDoWrong();
 
 	// Prepare a complete shader program...
 	/*if ( !prepareShaderProgram( "./flat.vert", "./flat.frag", "./flat.geo" ) ){
@@ -56,6 +60,7 @@ void glDisplayableMesh::sendToGPU()
 	// Set up additional uniforms
 	setUniformValue("light_pos", QVector3D(0,-4,4));
 	setUniformValue("light", QVector3D(1,1,1));
+	glDebuggingStuff::didIDoWrong();
 }
 
 void glDisplayableMesh::draw( QMatrix4x4 & world2view, QVector3D & eye)

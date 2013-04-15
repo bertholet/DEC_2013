@@ -3,9 +3,11 @@
 #include "floatVector.h"
 
 /************************************************************************/
-/* Interface for a blackbox solver to be used in the DEC applications   
-/* For every sparse linear system Ax = b a solver will be created,
-/* There can be more than one solver in use at once. */
+/* Interface for a black box solver to be used in the DEC applications   
+/* For every sparse linear system Ax = b a solver will have to be created,
+/* on which solve can be called any number of times with different left
+/* hand sides b
+/* It has to be possible that more than one solver in use at once. */
 /************************************************************************/
 class SolverIF
 {
