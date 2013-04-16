@@ -3,6 +3,9 @@ DEC/*
 ipch/*
 objfiles/*
 Release/*
+cudaSolver/*
+*.aps
+*.rc
 *.sln
 *sdf
 *.suo
