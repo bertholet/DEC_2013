@@ -1,7 +1,7 @@
 #include "application_smoothing.h"
 #include <QTime>
 #include "meshMath.h"
-#include "SuiteSparseSolver.h"
+#include "SolverConfig.h"
 
 application_smoothing::application_smoothing()
 {
@@ -56,18 +56,20 @@ void application_smoothing::implicitEuler( MODEL * model, float timeStep )
 	floatVector x = b,y=b,z=b;
 
 
-	SuiteSparseSolver solver(SolverIF::MATRIX_STRUCTURALLY_SYMMETRIC);
-	solver.setMatrix(Id_min_t_laplace);
-	solver.preconditionSystem();
+	SolverIF * solver = new solverInstance(SolverIF::MATRIX_STRUCTURALLY_SYMMETRIC);
+	solver->setMatrix(Id_min_t_laplace);
+	solver->preconditionSystem();
 
 	//do the implicit integration step
-	solver.solve(x,b);
+	solver->solve(x,b);
 
 	b.set(myMesh->getVertices(),1);
-	solver.solve(y,b);
+	solver->solve(y,b);
 
 	b.set(myMesh->getVertices(),2);
-	solver.solve(z,b);
+	solver->solve(z,b);
+
+	delete solver;
 
 	//keep the volume constant to prevent shrinkage
 	float scale= meshMath::volume(*(model->getMesh()));

@@ -42,6 +42,14 @@ void myVAO::bind()
 	glDebuggingStuff::didIDoWrong();
 }
 
+void myVAO::unbind()
+{
+	if(created){
+		glBindVertexArray(0);
+	}
+	glDebuggingStuff::didIDoWrong();
+}
+
 bool myVAO::isCreated()
 {
 	return created;

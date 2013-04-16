@@ -3,7 +3,7 @@
 #include <vector>
 #include "MODEL.h"
 #include "wingedMesh.h"
-#include "SolverIF.h"
+#include "SolverConfig.h"
 
 #ifndef DEBUG_FS
 #define DEBUG_FS

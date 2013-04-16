@@ -17,6 +17,8 @@ private:
 
 	//the b, x and values a of the matrix, which have to be of type double
 	std::vector<double> b,x, a;
+	//the ia, ja values of the matrix, ays they have to be 1-based for pardiso...
+	std::vector<int> ia,ja;
 	//other matrix types do exist, see manual.
 	static const int MT_ANY=11,MT_SYMMETRIC=-2,MT_STRUCTURALLY_SYMMETRIC=1;
 
@@ -29,7 +31,7 @@ private:
 
 	void init_intParams(int nrRefinementSteps);
 	void checkError_init();
-	void checkMatrix( int matrix_type, cpuCSRMatrix & mat );
+	void checkMatrix( int matrix_type, std::vector<double> & a, std::vector<int> & ia, std::vector<int> & ja );
 
 public:
 

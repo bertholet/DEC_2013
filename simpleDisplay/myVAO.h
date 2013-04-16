@@ -25,5 +25,6 @@ public:
 	void create();
 	bool isCreated();
 	void bind();
+	void unbind();
 };
 

@@ -3,7 +3,7 @@
 #include "DDGMatrices.h"
 #include "meshMath.h"
 #include <omp.h>
-#include "SuiteSparseSolver.h"
+//#include "SuiteSparseSolver.h"
 
 application_fluidSimulation::application_fluidSimulation(MODEL &model):
 	flux(model.getMesh()), harmonicFlux(model.getMesh()), forceFlux(model.getMesh())
@@ -87,7 +87,7 @@ void application_fluidSimulation::setViscosityAndTimestep( float visc, float tim
 	if(solver_diffusion != NULL){
 		delete solver_diffusion;
 	}
-	solver_diffusion = new SuiteSparseSolver(SolverIF::MATRIX_SYMMETRIC);
+	solver_diffusion = new solverInstance(SolverIF::MATRIX_SYMMETRIC);
 	solver_diffusion->setMatrix(star0_min_vhl);
 	solver_diffusion->preconditionSystem();
 }
@@ -159,11 +159,11 @@ oneForm application_fluidSimulation::computeHarmonicFlow( std::vector<tuple3f> &
 //	fluxConstr.saveVector("fs_b_harm", "fs_bHarmonic.m");
 //	harmonicFlux.loadVector("fs_x_harm");
 //#endif
-	SuiteSparseSolver solver(SolverIF::MATRIX_SYMMETRIC);
-	solver.setMatrix(Lflux);
-	solver.preconditionSystem();
-	solver.solve(harmonicFlux,fluxConstr);
-
+	SolverIF * solver = new solverInstance(SolverIF::MATRIX_SYMMETRIC);
+	solver->setMatrix(Lflux);
+	solver->preconditionSystem();
+	solver->solve(harmonicFlux,fluxConstr);
+	delete solver;
 
 	harmonicFlux.dualToVField(velocities_harm);
 	velocities = velocities_harm;
@@ -680,7 +680,7 @@ void application_fluidSimulation::setUpMatrixL( MODEL & model )
 	if(solver_vort2flux != NULL){
 		delete solver_vort2flux;
 	}
-	solver_vort2flux = new SuiteSparseSolver(/**/SolverIF::MATRIX_UNSYMMETRIC);//*/SolverIF::MATRIX_SYMMETRIC);//*/While symmetric is fast it is not stable when the matrix is not pos def.
+	solver_vort2flux = new solverInstance(/**/SolverIF::MATRIX_UNSYMMETRIC);//*/SolverIF::MATRIX_SYMMETRIC);//*/While symmetric is fast it is not stable when the matrix is not pos def.
 	solver_vort2flux->setMatrix(L);
 	solver_vort2flux->preconditionSystem();
 }

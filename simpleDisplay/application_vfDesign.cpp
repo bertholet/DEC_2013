@@ -1,6 +1,6 @@
 #include "application_vfDesign.h"
 #include "meshMath.h"
-#include "SuiteSparseSolver.h"
+#include "SolverConfig.h"
 
 #include "DDGMatrices.h"
 
@@ -112,10 +112,12 @@ void application_vfDesign::computeField( MODEL & model,
 	add_star1_d0_srcflow_to_b(b,sink_verts, source_verts, srcsink_flow, model);
 
 
-	SuiteSparseSolver solver(SuiteSparseSolver::MATRIX_SYMMETRIC);
-	solver.setMatrix(mat);
-	solver.preconditionSystem();
-	solver.solve(target,b);
+	SolverIF * solver = new solverInstance(SolverIF::MATRIX_SYMMETRIC);
+	solver->setMatrix(mat);
+	solver->preconditionSystem();
+	solver->solve(target,b);
+
+	delete solver;
 	//////////////////////////////////////////////////////////////////////////
 	//solving.....
 //	mat.saveMatrix("vf_laplace1.m");

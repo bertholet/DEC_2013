@@ -23,11 +23,12 @@ PardisoSolver::PardisoSolver(SolverIF::MatrixType type):
 {
 	int solver = PARDISO_SOLVERTYPE;
 	matrix = NULL; 
+	assert(matrix == NULL);
 	nrhs = 1;
 	error = 0;
 	print_stats = 0;
 	matrix_type = (type == SolverIF::MATRIX_STRUCTURALLY_SYMMETRIC?MT_STRUCTURALLY_SYMMETRIC: 
-					(type == SolverIF::MATRIX_SYMMETRIC? MT_SYMMETRIC:
+					(type == SolverIF::MATRIX_SYMMETRIC?MT_STRUCTURALLY_SYMMETRIC:  //MT_SYMMETRIC: numerical errors make the mats slightly unsymmetric.
 					MT_ANY));
 
 	init_intParams(PARDISO_REFINEMENTSTEPS);
@@ -83,7 +84,7 @@ PardisoSolver::~PardisoSolver(void)
 	if(matrix->geta().size() > 0){
 		int idumm;
 		pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-			&n, &a[0], &matrix->getia()[0], &matrix->getja()[0], &idumm, &nrhs,
+			&n, &a[0], &ia[0], &ja[0], &idumm, &nrhs,
 			int_params, &print_stats, NULL, NULL, &error, double_params);
 
 	}
@@ -91,7 +92,7 @@ PardisoSolver::~PardisoSolver(void)
 		double ddumm;
 		int idumm;
 		pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-			&n, &ddumm, &matrix->getia()[0], &idumm, &idumm, &nrhs,
+			&n, &ddumm, &ia[0], &idumm, &idumm, &nrhs,
 			int_params, &print_stats, &ddumm, &ddumm, &error, double_params);
 	}
 
@@ -114,6 +115,14 @@ void PardisoSolver::setMatrix( cpuCSRMatrix & mat )
 	for(int i = 0; i < a.size(); i++){
 		a[i] = 0.0 + mat.geta()[i];
 	}
+	ia = mat.getia();
+	for(int i = 0; i < ia.size(); i++){
+		ia[i]++;
+	}
+	ja = mat.getja();
+	for(int i = 0; i < ja.size(); i++){
+		ja[i]++;
+	}
 
 	if(mat.geta().size() > 0){
 		//checkMatrix(matrix_type, mat);
@@ -124,8 +133,9 @@ void PardisoSolver::setMatrix( cpuCSRMatrix & mat )
 		int mnum =1; /* Which factorization to use. */
 		int n = mat.dim();
 
+		checkMatrix(this->matrix_type, a, ia, ja);
 		pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-			&n, &a[0], &mat.getia()[0], &mat.getja()[0], NULL, &nrhs,
+			&n, &a[0], &ia[0], &ja[0], NULL, &nrhs,
 			int_params, &print_stats, NULL, NULL, &error, double_params);
 	}
 	else{
@@ -137,11 +147,11 @@ void PardisoSolver::setMatrix( cpuCSRMatrix & mat )
 		double ddumm;
 		int idumm;
 		pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-			&n, &ddumm, &mat.getia()[0], &idumm, NULL, &nrhs,
+			&n, &ddumm, &ia[0], &idumm, NULL, &nrhs,
 			int_params, &print_stats, NULL, NULL, &error, double_params);
 	}
 	if(error != 0){
-		checkMatrix(this->matrix_type, mat);
+		checkMatrix(this->matrix_type, a, ia, ja);
 		throw std::runtime_error("Exception in pardiso solve-");
 	}
 
@@ -166,28 +176,30 @@ void PardisoSolver::solve( floatVector & target, floatVector & b_ )
 
 	error = 0;
 	pardiso (intern_memory, &maxfct, &mnum, &matrix_type, &phase,
-		&n, &a[0], &matrix->getia()[0], &matrix->getja()[0], NULL, &nrhs,
+		&n, &a[0], &ia[0], &ja[0], NULL, &nrhs,
 		int_params, &print_stats, &b[0], &x[0], &error, double_params);
 
 	if(error != 0){
 		throw std::runtime_error("Exception in pardiso solve-");
 	}
 
+	target.resize(x.size());
 	for(int i = 0; i < target.size(); i++){
 		target[i] = x[i];
 	}
 
 }
 
-void PardisoSolver::checkMatrix( int matrix_type, cpuCSRMatrix & mat )
+void PardisoSolver::checkMatrix( int matrix_type,std::vector<double> & a, std::vector<int> & ia, std::vector<int> & ja  )
 {
-	int n = mat.dim();
-	int err;
-	pardiso_chkmatrix  (&matrix_type, &n, & a[0], & mat.getia()[0], 
-		& mat.getja()[0], &err);
+	int n = ia.size()-1;
+	int err = 0;
+	pardiso_chkmatrix  (&matrix_type, &n, & a[0], & ia[0], 
+		& ja[0], &err);
 
 	if (err != 0) {
-		printf("\nERROR in consistency of matrix: %d", err);
+		this->matrix->saveMatrix("PardisoMatrixDump.m");
+		printf("\nERROR in consistency of matrix: %d\n", err);
 	}
 }
 
