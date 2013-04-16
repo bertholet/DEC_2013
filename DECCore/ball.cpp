@@ -118,6 +118,9 @@ ball::ball(float r, int verticesPerHalfCycle)
 	}
 	//face_normals_perVertex = faces;
 	
+
+	face_tex = faces;
+	tex.assign(vertices.size(), tuple3f());
 }
 
 ball::ball( float r, int nrPhi, int nrPsi, bool FUN)
@@ -189,6 +192,8 @@ ball::ball( float r, int nrPhi, int nrPsi, bool FUN)
 		normals_per_vertex[i].normalize();
 	}
 
+	face_tex = faces;
+	tex.assign(vertices.size(), tuple3f());
 }
 
 ball::ball( float r, int nrPhi, int nrPsi )
@@ -262,6 +267,8 @@ ball::ball( float r, int nrPhi, int nrPsi )
 		normals_per_vertex[i].normalize();
 	}
 
+	face_tex = faces;
+	tex.assign(vertices.size(), tuple3f());
 }
 
 ball::ball( float r, int nrPhi, int nrPhi2,int nrPsi )
@@ -382,6 +389,9 @@ ball::ball( float r, int nrPhi, int nrPhi2,int nrPsi )
 		normals_per_vertex[i].normalize();
 	}
 	//face_normals_perVertex = faces;
+
+	face_tex = faces;
+	tex.assign(vertices.size(), tuple3f());
 }
 
 

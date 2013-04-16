@@ -6,7 +6,9 @@
 MODEL * MODEL::instance = 0;
 MODEL::MODEL(void)
 {
-	wfMesh * amesh = new wfMesh("../Objfiles/obstacleTiny.obj");
+	//standard mesh to be displayed
+	wfMesh * amesh = new ball(1, 20,10);
+	//wfMesh * amesh = new wfMesh("../Objfiles/obstacleTiny.obj");
 	amesh->normalize();
 	myMesh = new wingedMesh(amesh);
 	
