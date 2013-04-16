@@ -6,6 +6,8 @@ Release/*
 cudaSolver/*
 *.aps
 *.rc
+*.qrc
+*.ui
 *.sln
 *sdf
 *.suo
