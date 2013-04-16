@@ -69,6 +69,7 @@ void MainWindow::setupComponents(QGLFormat & format)
 	cbox_shader->addItem("Faces");
 	cbox_shader->addItem("Smooth");
 	cbox_shader->addItem("Texture");
+	cbox_shader->setCurrentIndex(1);
 
 	cbox_colormap = new QComboBox();
 	cbox_colormap->addItem("White");

@@ -11,8 +11,8 @@
 #pragma once
 
 //un-comment depending of the solver you want to use
-//#define PARDISOSOLVER
-#define SUITESPARSESOLVER
+#define PARDISOSOLVER
+//#define SUITESPARSESOLVER
 
 
 //syntax: new solverInstance(MatrixType type), returns SolverIf *.
