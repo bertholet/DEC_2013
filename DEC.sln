@@ -1,18 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DEC", "DEC\DEC.vcxproj", "{63A8EEE1-BCB1-4FA9-8B83-9529A95DEA3B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B56071D7-3B76-4541-A0A1-75C63AE0CC61} = {B56071D7-3B76-4541-A0A1-75C63AE0CC61}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DECCore", "DECCore\DECCore.vcxproj", "{B56071D7-3B76-4541-A0A1-75C63AE0CC61}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cudaSolver", "cudaSolver\cudaSolver.vcxproj", "{60F82566-A0C7-4D40-A86C-C1F1FEEA44A8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Applications", "simpleDisplay\simpleDisplay.vcxproj", "{75240FD0-F50E-4F5C-BA2E-48525AD2B9C4}"
 	ProjectSection(ProjectDependencies) = postProject
-		{60F82566-A0C7-4D40-A86C-C1F1FEEA44A8} = {60F82566-A0C7-4D40-A86C-C1F1FEEA44A8}
 		{B56071D7-3B76-4541-A0A1-75C63AE0CC61} = {B56071D7-3B76-4541-A0A1-75C63AE0CC61}
 	EndProjectSection
 EndProject
@@ -24,18 +16,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{63A8EEE1-BCB1-4FA9-8B83-9529A95DEA3B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{63A8EEE1-BCB1-4FA9-8B83-9529A95DEA3B}.Debug|Win32.Build.0 = Debug|Win32
-		{63A8EEE1-BCB1-4FA9-8B83-9529A95DEA3B}.Release|Win32.ActiveCfg = Release|Win32
-		{63A8EEE1-BCB1-4FA9-8B83-9529A95DEA3B}.Release|Win32.Build.0 = Release|Win32
 		{B56071D7-3B76-4541-A0A1-75C63AE0CC61}.Debug|Win32.ActiveCfg = Debug|Win32
 		{B56071D7-3B76-4541-A0A1-75C63AE0CC61}.Debug|Win32.Build.0 = Debug|Win32
 		{B56071D7-3B76-4541-A0A1-75C63AE0CC61}.Release|Win32.ActiveCfg = Release|Win32
 		{B56071D7-3B76-4541-A0A1-75C63AE0CC61}.Release|Win32.Build.0 = Release|Win32
-		{60F82566-A0C7-4D40-A86C-C1F1FEEA44A8}.Debug|Win32.ActiveCfg = Debug|Win32
-		{60F82566-A0C7-4D40-A86C-C1F1FEEA44A8}.Debug|Win32.Build.0 = Debug|Win32
-		{60F82566-A0C7-4D40-A86C-C1F1FEEA44A8}.Release|Win32.ActiveCfg = Release|Win32
-		{60F82566-A0C7-4D40-A86C-C1F1FEEA44A8}.Release|Win32.Build.0 = Release|Win32
 		{75240FD0-F50E-4F5C-BA2E-48525AD2B9C4}.Debug|Win32.ActiveCfg = Debug|Win32
 		{75240FD0-F50E-4F5C-BA2E-48525AD2B9C4}.Debug|Win32.Build.0 = Debug|Win32
 		{75240FD0-F50E-4F5C-BA2E-48525AD2B9C4}.Release|Win32.ActiveCfg = Release|Win32

@@ -1,4 +1,3 @@
-#include "simpledisplay.h"
 #include <QtGui/QApplication>
 #include "mainwindow.h"
 #include <QGLFormat>

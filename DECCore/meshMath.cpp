@@ -371,7 +371,7 @@ void meshMath::centroid( wingedMesh & mesh, int faceNr, tuple3f & target )
 		+verts[fc->c]*0.333333333f);
 }
 
-void meshMath::bariCoords( tuple3f & pos, 
+void inline meshMath::bariCoords( tuple3f & pos, 
 	int dualFace, 
 	std::vector<tuple3f> & dualVertices, 
 	std::vector<float> & target, 
