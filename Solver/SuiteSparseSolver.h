@@ -1,8 +1,10 @@
 #pragma once
+
 #include "solverif.h"
+#include "SolverConfig.h"
+#ifdef SUITESPARSESOLVER
 #include "DDGMatrices.h"
 #include "cholmod.h"
-#include "SolverConfig.h"
 
 /************************************************************************/
 /* Implements the solver interface, using the opensource
@@ -12,7 +14,7 @@
 /" definite problems, while Umfpack is used to handle any more general matrices
 /************************************************************************/
 
-#ifdef SUITESPARSESOLVER
+
 class SuiteSparseSolver :
 	public SolverIF
 {
